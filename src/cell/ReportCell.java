@@ -1,3 +1,5 @@
+package cell;
+
 public abstract class ReportCell {
     private String position;
     private String title;

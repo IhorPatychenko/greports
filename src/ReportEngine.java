@@ -1,7 +1,12 @@
 import annotations.Report;
 import annotations.ReportColumn;
 import annotations.ReportColumns;
+import cell.ReportDataColumn;
+import cell.ReportHeaderCell;
 import com.sun.istack.internal.NotNull;
+import data.ReportData;
+import data.ReportDataRow;
+import data.ReportHeader;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;

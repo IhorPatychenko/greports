@@ -1,3 +1,6 @@
+package data;
+
+import cell.ReportHeaderCell;
 import com.sun.istack.internal.NotNull;
 
 import java.util.ArrayList;
@@ -12,16 +15,16 @@ public class ReportHeader {
         return cells;
     }
 
-    void addCell(@NotNull ReportHeaderCell cell) {
+    public void addCell(@NotNull ReportHeaderCell cell) {
         this.cells.add(cell);
     }
 
-    ReportHeader addCells(@NotNull Collection<ReportHeaderCell> cells) {
+    public ReportHeader addCells(@NotNull Collection<ReportHeaderCell> cells) {
         this.cells.addAll(cells);
         return this;
     }
 
-    ReportHeader sortCells(){
+    public ReportHeader sortCells(){
         this.cells = cells.stream().sorted(Comparator.comparing(ReportHeaderCell::getPosition)).collect(Collectors.toList());
         return this;
     }
