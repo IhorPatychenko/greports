@@ -1,6 +1,7 @@
 import annotations.Report;
 import annotations.ReportColumn;
 import annotations.ReportColumns;
+import annotations.ReportTemplate;
 import cell.ReportDataColumn;
 import cell.ReportHeaderCell;
 import com.sun.istack.internal.NotNull;
@@ -32,11 +33,23 @@ public class ReportEngine {
 
     public static <T> ReportData parse(@NotNull final Collection<T> collection, @NotNull final String reportName, boolean extractValues) throws Exception {
         ReportData reportData = new ReportData(reportName);
+        T firstElement = collection.iterator().next();
         checkCollectionNotEmpty(collection);
-        checkReportAnnotation(reportData, collection.iterator().next());
-        loadReportHeader(reportData, collection.iterator().next());
+        checkReportAnnotation(reportData, firstElement);
+        loadReportTemplate(reportData, firstElement);
+        loadReportHeader(reportData, firstElement);
         loadReportRows(reportData, collection, extractValues);
         return reportData;
+    }
+
+    private static <T> void loadReportTemplate(ReportData reportData, T dto) {
+        Report report = getReportAnnotation(reportData, dto);
+        ReportTemplate first = asList(report.templates())
+                .stream()
+                .filter(template -> template.reportName().equals(reportData.getName()))
+                .findFirst()
+                .orElse(null);
+        reportData.setTemplate(Objects.requireNonNull(first).templatePath());
     }
 
     private static <T> void loadReportHeader(ReportData reportData, T dto) {

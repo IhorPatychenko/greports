@@ -7,6 +7,7 @@ import java.util.Collection;
 
 public class ReportData {
     private final String name;
+    private String template;
     private ReportHeader header;
     private Collection<ReportDataRow> rows = new ArrayList<>();
 
@@ -16,6 +17,14 @@ public class ReportData {
 
     public String getName() {
         return name;
+    }
+
+    public String getTemplate() {
+        return template;
+    }
+
+    public void setTemplate(String template) {
+        this.template = template;
     }
 
     public Collection<ReportDataRow> getRows() {
