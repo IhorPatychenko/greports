@@ -4,81 +4,89 @@ import annotations.ReportColumns;
 import annotations.ReportTemplate;
 import cell.ReportDataColumn;
 import cell.ReportHeaderCell;
+import com.oracle.tools.packager.IOUtils;
 import com.sun.istack.internal.NotNull;
+import com.sun.javafx.scene.shape.PathUtils;
 import data.ReportData;
 import data.ReportDataRow;
 import data.ReportHeader;
 
+import java.io.*;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.*;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-public class ReportEngine {
+public class ReportEngine<T> {
 
-    public static <T> ReportData parse(@NotNull final T dto, @NotNull final String reportName) throws Exception {
-        return parse(dto, reportName, true);
+    private ReportData reportData;
+    private T firstElement;
+    private Collection<ReportDataColumn> emptyColumns;
+    private Report reportAnnotation;
+    private ReportTemplate reportTemplate;
+
+    public ReportEngine parse(@NotNull T dto, @NotNull final String reportName) throws Exception {
+        return parse(Collections.singletonList(dto), reportName);
     }
 
-    public static <T> ReportData parse(@NotNull final T dto, @NotNull final String reportName, boolean extractValues) throws Exception {
-        return parse(Collections.singletonList(dto), reportName, extractValues);
-    }
-
-    public static <T> ReportData parse(@NotNull final Collection<T> collection, @NotNull final String reportName) throws Exception {
-        return parse(collection, reportName, true);
-    }
-
-    public static <T> ReportData parse(@NotNull final Collection<T> collection, @NotNull final String reportName, boolean extractValues) throws Exception {
-        ReportData reportData = new ReportData(reportName);
-        T firstElement = collection.iterator().next();
+    public ReportEngine parse(@NotNull Collection<T> collection, @NotNull final String reportName) throws Exception {
+        reportData = new ReportData(reportName);
+        firstElement = collection.iterator().next();
         checkCollectionNotEmpty(collection);
-        checkReportAnnotation(reportData, firstElement);
-        loadReportTemplate(reportData, firstElement);
-        loadReportHeader(reportData, firstElement);
-        loadReportRows(reportData, collection, extractValues);
-        return reportData;
+        reportAnnotation = getReportAnnotation(this.reportData, firstElement);
+        checkReportAnnotation(firstElement);
+        loadReportTemplate();
+        loadReportHeader(firstElement);
+        loadReportRows(reportData, collection);
+        return this;
     }
 
-    private static <T> void loadReportTemplate(ReportData reportData, T dto) {
-        Report report = getReportAnnotation(reportData, dto);
-        ReportTemplate first = asList(report.templates())
+    private void loadReportTemplate() throws Exception {
+        reportTemplate = asList(reportAnnotation.templates())
                 .stream()
                 .filter(template -> template.reportName().equals(reportData.getName()))
                 .findFirst()
                 .orElse(null);
-        reportData.setTemplate(Objects.requireNonNull(first).templatePath());
+        if(!Objects.isNull(reportTemplate)){
+            try {
+                InputStream fileStream = new FileInputStream(reportTemplate.templatePath());
+                reportData.setTemplateInputStream(fileStream);
+            } catch (FileNotFoundException e) {
+                throw new Exception("No template found with path \"" + reportTemplate.templatePath() + "\"");
+            }
+        }
     }
 
-    private static <T> void loadReportHeader(ReportData reportData, T dto) {
-        Collection<ReportDataColumn> emptyColumns = loadEmptyColumns(reportData, dto);
+    private void loadReportHeader(T dto) {
+        loadEmptyColumns();
         ReportHeader reportHeader = new ReportHeader();
         Function<AbstractMap.SimpleEntry<Method, ReportColumn>, Void> columnFunction = list -> {
             ReportColumn column = list.getValue();
             reportHeader.addCell(new ReportHeaderCell(column.position(), column.title()));
             return null;
         };
-        loadMethodsColumns(reportData, dto, columnFunction);
+        loadMethodsColumns(dto, columnFunction);
         reportData.setHeader(reportHeader)
                 .addCells(ReportHeaderCell.from(emptyColumns))
                 .sortCells();
     }
 
-    private static <T> void loadReportRows(ReportData reportData, Collection<T> collection, boolean extractValues) throws Exception {
-        Collection<ReportDataColumn> emptyColumns = loadEmptyColumns(reportData, collection.iterator().next());
-        for (T dto : collection) {
-            loadRow(reportData, dto, emptyColumns, extractValues);
-        }
+    private void loadReportRows(ReportData reportData, Collection<T> collection) throws Exception {
+        loadEmptyColumns();
+        loadRows(reportData, collection);
     }
 
-    private static <T> void loadRow(ReportData reportData, T dto, Collection<ReportDataColumn> emptyColumns, boolean extractValues) throws Exception {
-        loadRowColumns(reportData, dto, emptyColumns, extractValues);
+    private void loadRows(ReportData reportData, Collection<T> collection) throws Exception {
+        loadRowColumns(collection);
         reportData.orderColumns();
     }
 
-    private static <T> void loadRowColumns(ReportData reportData, T dto, Collection<ReportDataColumn> emptyColumns, boolean extractValues) throws Exception {
+    private void loadRowColumns(Collection<T> collection) throws Exception {
         Map<Method, ReportColumn> methodsMap = new LinkedHashMap<>();
         Function<AbstractMap.SimpleEntry<Method, ReportColumn>, Void> columnFunction = list -> {
             Method method = list.getKey();
@@ -87,28 +95,26 @@ public class ReportEngine {
             return null;
         };
 
-        loadMethodsColumns(reportData, dto, columnFunction);
+        loadMethodsColumns(collection.iterator().next(), columnFunction);
 
-        ReportDataRow row = new ReportDataRow();
-        for(Map.Entry<Method, ReportColumn> entry : methodsMap.entrySet()){
-            ReportDataColumn reportDataColumn = new ReportDataColumn(entry.getValue().position(), entry.getValue().title());
-            if (extractValues) {
+        for (T dto : collection) {
+            ReportDataRow row = new ReportDataRow();
+            for(Map.Entry<Method, ReportColumn> entry : methodsMap.entrySet()){
+                ReportDataColumn reportDataColumn = new ReportDataColumn(entry.getValue().position(), entry.getValue().title());
                 try {
                     reportDataColumn.setValue(entry.getKey().invoke(dto));
                 } catch (IllegalAccessException | InvocationTargetException e) {
                     throw new Exception("Error obtaining the value of column");
                 }
+                row.addColumn(reportDataColumn);
             }
-            row.addColumn(reportDataColumn);
+            emptyColumns.forEach(row::addColumn);
+            reportData.addRow(row);
         }
-        emptyColumns.forEach(row::addColumn);
-        reportData.addRow(row);
     }
 
-    private static <T> Collection<ReportDataColumn> loadEmptyColumns(ReportData reportData, T dto) {
-        Report reportAnnotation = getReportAnnotation(reportData, dto);
-
-        return asList(reportAnnotation.emptyColumns())
+    private void loadEmptyColumns() {
+        emptyColumns = asList(reportAnnotation.emptyColumns())
                 .stream()
                 .filter(column -> reportData.getName().equals(column.reportName()))
                 .map(column -> new ReportDataColumn(column.position(), column.title(), column.value()))
@@ -124,7 +130,7 @@ public class ReportEngine {
                 .orElse(null));
     }
 
-    private static <T> void loadMethodsColumns(ReportData reportData, T dto, Function<AbstractMap.SimpleEntry<Method, ReportColumn>, Void> columnFunction){
+    private void loadMethodsColumns(T dto, Function<AbstractMap.SimpleEntry<Method, ReportColumn>, Void> columnFunction){
         for (Method method : dto.getClass().getMethods()) {
             for (Annotation annotation : method.getDeclaredAnnotations()) {
                 if(annotation instanceof ReportColumn && getMethodAnnotationPredicate(reportData).test(annotation)){
@@ -143,31 +149,29 @@ public class ReportEngine {
         return annotation -> annotation instanceof ReportColumn && ((ReportColumn) annotation).reportName().equals(reportData.getName());
     }
 
-    private static <T> void checkCollectionNotEmpty(Collection<T> collection) throws Exception {
+    private void checkCollectionNotEmpty(Collection<T> collection) throws Exception {
         if (collection.isEmpty()) {
             throw new Exception("The collection cannot be empty");
         }
     }
 
-    private static <T> void checkReportAnnotation(ReportData reportData, T dto) throws Exception {
-        Annotation[] classAnnotations = dto.getClass().getAnnotations();
-        List<Annotation> dtoAnnotations = asList(classAnnotations);
-
-        boolean containsReportAnnotation = dtoAnnotations.stream().anyMatch(entry -> entry instanceof Report);
-        if (!containsReportAnnotation) {
-            throw new Exception(dto.getClass().toString() + " is not annotated as @Report");
+    private void checkReportAnnotation(T dto) throws Exception {
+        if (Objects.isNull(this.reportAnnotation)) {
+            throw new Exception(dto.getClass().toString() + " is not annotated as @Report or has no name \"" + reportData.getName() + "\"");
         }
+    }
 
-        Optional<Annotation> optionalReportAnnotation = dtoAnnotations.stream()
-                .filter(entry -> entry instanceof Report)
-                .filter(entry -> {
-                    List<String> names = asList(((Report) entry).name());
-                    return names.contains(reportData.getName());
-                })
-                .findFirst();
-        if (!optionalReportAnnotation.isPresent()) {
-            throw new Exception(dto.getClass().toString() + " has no name '" + reportData.getName() + "'");
+    public ReportData getData(){
+        return reportData;
+    }
+
+    public File generateReport() throws Exception {
+        if(Objects.isNull(reportData.getTemplateInputStream())){
+            throw new Exception("There is no @ReportTemplate defined in @Report annotation for \"" + reportData.getName() + "\" report name");
         }
+        // TODO create file from template
+        // TODO insert data to created file
+        return null;
     }
 
     private static <T> List<T> asList(T[] array) {

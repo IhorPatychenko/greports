@@ -2,12 +2,14 @@ package data;
 
 import com.sun.istack.internal.NotNull;
 
+import java.io.File;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 
 public class ReportData {
     private final String name;
-    private String template;
+    private InputStream template;
     private ReportHeader header;
     private Collection<ReportDataRow> rows = new ArrayList<>();
 
@@ -19,11 +21,11 @@ public class ReportData {
         return name;
     }
 
-    public String getTemplate() {
+    public InputStream getTemplateInputStream() {
         return template;
     }
 
-    public void setTemplate(String template) {
+    public void setTemplateInputStream(InputStream template) {
         this.template = template;
     }
 
