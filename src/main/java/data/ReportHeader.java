@@ -22,9 +22,4 @@ public class ReportHeader {
         this.cells.addAll(cells);
         return this;
     }
-
-    public ReportHeader sortCells(){
-        this.cells = cells.stream().sorted(Comparator.comparing(ReportHeaderCell::getPosition)).collect(Collectors.toList());
-        return this;
-    }
 }

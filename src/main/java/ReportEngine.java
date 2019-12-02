@@ -7,6 +7,7 @@ import cell.ReportHeaderCell;
 import data.ReportData;
 import data.ReportDataRow;
 import data.ReportHeader;
+import utils.YamlParser;
 
 import java.io.*;
 import java.lang.annotation.Annotation;
@@ -19,10 +20,18 @@ import java.util.stream.Collectors;
 
 public final class ReportEngine<T> {
 
+    private String reportLang;
     private ReportData reportData;
     private Collection<ReportDataColumn> emptyColumns;
     private Report reportAnnotation;
-    private ReportTemplate reportTemplate;
+
+    public ReportEngine(){
+        this("en");
+    }
+
+    public ReportEngine(String lang) {
+        this.reportLang = lang;
+    }
 
     public ReportEngine parse(T dto, final String reportName) throws Exception {
         return parse(Collections.singletonList(dto), reportName);
@@ -41,7 +50,7 @@ public final class ReportEngine<T> {
     }
 
     private void loadReportTemplate() throws Exception {
-        reportTemplate = asList(reportAnnotation.templates())
+        final ReportTemplate reportTemplate = asList(reportAnnotation.templates())
                 .stream()
                 .filter(template -> template.reportName().equals(reportData.getName()))
                 .findFirst()
@@ -59,15 +68,15 @@ public final class ReportEngine<T> {
     private void loadReportHeader(T dto) {
         loadEmptyColumns();
         ReportHeader reportHeader = new ReportHeader();
+        final Map<String, Object> titles = new YamlParser().parse(this.reportAnnotation.translationsDir(), this.reportLang);
         Function<AbstractMap.SimpleEntry<Method, ReportColumn>, Void> columnFunction = list -> {
             ReportColumn column = list.getValue();
-            reportHeader.addCell(new ReportHeaderCell(column.position(), column.title()));
+            reportHeader.addCell(new ReportHeaderCell(column.position(), (String) titles.getOrDefault(column.title(), column.title())));
             return null;
         };
         loadMethodsColumns(dto, columnFunction);
         reportData.setHeader(reportHeader)
-                .addCells(ReportHeaderCell.from(emptyColumns))
-                .sortCells();
+                .addCells(ReportHeaderCell.from(emptyColumns));
     }
 
     private void loadReportRows(Collection<T> collection) throws Exception {
