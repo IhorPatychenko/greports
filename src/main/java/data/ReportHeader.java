@@ -1,7 +1,6 @@
 package data;
 
 import cell.ReportHeaderCell;
-import com.sun.istack.internal.NotNull;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -15,11 +14,11 @@ public class ReportHeader {
         return cells;
     }
 
-    public void addCell(@NotNull ReportHeaderCell cell) {
+    public void addCell(ReportHeaderCell cell) {
         this.cells.add(cell);
     }
 
-    public ReportHeader addCells(@NotNull Collection<ReportHeaderCell> cells) {
+    public ReportHeader addCells(Collection<ReportHeaderCell> cells) {
         this.cells.addAll(cells);
         return this;
     }

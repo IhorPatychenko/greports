@@ -4,8 +4,6 @@ import cell.ReportDataColumn;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Comparator;
-import java.util.stream.Collectors;
 
 public class ReportDataRow {
     private Collection<ReportDataColumn> columns = new ArrayList<>();
@@ -20,7 +18,4 @@ public class ReportDataRow {
         this.columns.add(column);
     }
 
-    void orderColumns(){
-        this.columns = columns.stream().sorted(Comparator.comparing(ReportDataColumn::getPosition)).collect(Collectors.toList());
-    }
 }

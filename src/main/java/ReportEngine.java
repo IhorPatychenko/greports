@@ -4,9 +4,6 @@ import annotations.ReportColumns;
 import annotations.ReportTemplate;
 import cell.ReportDataColumn;
 import cell.ReportHeaderCell;
-import com.oracle.tools.packager.IOUtils;
-import com.sun.istack.internal.NotNull;
-import com.sun.javafx.scene.shape.PathUtils;
 import data.ReportData;
 import data.ReportDataRow;
 import data.ReportHeader;
@@ -15,34 +12,31 @@ import java.io.*;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.*;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-public class ReportEngine<T> {
+public final class ReportEngine<T> {
 
     private ReportData reportData;
-    private T firstElement;
     private Collection<ReportDataColumn> emptyColumns;
     private Report reportAnnotation;
     private ReportTemplate reportTemplate;
 
-    public ReportEngine parse(@NotNull T dto, @NotNull final String reportName) throws Exception {
+    public ReportEngine parse(T dto, final String reportName) throws Exception {
         return parse(Collections.singletonList(dto), reportName);
     }
 
-    public ReportEngine parse(@NotNull Collection<T> collection, @NotNull final String reportName) throws Exception {
+    public ReportEngine parse(Collection<T> collection, final String reportName) throws Exception {
         reportData = new ReportData(reportName);
-        firstElement = collection.iterator().next();
+        T firstElement = collection.iterator().next();
         checkCollectionNotEmpty(collection);
         reportAnnotation = getReportAnnotation(this.reportData, firstElement);
         checkReportAnnotation(firstElement);
         loadReportTemplate();
         loadReportHeader(firstElement);
-        loadReportRows(reportData, collection);
+        loadReportRows(collection);
         return this;
     }
 
@@ -76,26 +70,24 @@ public class ReportEngine<T> {
                 .sortCells();
     }
 
-    private void loadReportRows(ReportData reportData, Collection<T> collection) throws Exception {
+    private void loadReportRows(Collection<T> collection) throws Exception {
         loadEmptyColumns();
-        loadRows(reportData, collection);
-    }
-
-    private void loadRows(ReportData reportData, Collection<T> collection) throws Exception {
         loadRowColumns(collection);
-        reportData.orderColumns();
     }
 
     private void loadRowColumns(Collection<T> collection) throws Exception {
         Map<Method, ReportColumn> methodsMap = new LinkedHashMap<>();
+        Map<Method, ReportColumn> finalMethodsMap = methodsMap;
         Function<AbstractMap.SimpleEntry<Method, ReportColumn>, Void> columnFunction = list -> {
             Method method = list.getKey();
             ReportColumn column = list.getValue();
-            methodsMap.put(method, column);
+            finalMethodsMap.put(method, column);
             return null;
         };
 
         loadMethodsColumns(collection.iterator().next(), columnFunction);
+
+        methodsMap = sortMethodsMapByColumnOrder(finalMethodsMap);
 
         for (T dto : collection) {
             ReportDataRow row = new ReportDataRow();
@@ -111,6 +103,14 @@ public class ReportEngine<T> {
             emptyColumns.forEach(row::addColumn);
             reportData.addRow(row);
         }
+    }
+
+    private Map<Method, ReportColumn> sortMethodsMapByColumnOrder(Map<Method, ReportColumn> methodsMap) {
+        List<Map.Entry<Method, ReportColumn>> list = new ArrayList<>(methodsMap.entrySet());
+        return list
+                .stream()
+                .sorted(Comparator.comparing(o -> o.getValue().position()))
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e2, LinkedHashMap::new));
     }
 
     private void loadEmptyColumns() {

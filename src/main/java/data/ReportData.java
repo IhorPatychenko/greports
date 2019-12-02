@@ -1,8 +1,5 @@
 package data;
 
-import com.sun.istack.internal.NotNull;
-
-import java.io.File;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -13,7 +10,7 @@ public class ReportData {
     private ReportHeader header;
     private Collection<ReportDataRow> rows = new ArrayList<>();
 
-    public ReportData(@NotNull String name) {
+    public ReportData(String name) {
         this.name = name;
     }
 
@@ -31,10 +28,6 @@ public class ReportData {
 
     public Collection<ReportDataRow> getRows() {
         return rows;
-    }
-
-    public void orderColumns(){
-        this.rows.forEach(ReportDataRow::orderColumns);
     }
 
     public ReportHeader setHeader(ReportHeader header) {
