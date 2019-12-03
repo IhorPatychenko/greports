@@ -5,13 +5,18 @@ import cell.ReportHeaderCell;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.List;
 import java.util.stream.Collectors;
 
 public class ReportHeader {
-    private Collection<ReportHeaderCell> cells = new ArrayList<>();
+    private List<ReportHeaderCell> cells = new ArrayList<>();
 
-    public Collection<ReportHeaderCell> getCells() {
+    public List<ReportHeaderCell> getCells() {
         return cells;
+    }
+
+    public ReportHeaderCell getCell(int index){
+        return cells.get(index);
     }
 
     public void addCell(ReportHeaderCell cell) {

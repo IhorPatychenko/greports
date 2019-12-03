@@ -3,12 +3,13 @@ package data;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 public class ReportData {
     private final String name;
     private InputStream template;
     private ReportHeader header;
-    private Collection<ReportDataRow> rows = new ArrayList<>();
+    private List<ReportDataRow> rows = new ArrayList<>();
 
     public ReportData(String name) {
         this.name = name;
@@ -26,8 +27,16 @@ public class ReportData {
         this.template = template;
     }
 
-    public Collection<ReportDataRow> getRows() {
+    public Iterable<ReportDataRow> getRows() {
         return rows;
+    }
+
+    public ReportDataRow getRow(int index) {
+        return rows.get(index);
+    }
+
+    public int getRowsCount(){
+        return rows.size();
     }
 
     public ReportHeader setHeader(ReportHeader header) {

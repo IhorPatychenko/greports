@@ -16,7 +16,7 @@ public abstract class ReportCell {
         return position;
     }
 
-    public String getTitle() {
+    protected String getTitle() {
         return title;
     }
 }

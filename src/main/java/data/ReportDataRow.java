@@ -4,13 +4,14 @@ import cell.ReportDataColumn;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 public class ReportDataRow {
-    private Collection<ReportDataColumn> columns = new ArrayList<>();
+    private List<ReportDataColumn> columns = new ArrayList<>();
 
     public ReportDataRow() {}
 
-    public Collection<ReportDataColumn> getColumns() {
+    public List<ReportDataColumn> getColumns() {
         return columns;
     }
 

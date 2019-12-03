@@ -2,6 +2,7 @@ import annotations.Report;
 import annotations.ReportColumn;
 import annotations.ReportColumns;
 import annotations.ReportTemplate;
+import cell.ReportCell;
 import cell.ReportDataColumn;
 import cell.ReportHeaderCell;
 import data.ReportData;
@@ -67,16 +68,18 @@ public final class ReportEngine<T> {
 
     private void loadReportHeader(T dto) {
         loadEmptyColumns();
-        ReportHeader reportHeader = new ReportHeader();
+        List<ReportHeaderCell> cells = new ArrayList<>();
         final Map<String, Object> titles = new YamlParser().parse(this.reportAnnotation.translationsDir(), this.reportLang);
         Function<AbstractMap.SimpleEntry<Method, ReportColumn>, Void> columnFunction = list -> {
             ReportColumn column = list.getValue();
-            reportHeader.addCell(new ReportHeaderCell(column.position(), (String) titles.getOrDefault(column.title(), column.title())));
+            cells.add(new ReportHeaderCell(column.position(), (String) titles.getOrDefault(column.title(), column.title())));
             return null;
         };
         loadMethodsColumns(dto, columnFunction);
-        reportData.setHeader(reportHeader)
-                .addCells(ReportHeaderCell.from(emptyColumns));
+        cells.addAll(ReportHeaderCell.from(emptyColumns));
+        cells.sort(Comparator.comparing(ReportCell::getPosition));
+        reportData.setHeader(new ReportHeader())
+                .addCells(cells);
     }
 
     private void loadReportRows(Collection<T> collection) throws Exception {
@@ -120,6 +123,10 @@ public final class ReportEngine<T> {
                 .stream()
                 .sorted(Comparator.comparing(o -> o.getValue().position()))
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e2, LinkedHashMap::new));
+    }
+
+    private void sortHeaderColumns(){
+
     }
 
     private void loadEmptyColumns() {
@@ -172,15 +179,6 @@ public final class ReportEngine<T> {
 
     public ReportData getData(){
         return reportData;
-    }
-
-    public File generateReport() throws Exception {
-        if(Objects.isNull(reportData.getTemplateInputStream())){
-            throw new Exception("There is no @ReportTemplate defined in @Report annotation for \"" + reportData.getName() + "\" report name");
-        }
-        // TODO create file from template
-        // TODO insert data to created file
-        return null;
     }
 
     private static <T> List<T> asList(T[] array) {

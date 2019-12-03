@@ -3,7 +3,7 @@ package models;
 import annotations.Report;
 import annotations.ReportColumn;
 
-@Report(name = "Report1")
+@Report(name = "Report1", translationsDir = "src/test/resources/i18n/")
 public class BackDto {
 
     private int id;

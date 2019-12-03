@@ -10,7 +10,6 @@ import java.lang.annotation.Target;
 public @interface Report {
     String[] name();
     String translationsDir() default "src/main/java/resources/i18n/";
-    String lang() default "en";
     ReportTemplate[] templates() default {};
     ReportColumn[] emptyColumns() default {};
 }
