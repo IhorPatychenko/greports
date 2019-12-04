@@ -22,7 +22,7 @@ class ReportEngineTest {
     @Test
     void testParseCollection() throws Exception {
         Collection<BackDto> collection = new ArrayList<>(Arrays.asList(
-                new BackDto(1, "Juan", "Velasquez"),
+                new BackDto(1, "Juan", "Vasquez"),
                 new BackDto(2, "Ihor", "Patychenko")
         ));
         final ReportData reportData = reportEngine.parse(collection, "Report1").getData();
@@ -30,9 +30,9 @@ class ReportEngineTest {
     }
 
     @Test
-    void getData() throws Exception {
+    void testGetData() throws Exception {
         Collection<BackDto> collection = new ArrayList<>(Arrays.asList(
-                new BackDto(1, "Juan", "Velasquez"),
+                new BackDto(1, "Juan", "Vasquez"),
                 new BackDto(2, "Ihor", "Patychenko")
         ));
         final ReportData reportData = reportEngine.parse(collection, "Report1").getData();
@@ -44,6 +44,7 @@ class ReportEngineTest {
     void testTranslations() throws Exception {
         final BackDto backDto = new BackDto(2, "Ihor", "Patychenko");
         final ReportData reportData = reportEngine.parse(backDto, "Report1").getData();
-        assertEquals("Name", reportData.getHeader().getCell(1).getTitle());
+        assertEquals("Nombre", reportData.getHeader().getCell(1).getTitle());
+        assertEquals("Apellidos", reportData.getHeader().getCell(2).getTitle());
     }
 }

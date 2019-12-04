@@ -8,7 +8,7 @@ import cell.ReportHeaderCell;
 import data.ReportData;
 import data.ReportDataRow;
 import data.ReportHeader;
-import utils.YamlParser;
+import utils.TranslationsParser;
 
 import java.io.*;
 import java.lang.annotation.Annotation;
@@ -69,7 +69,7 @@ public final class ReportEngine<T> {
     private void loadReportHeader(T dto) {
         loadEmptyColumns();
         List<ReportHeaderCell> cells = new ArrayList<>();
-        final Map<String, Object> titles = new YamlParser().parse(this.reportAnnotation.translationsDir(), this.reportLang);
+        final Map<String, Object> titles = new TranslationsParser(this.reportAnnotation.translationsDir()).parse(this.reportLang);
         Function<AbstractMap.SimpleEntry<Method, ReportColumn>, Void> columnFunction = list -> {
             ReportColumn column = list.getValue();
             cells.add(new ReportHeaderCell(column.position(), (String) titles.getOrDefault(column.title(), column.title())));
@@ -123,10 +123,6 @@ public final class ReportEngine<T> {
                 .stream()
                 .sorted(Comparator.comparing(o -> o.getValue().position()))
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e2, LinkedHashMap::new));
-    }
-
-    private void sortHeaderColumns(){
-
     }
 
     private void loadEmptyColumns() {
