@@ -19,26 +19,26 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-public final class ReportEngine<T> {
+public final class ReportDataParser {
 
     private String reportLang;
     private ReportData reportData;
     private Collection<ReportDataColumn> emptyColumns;
     private Report reportAnnotation;
 
-    public ReportEngine(){
+    public ReportDataParser(){
         this("en");
     }
 
-    public ReportEngine(String lang) {
+    public ReportDataParser(String lang) {
         this.reportLang = lang;
     }
 
-    public ReportEngine parse(T dto, final String reportName) throws Exception {
+    public <T> ReportDataParser parse(T dto, final String reportName) throws Exception {
         return parse(Collections.singletonList(dto), reportName);
     }
 
-    public ReportEngine parse(Collection<T> collection, final String reportName) throws Exception {
+    public <T> ReportDataParser parse(Collection<T> collection, final String reportName) throws Exception {
         reportData = new ReportData(reportName);
         T firstElement = collection.iterator().next();
         checkCollectionNotEmpty(collection);
@@ -66,28 +66,30 @@ public final class ReportEngine<T> {
         }
     }
 
-    private void loadReportHeader(T dto) {
-        loadEmptyColumns();
-        List<ReportHeaderCell> cells = new ArrayList<>();
-        final Map<String, Object> titles = new TranslationsParser(this.reportAnnotation.translationsDir()).parse(this.reportLang);
-        Function<AbstractMap.SimpleEntry<Method, ReportColumn>, Void> columnFunction = list -> {
-            ReportColumn column = list.getValue();
-            cells.add(new ReportHeaderCell(column.position(), (String) titles.getOrDefault(column.title(), column.title())));
-            return null;
-        };
-        loadMethodsColumns(dto, columnFunction);
-        cells.addAll(ReportHeaderCell.from(emptyColumns));
-        cells.sort(Comparator.comparing(ReportCell::getPosition));
-        reportData.setHeader(new ReportHeader())
-                .addCells(cells);
+    private <T> void loadReportHeader(T dto) {
+        if(reportAnnotation.showHeader()){
+            loadEmptyColumns();
+            List<ReportHeaderCell> cells = new ArrayList<>();
+            final Map<String, Object> titles = new TranslationsParser(this.reportAnnotation.translationsDir()).parse(this.reportLang);
+            Function<AbstractMap.SimpleEntry<Method, ReportColumn>, Void> columnFunction = list -> {
+                ReportColumn column = list.getValue();
+                cells.add(new ReportHeaderCell(column.position(), (String) titles.getOrDefault(column.title(), column.title())));
+                return null;
+            };
+            loadMethodsColumns(dto, columnFunction);
+            cells.addAll(ReportHeaderCell.from(emptyColumns));
+            cells.sort(Comparator.comparing(ReportCell::getPosition));
+            reportData.setHeader(new ReportHeader())
+                    .addCells(cells);
+        }
     }
 
-    private void loadReportRows(Collection<T> collection) throws Exception {
+    private <T> void loadReportRows(Collection<T> collection) throws Exception {
         loadEmptyColumns();
         loadRowColumns(collection);
     }
 
-    private void loadRowColumns(Collection<T> collection) throws Exception {
+    private <T> void loadRowColumns(Collection<T> collection) throws Exception {
         Map<Method, ReportColumn> methodsMap = new LinkedHashMap<>();
         Map<Method, ReportColumn> finalMethodsMap = methodsMap;
         Function<AbstractMap.SimpleEntry<Method, ReportColumn>, Void> columnFunction = list -> {
@@ -142,7 +144,7 @@ public final class ReportEngine<T> {
                 .orElse(null));
     }
 
-    private void loadMethodsColumns(T dto, Function<AbstractMap.SimpleEntry<Method, ReportColumn>, Void> columnFunction){
+    private <T> void loadMethodsColumns(T dto, Function<AbstractMap.SimpleEntry<Method, ReportColumn>, Void> columnFunction){
         for (Method method : dto.getClass().getMethods()) {
             for (Annotation annotation : method.getDeclaredAnnotations()) {
                 if(annotation instanceof ReportColumn && getMethodAnnotationPredicate(reportData).test(annotation)){
@@ -161,13 +163,13 @@ public final class ReportEngine<T> {
         return annotation -> annotation instanceof ReportColumn && ((ReportColumn) annotation).reportName().equals(reportData.getName());
     }
 
-    private void checkCollectionNotEmpty(Collection<T> collection) throws Exception {
+    private <T> void checkCollectionNotEmpty(Collection<T> collection) throws Exception {
         if (collection.isEmpty()) {
             throw new Exception("The collection cannot be empty");
         }
     }
 
-    private void checkReportAnnotation(T dto) throws Exception {
+    private <T> void checkReportAnnotation(T dto) throws Exception {
         if (Objects.isNull(this.reportAnnotation)) {
             throw new Exception(dto.getClass().toString() + " is not annotated as @Report or has no name \"" + reportData.getName() + "\"");
         }
@@ -175,6 +177,13 @@ public final class ReportEngine<T> {
 
     public ReportData getData(){
         return reportData;
+    }
+
+    public ReportDataParser clear(){
+        reportData = null;
+        emptyColumns = null;
+        reportAnnotation = null;
+        return this;
     }
 
     private static <T> List<T> asList(T[] array) {

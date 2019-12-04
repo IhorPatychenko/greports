@@ -8,14 +8,14 @@ import java.util.Collection;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class ReportEngineTest {
+class ReportDataParserTest {
 
-    private final ReportEngine<BackDto> reportEngine = new ReportEngine<>("es");
+    private final ReportDataParser reportDataParser = new ReportDataParser("es");
 
     @Test
     void testParse() throws Exception {
         BackDto dto = new BackDto(1, "Ihor", "Patychenko");
-        final ReportData reportData = reportEngine.parse(dto, "Report1").getData();
+        final ReportData reportData = reportDataParser.parse(dto, "Report1").getData();
         assertEquals("Report1", reportData.getName());
     }
 
@@ -25,7 +25,7 @@ class ReportEngineTest {
                 new BackDto(1, "Juan", "Vasquez"),
                 new BackDto(2, "Ihor", "Patychenko")
         ));
-        final ReportData reportData = reportEngine.parse(collection, "Report1").getData();
+        final ReportData reportData = reportDataParser.parse(collection, "Report1").getData();
         assertEquals(2, reportData.getRowsCount());
     }
 
@@ -35,7 +35,7 @@ class ReportEngineTest {
                 new BackDto(1, "Juan", "Vasquez"),
                 new BackDto(2, "Ihor", "Patychenko")
         ));
-        final ReportData reportData = reportEngine.parse(collection, "Report1").getData();
+        final ReportData reportData = reportDataParser.parse(collection, "Report1").getData();
         assertEquals("Ihor", reportData.getRow(1).getColumns().get(1).getValue());
         assertEquals("Patychenko", reportData.getRow(1).getColumns().get(2).getValue());
     }
@@ -43,7 +43,7 @@ class ReportEngineTest {
     @Test
     void testTranslations() throws Exception {
         final BackDto backDto = new BackDto(2, "Ihor", "Patychenko");
-        final ReportData reportData = reportEngine.parse(backDto, "Report1").getData();
+        final ReportData reportData = reportDataParser.parse(backDto, "Report1").getData();
         assertEquals("Nombre", reportData.getHeader().getCell(1).getTitle());
         assertEquals("Apellidos", reportData.getHeader().getCell(2).getTitle());
     }

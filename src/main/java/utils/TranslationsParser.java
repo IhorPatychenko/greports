@@ -37,11 +37,7 @@ public class TranslationsParser {
         Yaml yaml = new Yaml();
         InputStream inputStream;
         try {
-            StringJoiner joiner = new StringJoiner(".");
-            joiner.add(translationsDir + "messages")
-                    .add(reportLang)
-                    .add(fileExtension.toString());
-            inputStream = new FileInputStream(joiner.toString());
+            inputStream = new FileInputStream(String.format("%smessages.%s.%s", translationsDir, reportLang, fileExtension.toString()));
             return yaml.load(inputStream);
         } catch (FileNotFoundException e) {
             return new HashMap<>();
