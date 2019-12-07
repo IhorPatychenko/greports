@@ -7,6 +7,7 @@ public abstract class ReportCell {
     public ReportCell(String position) {
         this.position = position;
     }
+
     public ReportCell(String position, String title) {
         this(position);
         this.title = title;

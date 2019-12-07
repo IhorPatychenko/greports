@@ -1,3 +1,5 @@
 Messages.id: ID
 Messages.name: Nombre
 Messages.surname: Apellidos
+Messages.birthDay: Cumpleaños
+Messages.emptyColumn: Columna vacia

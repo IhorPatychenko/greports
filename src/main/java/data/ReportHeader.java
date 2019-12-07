@@ -4,11 +4,10 @@ import cell.ReportHeaderCell;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Comparator;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class ReportHeader {
+
     private List<ReportHeaderCell> cells = new ArrayList<>();
 
     public List<ReportHeaderCell> getCells() {
@@ -27,4 +26,5 @@ public class ReportHeader {
         this.cells.addAll(cells);
         return this;
     }
+
 }

@@ -9,8 +9,10 @@ import java.lang.annotation.Target;
 @Target(ElementType.TYPE)
 public @interface Report {
     String[] name();
-    boolean showHeader() default true;
     String translationsDir() default "src/main/java/resources/i18n/";
+    boolean showHeader() default true;
+    short headerStartRow() default 0;
+    short dataStartRow() default 1;
     ReportTemplate[] templates() default {};
     ReportColumn[] emptyColumns() default {};
 }

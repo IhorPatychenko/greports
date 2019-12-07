@@ -8,6 +8,7 @@ import cell.ReportHeaderCell;
 import data.ReportData;
 import data.ReportDataRow;
 import data.ReportHeader;
+import styles.StyledReport;
 import utils.TranslationsParser;
 
 import java.io.*;
@@ -19,34 +20,29 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-public final class ReportDataParser {
+final class ReportDataParser {
 
     private String reportLang;
     private ReportData reportData;
+    private Map<String, Object> translations;
     private Collection<ReportDataColumn> emptyColumns;
     private Report reportAnnotation;
 
-    public ReportDataParser(){
-        this("en");
-    }
-
-    public ReportDataParser(String lang) {
+    ReportDataParser(String lang) {
         this.reportLang = lang;
     }
 
-    public <T> ReportDataParser parse(T dto, final String reportName) throws Exception {
-        return parse(Collections.singletonList(dto), reportName);
-    }
-
-    public <T> ReportDataParser parse(Collection<T> collection, final String reportName) throws Exception {
+    <T> ReportDataParser parse(Collection<T> collection, final String reportName) throws Exception {
         reportData = new ReportData(reportName);
         T firstElement = collection.iterator().next();
         checkCollectionNotEmpty(collection);
         reportAnnotation = getReportAnnotation(this.reportData, firstElement);
+        translations = new TranslationsParser(this.reportAnnotation.translationsDir()).parse(this.reportLang);
         checkReportAnnotation(firstElement);
         loadReportTemplate();
         loadReportHeader(firstElement);
         loadReportRows(collection);
+        loadReportStyles(firstElement);
         return this;
     }
 
@@ -67,13 +63,14 @@ public final class ReportDataParser {
     }
 
     private <T> void loadReportHeader(T dto) {
-        if(reportAnnotation.showHeader()){
+        reportData.setShowHeader(reportAnnotation.showHeader());
+        if(reportData.isShowHeader()){
+            reportData.setHeaderStartRow(reportAnnotation.headerStartRow());
             loadEmptyColumns();
             List<ReportHeaderCell> cells = new ArrayList<>();
-            final Map<String, Object> titles = new TranslationsParser(this.reportAnnotation.translationsDir()).parse(this.reportLang);
             Function<AbstractMap.SimpleEntry<Method, ReportColumn>, Void> columnFunction = list -> {
                 ReportColumn column = list.getValue();
-                cells.add(new ReportHeaderCell(column.position(), (String) titles.getOrDefault(column.title(), column.title())));
+                cells.add(new ReportHeaderCell(column.position(), (String) translations.getOrDefault(column.title(), column.title())));
                 return null;
             };
             loadMethodsColumns(dto, columnFunction);
@@ -86,10 +83,12 @@ public final class ReportDataParser {
 
     private <T> void loadReportRows(Collection<T> collection) throws Exception {
         loadEmptyColumns();
-        loadRowColumns(collection);
+        loadRowsData(collection);
     }
 
-    private <T> void loadRowColumns(Collection<T> collection) throws Exception {
+    private <T> void loadRowsData(Collection<T> collection) throws Exception {
+        reportData.setDataStartRow(reportAnnotation.dataStartRow());
+
         Map<Method, ReportColumn> methodsMap = new LinkedHashMap<>();
         Map<Method, ReportColumn> finalMethodsMap = methodsMap;
         Function<AbstractMap.SimpleEntry<Method, ReportColumn>, Void> columnFunction = list -> {
@@ -102,20 +101,45 @@ public final class ReportDataParser {
         loadMethodsColumns(collection.iterator().next(), columnFunction);
 
         methodsMap = sortMethodsMapByColumnOrder(finalMethodsMap);
+        reportData.setColumnsLength(methodsMap.size());
 
         for (T dto : collection) {
             ReportDataRow row = new ReportDataRow();
             for(Map.Entry<Method, ReportColumn> entry : methodsMap.entrySet()){
-                ReportDataColumn reportDataColumn = new ReportDataColumn(entry.getValue().position(), entry.getValue().title());
                 try {
-                    reportDataColumn.setValue(entry.getKey().invoke(dto));
+                    final Object invokedValue = entry.getKey().invoke(dto);
+                    ReportDataColumn reportDataColumn = new ReportDataColumn(
+                            entry.getValue().position(),
+                            entry.getValue().format(),
+                            invokedValue
+                    );
+                    row.addColumn(reportDataColumn);
                 } catch (IllegalAccessException | InvocationTargetException e) {
                     throw new Exception("Error obtaining the value of column");
                 }
-                row.addColumn(reportDataColumn);
+
             }
             emptyColumns.forEach(row::addColumn);
+            row.getColumns().sort(Comparator.comparing(ReportCell::getPosition));
             reportData.addRow(row);
+        }
+    }
+
+    private <T> void loadReportStyles(T firstElement) {
+        if(firstElement instanceof StyledReport){
+            StyledReport elem = (StyledReport) firstElement;
+            if(elem.getRangedRowStyles() != null){
+                reportData.setRowStyles(elem.getRangedRowStyles().get(reportData.getName()));
+            }
+            if(elem.getRangedColumnStyles() != null){
+                reportData.setColumnStyles(elem.getRangedColumnStyles().get(reportData.getName()));
+            }
+            if(elem.getPositionedStyles() != null){
+                reportData.setPositionedStyles(elem.getPositionedStyles().get(reportData.getName()));
+            }
+            if(elem.getRectangleRangedStyles() != null){
+                reportData.setRangedStyleReportStyles(elem.getRectangleRangedStyles().get(reportData.getName()));
+            }
         }
     }
 
@@ -131,8 +155,12 @@ public final class ReportDataParser {
         emptyColumns = asList(reportAnnotation.emptyColumns())
                 .stream()
                 .filter(column -> reportData.getName().equals(column.reportName()))
-                .map(column -> new ReportDataColumn(column.position(), column.title(), column.value()))
-                .collect(Collectors.toList());
+                .map(column -> new ReportDataColumn(
+                        column.position(),
+                        (String) translations.getOrDefault(column.title(), column.title()),
+                        null,
+                        null
+                )).collect(Collectors.toList());
     }
 
     private static <T> Report getReportAnnotation(ReportData reportData, T dto) {
@@ -175,7 +203,7 @@ public final class ReportDataParser {
         }
     }
 
-    public ReportData getData(){
+    protected ReportData getData(){
         return reportData;
     }
 
