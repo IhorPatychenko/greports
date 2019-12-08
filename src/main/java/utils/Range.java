@@ -13,4 +13,12 @@ public abstract class Range extends Tuple<Integer, Integer> {
     protected Integer getEnd(){
         return super.getB();
     }
+
+    public void setStart(Integer start) {
+        super.setA(start);
+    }
+
+    public void setEnd(Integer end) {
+        super.setB(end);
+    }
 }

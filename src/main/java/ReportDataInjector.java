@@ -1,13 +1,17 @@
 import cell.ReportDataColumn;
 import cell.ReportHeaderCell;
 import data.ReportData;
+import data.ReportHeader;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.CreationHelper;
+import org.apache.poi.ss.usermodel.FillPatternType;
 import org.apache.poi.ss.usermodel.Font;
+import org.apache.poi.ss.usermodel.IndexedColors;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import styles.HorizontalRangedStyle;
 import styles.PositionedStyle;
@@ -16,7 +20,10 @@ import styles.ReportStyle;
 import styles.ReportStylesBuilder;
 import styles.ReportStylesBuilder.StylePriority;
 import styles.VerticalRangedStyle;
+import styles.interfaces.StripedRows;
+import utils.HorizontalRange;
 import utils.RectangleRange;
+import utils.VerticalRange;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -41,16 +48,20 @@ class ReportDataInjector {
     private void createSheets(){
         final Sheet sheet = wb.createSheet();
         createRows(sheet);
+        addStripedRows(sheet);
         addStyles(sheet);
-        //autoSizeColumns(sheet);
     }
 
     private void createRows(Sheet sheet){
         // Create a header row
         if(reportData.isShowHeader()){
+            final ReportHeader header = reportData.getHeader();
             final Row headerRow = sheet.createRow(reportData.getHeaderStartRow());
-            for (int i = 0; i < reportData.getHeader().getCells().size(); i++) {
-                createHeaderCell(headerRow, reportData.getHeader().getCells().get(i), i);
+            for (int i = 0; i < header.getCells().size(); i++) {
+                createHeaderCell(headerRow, header.getCells().get(i), i);
+            }
+            if(header.isColumnFilter()){
+                sheet.setAutoFilter(new CellRangeAddress(headerRow.getRowNum(), headerRow.getRowNum(), 0, header.getCells().size() - 1));
             }
         }
         // Create data rows
@@ -93,16 +104,34 @@ class ReportDataInjector {
         }
     }
 
+    private void addStripedRows(Sheet sheet){
+        final StripedRows.StripedRowsIndex stripedRowsIndex = reportData.getStyles().getStripedRowsIndex();
+        final IndexedColors stripedRowsColor = reportData.getStyles().getStripedRowsColor();
+        if(stripedRowsIndex != null && stripedRowsColor != null){
+            for(int i = stripedRowsIndex.getIndex(); i <= sheet.getLastRowNum(); i+=2){
+                final Row row = sheet.getRow(i);
+                for(int y = 0; y < row.getLastCellNum(); y++) {
+                    final Cell cell = row.getCell(y);
+                    final CellStyle cellStyle = wb.createCellStyle();
+                    cellStyle.cloneStyleFrom(cell.getCellStyle());
+                    cellStyle.setFillForegroundColor(stripedRowsColor.getIndex());
+                    cellStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+                    cell.setCellStyle(cellStyle);
+                }
+            }
+        }
+    }
+
     private void addStyles(Sheet sheet) {
         for (StylePriority priority : StylePriority.values()) {
-            if(reportData.getRowStyles() != null && priority.equals(reportData.getRowStyles().getPriority())){
-                applyRowStyles(sheet, reportData.getRowStyles());
-            } else if(reportData.getColumnStyles() != null && priority.equals(reportData.getColumnStyles().getPriority())){
-                applyColumnStyles(sheet, reportData.getColumnStyles());
-            } else if(reportData.getPositionedStyles() != null && priority.equals(reportData.getPositionedStyles().getPriority())){
-                applyPositionedStyles(sheet, reportData.getPositionedStyles());
-            } else if(reportData.getRangedStyleReportStyles() != null && priority.equals(reportData.getRangedStyleReportStyles().getPriority())){
-                applyRangedStyles(sheet, reportData.getRangedStyleReportStyles());
+            if(reportData.getStyles().getRowStyles() != null && priority.equals(reportData.getStyles().getRowStyles().getPriority())){
+                applyRowStyles(sheet, reportData.getStyles().getRowStyles());
+            } else if(reportData.getStyles().getColumnStyles() != null && priority.equals(reportData.getStyles().getColumnStyles().getPriority())){
+                applyColumnStyles(sheet, reportData.getStyles().getColumnStyles());
+            } else if(reportData.getStyles().getPositionedStyles() != null && priority.equals(reportData.getStyles().getPositionedStyles().getPriority())){
+                applyPositionedStyles(sheet, reportData.getStyles().getPositionedStyles());
+            } else if(reportData.getStyles().getRangedStyleReportStyles() != null && priority.equals(reportData.getStyles().getRangedStyleReportStyles().getPriority())){
+                applyRangedStyles(sheet, reportData.getStyles().getRangedStyleReportStyles());
             }
         }
     }
@@ -110,7 +139,9 @@ class ReportDataInjector {
     private void applyRowStyles(Sheet sheet, ReportStylesBuilder<VerticalRangedStyle> rowStyles) {
         final Collection<VerticalRangedStyle> styles = rowStyles.build();
         for (VerticalRangedStyle style : styles) {
-            for(int i = style.getRange().getStart(); i <= style.getRange().getEnd(); i++){
+            final VerticalRange range = style.getRange();
+            checkRangeEnd(range);
+            for(int i = range.getStart(); i <= range.getEnd(); i++){
                 final Row row = sheet.getRow(i);
                 for(int y = 0; y < row.getLastCellNum(); y++){
                     cellApplyStyles(row.getCell(y), style);
@@ -124,7 +155,9 @@ class ReportDataInjector {
         for (HorizontalRangedStyle style : styles) {
             for(int i = 0; i <= sheet.getLastRowNum(); i++) {
                 final Row row = sheet.getRow(i);
-                for(int y = style.getRange().getStart(); y <= style.getRange().getEnd(); y++){
+                final HorizontalRange range = style.getRange();
+                checkRangeEnd(range);
+                for(int y = range.getStart(); y <= range.getEnd(); y++){
                     cellApplyStyles(row.getCell(y), style);
                 }
             }
@@ -142,11 +175,27 @@ class ReportDataInjector {
         final Collection<RectangleRangedStyle> rangedStyles = positionedStyles.build();
         for (RectangleRangedStyle rangedStyle : rangedStyles) {
             final RectangleRange range = rangedStyle.getRange();
-            for(int i = range.getVerticalRange().getStart(); i <= range.getVerticalRange().getEnd(); i++) {
-                for(int y = range.getHorizontalRange().getStart(); y <= range.getHorizontalRange().getEnd(); y++){
+            final VerticalRange verticalRange = range.getVerticalRange();
+            checkRangeEnd(verticalRange);
+            final HorizontalRange horizontalRange = range.getHorizontalRange();
+            checkRangeEnd(horizontalRange);
+            for(int i = verticalRange.getStart(); i <= verticalRange.getEnd(); i++) {
+                for(int y = horizontalRange.getStart(); y <= horizontalRange.getEnd(); y++){
                     cellApplyStyles(sheet.getRow(i).getCell(y), rangedStyle);
                 }
             }
+        }
+    }
+
+    private void checkRangeEnd(VerticalRange range){
+        if(Objects.isNull(range.getEnd())) {
+            range.setEnd(reportData.getRowsCount() + reportData.getDataStartRow() - 1);
+        }
+    }
+
+    private void checkRangeEnd(HorizontalRange range){
+        if(Objects.isNull(range.getEnd())){
+            range.setEnd(reportData.getColumnsLength());
         }
     }
 
@@ -180,8 +229,8 @@ class ReportDataInjector {
         if(style.getFontColor() != null) {
             font.setColor(style.getFontColor().getIndex());
         }
-        if(style.isBoldFont() != null) {
-            font.setBold(style.isBoldFont());
+        if(style.getBoldFont() != null) {
+            font.setBold(style.getBoldFont());
         }
 
         cellStyle.setFont(font);
@@ -197,12 +246,6 @@ class ReportDataInjector {
         cell.setCellStyle(cellStyle);
     }
 
-//    private void autoSizeColumns(Sheet sheet) {
-//        sheet.autoSizeColumn(4);
-////        for (int i = 0; i < reportData.getColumnsLength(); i++) {
-////            sheet.autoSizeColumn(i);
-////        }
-//    }
 
     protected void writeToFileOutputStream(OutputStream fileOutputStream) throws IOException {
         wb.write(fileOutputStream);

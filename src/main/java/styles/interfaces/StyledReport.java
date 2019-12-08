@@ -1,4 +1,10 @@
-package styles;
+package styles.interfaces;
+
+import styles.HorizontalRangedStyle;
+import styles.PositionedStyle;
+import styles.RectangleRangedStyle;
+import styles.ReportStylesBuilder;
+import styles.VerticalRangedStyle;
 
 import java.util.Map;
 

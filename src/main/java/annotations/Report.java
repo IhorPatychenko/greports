@@ -11,8 +11,9 @@ public @interface Report {
     String[] name();
     String translationsDir() default "src/main/java/resources/i18n/";
     boolean showHeader() default true;
-    short headerStartRow() default 0;
-    short dataStartRow() default 1;
+    short headerOffset() default 0;
+    short dataOffset() default 1;
+    boolean sortableHeader() default false;
     ReportTemplate[] templates() default {};
     ReportColumn[] emptyColumns() default {};
 }

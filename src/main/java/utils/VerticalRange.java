@@ -12,4 +12,12 @@ public class VerticalRange extends Range {
     public Integer getEnd(){
         return super.getEnd();
     }
+
+    public void setStart(Integer start) {
+        super.setStart(start);
+    }
+
+    public void setEnd(Integer end) {
+        super.setEnd(end);
+    }
 }

@@ -8,7 +8,8 @@ import cell.ReportHeaderCell;
 import data.ReportData;
 import data.ReportDataRow;
 import data.ReportHeader;
-import styles.StyledReport;
+import styles.interfaces.StripedRows;
+import styles.interfaces.StyledReport;
 import utils.TranslationsParser;
 
 import java.io.*;
@@ -65,7 +66,7 @@ final class ReportDataParser {
     private <T> void loadReportHeader(T dto) {
         reportData.setShowHeader(reportAnnotation.showHeader());
         if(reportData.isShowHeader()){
-            reportData.setHeaderStartRow(reportAnnotation.headerStartRow());
+            reportData.setHeaderStartRow(reportAnnotation.headerOffset());
             loadEmptyColumns();
             List<ReportHeaderCell> cells = new ArrayList<>();
             Function<AbstractMap.SimpleEntry<Method, ReportColumn>, Void> columnFunction = list -> {
@@ -76,7 +77,7 @@ final class ReportDataParser {
             loadMethodsColumns(dto, columnFunction);
             cells.addAll(ReportHeaderCell.from(emptyColumns));
             cells.sort(Comparator.comparing(ReportCell::getPosition));
-            reportData.setHeader(new ReportHeader())
+            reportData.setHeader(new ReportHeader(reportAnnotation.sortableHeader()))
                     .addCells(cells);
         }
     }
@@ -87,7 +88,7 @@ final class ReportDataParser {
     }
 
     private <T> void loadRowsData(Collection<T> collection) throws Exception {
-        reportData.setDataStartRow(reportAnnotation.dataStartRow());
+        reportData.setDataStartRow(reportAnnotation.dataOffset());
 
         Map<Method, ReportColumn> methodsMap = new LinkedHashMap<>();
         Map<Method, ReportColumn> finalMethodsMap = methodsMap;
@@ -129,16 +130,24 @@ final class ReportDataParser {
         if(firstElement instanceof StyledReport){
             StyledReport elem = (StyledReport) firstElement;
             if(elem.getRangedRowStyles() != null){
-                reportData.setRowStyles(elem.getRangedRowStyles().get(reportData.getName()));
+                reportData.getStyles().setRowStyles(elem.getRangedRowStyles().get(reportData.getName()));
             }
             if(elem.getRangedColumnStyles() != null){
-                reportData.setColumnStyles(elem.getRangedColumnStyles().get(reportData.getName()));
+                reportData.getStyles().setColumnStyles(elem.getRangedColumnStyles().get(reportData.getName()));
             }
             if(elem.getPositionedStyles() != null){
-                reportData.setPositionedStyles(elem.getPositionedStyles().get(reportData.getName()));
+                reportData.getStyles().setPositionedStyles(elem.getPositionedStyles().get(reportData.getName()));
             }
             if(elem.getRectangleRangedStyles() != null){
-                reportData.setRangedStyleReportStyles(elem.getRectangleRangedStyles().get(reportData.getName()));
+                reportData.getStyles().setRangedStyleReportStyles(elem.getRectangleRangedStyles().get(reportData.getName()));
+            }
+        }
+        if(firstElement instanceof StripedRows){
+            StripedRows elem = (StripedRows) firstElement;
+            if(elem.getStripedRowsIndex() != null && elem.getStripedRowsColor() != null){
+                reportData.getStyles()
+                        .setStripedRowsIndex(elem.getStripedRowsIndex())
+                        .setStripedRowsColor(elem.getStripedRowsColor());
             }
         }
     }
@@ -198,8 +207,10 @@ final class ReportDataParser {
     }
 
     private <T> void checkReportAnnotation(T dto) throws Exception {
-        if (Objects.isNull(this.reportAnnotation)) {
+        if (Objects.isNull(reportAnnotation)) {
             throw new Exception(dto.getClass().toString() + " is not annotated as @Report or has no name \"" + reportData.getName() + "\"");
+        } else if(reportAnnotation.headerOffset() >= reportAnnotation.dataOffset()){
+            throw new Exception("Header offset cannot be greater or equals than data offset");
         }
     }
 

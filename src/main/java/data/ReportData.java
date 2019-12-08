@@ -1,11 +1,5 @@
 package data;
 
-import styles.PositionedStyle;
-import styles.HorizontalRangedStyle;
-import styles.RectangleRangedStyle;
-import styles.ReportStylesBuilder;
-import styles.VerticalRangedStyle;
-
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
@@ -20,10 +14,7 @@ public class ReportData {
     private int dataStartRow;
     private int columnsLength;
     private List<ReportDataRow> rows = new ArrayList<>();
-    private ReportStylesBuilder<VerticalRangedStyle> rowStyles;
-    private ReportStylesBuilder<HorizontalRangedStyle> columnStyles;
-    private ReportStylesBuilder<PositionedStyle> positionedStyles;
-    private ReportStylesBuilder<RectangleRangedStyle> rangedStyleReportStyles;
+    private ReportDataStyles reportDataStyles = new ReportDataStyles();
 
     public ReportData(String name) {
         this.name = name;
@@ -99,36 +90,7 @@ public class ReportData {
         return this;
     }
 
-    public ReportStylesBuilder<VerticalRangedStyle> getRowStyles() {
-        return rowStyles;
-    }
-
-    public void setRowStyles(ReportStylesBuilder<VerticalRangedStyle> rowStyles) {
-        this.rowStyles = rowStyles;
-    }
-
-    public ReportStylesBuilder<HorizontalRangedStyle> getColumnStyles() {
-        return columnStyles;
-    }
-
-    public void setColumnStyles(ReportStylesBuilder<HorizontalRangedStyle> columnStyles) {
-        this.columnStyles = columnStyles;
-    }
-
-    public ReportStylesBuilder<PositionedStyle> getPositionedStyles() {
-        return positionedStyles;
-    }
-
-    public void setPositionedStyles(ReportStylesBuilder<PositionedStyle> positionedStyles) {
-        this.positionedStyles = positionedStyles;
-    }
-
-    public ReportStylesBuilder<RectangleRangedStyle> getRangedStyleReportStyles() {
-        return rangedStyleReportStyles;
-    }
-
-    public ReportData setRangedStyleReportStyles(ReportStylesBuilder<RectangleRangedStyle> rangedStyleReportStyles) {
-        this.rangedStyleReportStyles = rangedStyleReportStyles;
-        return this;
+    public ReportDataStyles getStyles() {
+        return reportDataStyles;
     }
 }

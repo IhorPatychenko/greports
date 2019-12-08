@@ -8,10 +8,10 @@ import styles.PositionedStyle;
 import styles.RectangleRangedStyle;
 import styles.ReportStylesBuilder;
 import styles.ReportStylesBuilder.StylePriority;
-import styles.StyledReport;
+import styles.interfaces.StripedRows;
+import styles.interfaces.StyledReport;
 import styles.VerticalRangedStyle;
 import utils.HorizontalRange;
-import utils.Position;
 import utils.RectangleRange;
 import utils.VerticalRange;
 
@@ -22,11 +22,12 @@ import java.util.Map;
 @Report(
     name = "Report1",
     translationsDir = "src/test/resources/i18n/",
+    sortableHeader = true,
     emptyColumns = {
         @ReportColumn(reportName = "Report1", position = "3.5", title = "Messages.emptyColumn")
     }
 )
-public class BackDto implements StyledReport {
+public class BackDto implements StyledReport, StripedRows {
 
     private static final String DATE_FORMAT = "dd/MM/yyyy";
 
@@ -74,43 +75,32 @@ public class BackDto implements StyledReport {
                     .newStyle(new VerticalRange(0, 0))
                     .setForegroundColor(IndexedColors.AQUA)
                     .parent()
-                    .newStyle(new VerticalRange(1, 2))
-                    .setBoldFont(true)
-                    .parent()
             );
         }};
     }
 
     @Override
     public Map<String, ReportStylesBuilder<HorizontalRangedStyle>> getRangedColumnStyles() {
-//        return new HashMap<String, ReportStylesBuilder<HorizontalRangedStyle>>() {{
-////            put("Report1", new ReportStylesBuilder<>(HorizontalRangedStyle.class, StylePriority.MEDIUM)
-////                    .newStyle()
-////                    .setBackgroundColor((short) 11)
-////                    .setBoldFont(true)
-////                    .parent());
-//        }};
         return null;
     }
 
     @Override
     public Map<String, ReportStylesBuilder<PositionedStyle>> getPositionedStyles() {
-        return new HashMap<String, ReportStylesBuilder<PositionedStyle>>() {{
-            put("Report1", new ReportStylesBuilder<>(PositionedStyle.class, StylePriority.PRIORITY3)
-                    .newStyle(new Position(0,1))
-                    .setForegroundColor(IndexedColors.BLUE)
-                    .setFontColor(IndexedColors.WHITE)
-                    .parent());
-        }};
+        return null;
     }
 
     @Override
     public Map<String, ReportStylesBuilder<RectangleRangedStyle>> getRectangleRangedStyles() {
-        return new HashMap<String, ReportStylesBuilder<RectangleRangedStyle>>() {{
-            put("Report1", new ReportStylesBuilder<>(RectangleRangedStyle.class, StylePriority.PRIORITY2)
-                    .newStyle(new RectangleRange(new VerticalRange(1, 2), new HorizontalRange(1, 3)))
-                    .setForegroundColor(IndexedColors.CORAL)
-                    .parent());
-        }};
+        return null;
+    }
+
+    @Override
+    public StripedRowsIndex getStripedRowsIndex() {
+        return StripedRowsIndex.ODD;
+    }
+
+    @Override
+    public IndexedColors getStripedRowsColor() {
+        return IndexedColors.GREY_25_PERCENT;
     }
 }

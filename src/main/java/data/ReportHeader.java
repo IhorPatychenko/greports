@@ -9,6 +9,15 @@ import java.util.List;
 public class ReportHeader {
 
     private List<ReportHeaderCell> cells = new ArrayList<>();
+    private boolean columnFilter;
+
+    public ReportHeader(){
+        this(false);
+    }
+
+    public ReportHeader(boolean addFilter) {
+        this.columnFilter = addFilter;
+    }
 
     public List<ReportHeaderCell> getCells() {
         return cells;
@@ -22,9 +31,11 @@ public class ReportHeader {
         this.cells.add(cell);
     }
 
-    public ReportHeader addCells(Collection<ReportHeaderCell> cells) {
+    public void addCells(Collection<ReportHeaderCell> cells) {
         this.cells.addAll(cells);
-        return this;
     }
 
+    public boolean isColumnFilter() {
+        return columnFilter;
+    }
 }
