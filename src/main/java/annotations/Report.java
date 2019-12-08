@@ -16,4 +16,5 @@ public @interface Report {
     boolean sortableHeader() default false;
     ReportTemplate[] templates() default {};
     ReportColumn[] emptyColumns() default {};
+    ReportSpecialRow[] specialRows() default {};
 }

@@ -1,6 +1,6 @@
-package data;
+package content;
 
-import cell.ReportHeaderCell;
+import content.cell.ReportHeaderCell;
 
 import java.util.ArrayList;
 import java.util.Collection;

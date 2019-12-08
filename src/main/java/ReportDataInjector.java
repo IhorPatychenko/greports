@@ -1,7 +1,7 @@
-import cell.ReportDataColumn;
-import cell.ReportHeaderCell;
-import data.ReportData;
-import data.ReportHeader;
+import content.cell.ReportDataColumn;
+import content.cell.ReportHeaderCell;
+import content.ReportData;
+import content.ReportHeader;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.CreationHelper;
@@ -21,9 +21,9 @@ import styles.ReportStylesBuilder;
 import styles.ReportStylesBuilder.StylePriority;
 import styles.VerticalRangedStyle;
 import styles.interfaces.StripedRows;
-import utils.HorizontalRange;
-import utils.RectangleRange;
-import utils.VerticalRange;
+import positioning.HorizontalRange;
+import positioning.RectangleRange;
+import positioning.VerticalRange;
 
 import java.io.IOException;
 import java.io.OutputStream;

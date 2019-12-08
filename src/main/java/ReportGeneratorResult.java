@@ -1,4 +1,4 @@
-import data.ReportData;
+import content.ReportData;
 
 import java.io.*;
 

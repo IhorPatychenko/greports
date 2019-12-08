@@ -1,6 +1,6 @@
 package styles;
 
-import utils.HorizontalRange;
+import positioning.HorizontalRange;
 
 public class HorizontalRangedStyle extends ReportStyle {
 

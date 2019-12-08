@@ -1,4 +1,4 @@
-package utils;
+package positioning;
 
 public class VerticalRange extends Range {
     public VerticalRange(Integer start, Integer end) {

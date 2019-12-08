@@ -10,4 +10,5 @@ public @interface ReportColumn {
     String position();
     String title();
     String format() default "";
+    String id() default "";
 }

@@ -2,6 +2,10 @@ package models;
 
 import annotations.Report;
 import annotations.ReportColumn;
+import annotations.ReportSpecialCell;
+import annotations.ReportSpecialCell.ValueType;
+import annotations.ReportSpecialRow;
+import formula.Formulas;
 import org.apache.poi.ss.usermodel.IndexedColors;
 import styles.HorizontalRangedStyle;
 import styles.PositionedStyle;
@@ -11,9 +15,7 @@ import styles.ReportStylesBuilder.StylePriority;
 import styles.interfaces.StripedRows;
 import styles.interfaces.StyledReport;
 import styles.VerticalRangedStyle;
-import utils.HorizontalRange;
-import utils.RectangleRange;
-import utils.VerticalRange;
+import positioning.VerticalRange;
 
 import java.util.Date;
 import java.util.HashMap;
@@ -23,8 +25,18 @@ import java.util.Map;
     name = "Report1",
     translationsDir = "src/test/resources/i18n/",
     sortableHeader = true,
+    headerOffset = 1,
+    dataOffset = 2,
     emptyColumns = {
         @ReportColumn(reportName = "Report1", position = "3.5", title = "Messages.emptyColumn")
+    },
+    specialRows = {
+        @ReportSpecialRow(
+            rowIndex = 0,
+            columns = {
+                @ReportSpecialCell(targetId = "id", valueType = ValueType.FORMULA, value = Formulas.SUM)
+            }
+        )
     }
 )
 public class BackDto implements StyledReport, StripedRows {
@@ -43,7 +55,7 @@ public class BackDto implements StyledReport, StripedRows {
         this.birthDay = new Date();
     }
 
-    @ReportColumn(reportName = "Report1", position = "1.0", title = "Messages.id")
+    @ReportColumn(reportName = "Report1", position = "1.0", title = "Messages.id", id = "id")
     public Integer getId() {
         return id;
     }
@@ -72,7 +84,7 @@ public class BackDto implements StyledReport, StripedRows {
     public Map<String, ReportStylesBuilder<VerticalRangedStyle>> getRangedRowStyles() {
         return new HashMap<String, ReportStylesBuilder<VerticalRangedStyle>>() {{
             put("Report1", new ReportStylesBuilder<>(VerticalRangedStyle.class, StylePriority.PRIORITY1)
-                    .newStyle(new VerticalRange(0, 0))
+                    .newStyle(new VerticalRange(1, 1))
                     .setForegroundColor(IndexedColors.AQUA)
                     .parent()
             );

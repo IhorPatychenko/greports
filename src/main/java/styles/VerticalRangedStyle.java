@@ -1,6 +1,6 @@
 package styles;
 
-import utils.VerticalRange;
+import positioning.VerticalRange;
 
 public class VerticalRangedStyle extends ReportStyle {
 

@@ -5,11 +5,11 @@ import org.apache.poi.ss.usermodel.FillPatternType;
 import org.apache.poi.ss.usermodel.HorizontalAlignment;
 import org.apache.poi.ss.usermodel.IndexedColors;
 import org.apache.poi.ss.usermodel.VerticalAlignment;
-import utils.HorizontalRange;
-import utils.Position;
-import utils.RectangleRange;
-import utils.Tuple;
-import utils.VerticalRange;
+import positioning.HorizontalRange;
+import positioning.Position;
+import positioning.RectangleRange;
+import positioning.Tuple;
+import positioning.VerticalRange;
 
 public class ReportStyleBuilder<T extends ReportStyle> {
 

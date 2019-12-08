@@ -1,4 +1,4 @@
-package utils;
+package positioning;
 
 import org.yaml.snakeyaml.Yaml;
 
@@ -7,7 +7,6 @@ import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.StringJoiner;
 
 public class TranslationsParser {
 

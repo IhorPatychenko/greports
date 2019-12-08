@@ -1,4 +1,4 @@
-package utils;
+package positioning;
 
 public class Position extends Tuple<Integer, Integer> {
 

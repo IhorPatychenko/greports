@@ -1,6 +1,6 @@
 package styles;
 
-import utils.Tuple;
+import positioning.Tuple;
 
 import java.util.*;
 import java.util.stream.Collectors;

@@ -1,6 +1,6 @@
-package data;
+package content;
 
-import cell.ReportDataColumn;
+import content.cell.ReportDataColumn;
 
 import java.util.ArrayList;
 import java.util.List;

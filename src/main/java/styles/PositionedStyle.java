@@ -1,6 +1,6 @@
 package styles;
 
-import utils.Position;
+import positioning.Position;
 
 public class PositionedStyle extends ReportStyle {
 

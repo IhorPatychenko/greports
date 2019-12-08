@@ -1,4 +1,4 @@
-package utils;
+package positioning;
 
 public class RectangleRange extends Tuple<VerticalRange, HorizontalRange> {
 

@@ -1,8 +1,8 @@
-package utils;
+package positioning;
 
 public abstract class Range extends Tuple<Integer, Integer> {
 
-    public Range(Integer start, Integer end) {
+    Range(Integer start, Integer end) {
         super(start, end);
     }
 

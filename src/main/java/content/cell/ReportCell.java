@@ -1,4 +1,4 @@
-package cell;
+package content.cell;
 
 public abstract class ReportCell {
     private String position;

@@ -1,6 +1,6 @@
 package styles;
 
-import utils.RectangleRange;
+import positioning.RectangleRange;
 
 public class RectangleRangedStyle extends ReportStyle {
 
