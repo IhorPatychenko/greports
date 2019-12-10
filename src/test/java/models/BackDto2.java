@@ -22,25 +22,24 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Report(
-    name = "Report1",
-    translationsDir = "src/test/resources/i18n/",
-    sheetName = "Pagina 1",
-    headerOffset = 1,
-    dataOffset = 2,
-    sortableHeader = true,
-    emptyColumns = {
-        @ReportColumn(reportName = "Report1", position = "3.5", title = "Messages.emptyColumn")
-    },
-    specialRows = {
-        @ReportSpecialRow(
-            rowIndex = 0,
-            columns = {
-                @ReportSpecialCell(targetId = "id", valueType = ValueType.FORMULA, value = Formulas.SUMA)
-            }
-        )
-    }
+        name = "Report1",
+        translationsDir = "src/test/resources/i18n/",
+        headerOffset = 1,
+        dataOffset = 2,
+        sortableHeader = true,
+        emptyColumns = {
+                @ReportColumn(reportName = "Report1", position = "3.5", title = "Messages.emptyColumn")
+        },
+        specialRows = {
+                @ReportSpecialRow(
+                        rowIndex = 0,
+                        columns = {
+                                @ReportSpecialCell(targetId = "id", valueType = ValueType.FORMULA, value = Formulas.SUMA)
+                        }
+                )
+        }
 )
-public class BackDto implements StyledReport, StripedRows {
+public class BackDto2 implements StyledReport, StripedRows {
 
     private static final String DATE_FORMAT = "dd/MM/yyyy";
 
@@ -49,14 +48,14 @@ public class BackDto implements StyledReport, StripedRows {
     private String surname;
     private Date birthDay;
 
-    public BackDto(Integer id, String name, String surname) {
+    public BackDto2(Integer id, String name, String surname) {
         this.id = id;
         this.name = name;
         this.surname = surname;
         this.birthDay = new Date();
     }
 
-    @ReportColumn(reportName = "Report1", position = "2.4", title = "Messages.id", id = "id")
+    @ReportColumn(reportName = "Report1", position = "2.1", title = "Messages.id", id = "id")
     public Integer getId() {
         return id;
     }
@@ -84,9 +83,9 @@ public class BackDto implements StyledReport, StripedRows {
     @Override
     public Map<String, ReportStylesBuilder<VerticalRangedStyle>> getRangedRowStyles() {
         return new HashMap<String, ReportStylesBuilder<VerticalRangedStyle>>() {{
-            put("Report1", new ReportStylesBuilder<>(VerticalRangedStyle.class, StylePriority.PRIORITY1)
-                    .newStyle(new VerticalRange(1, 1))
-                    .setForegroundColor(IndexedColors.AQUA)
+            put("Report2", new ReportStylesBuilder<>(VerticalRangedStyle.class, StylePriority.PRIORITY1)
+                    .newStyle(new VerticalRange(4, 4))
+                    .setForegroundColor(IndexedColors.GOLD)
                     .parent()
             );
         }};

@@ -1,4 +1,5 @@
 import models.BackDto;
+import models.BackDto2;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
@@ -54,22 +55,114 @@ class ReportDataParserTest {
 
     @Test
     void testSaveFile() throws Exception {
+        int i = 0;
         Collection<BackDto> collection = new ArrayList<>(Arrays.asList(
-            new BackDto(1, "Juan", "Vasquez"),
-            new BackDto(2, "Ihor", "Patychenko"),
-            new BackDto(2, "Ihor", "Patychenko"),
-            new BackDto(2, "Ihor", "Patychenko"),
-            new BackDto(2, "Ihor", "Patychenko"),
-            new BackDto(2, "Ihor", "Patychenko"),
-            new BackDto(2, "Ihor", "Patychenko"),
-            new BackDto(2, "Ihor", "Patychenko"),
-            new BackDto(2, "Ihor", "Patychenko"),
-            new BackDto(2, "Ihor", "Patychenko"),
-            new BackDto(2, "Ihor", "Patychenko")
+            new BackDto(++i, "Pepito", "Fulanito"),
+            new BackDto(++i, "Pepito", "Fulanito"),
+            new BackDto(++i, "Pepito", "Fulanito"),
+            new BackDto(++i, "Pepito", "Fulanito"),
+            new BackDto(++i, "Pepito", "Fulanito"),
+            new BackDto(++i, "Pepito", "Fulanito"),
+            new BackDto(++i, "Pepito", "Fulanito"),
+            new BackDto(++i, "Pepito", "Fulanito"),
+            new BackDto(++i, "Pepito", "Fulanito"),
+            new BackDto(++i, "Pepito", "Fulanito"),
+            new BackDto(++i, "Pepito", "Fulanito"),
+            new BackDto(++i, "Pepito", "Fulanito"),
+            new BackDto(++i, "Pepito", "Fulanito"),
+            new BackDto(++i, "Pepito", "Fulanito"),
+            new BackDto(++i, "Pepito", "Fulanito"),
+            new BackDto(++i, "Pepito", "Fulanito"),
+            new BackDto(++i, "Pepito", "Fulanito"),
+            new BackDto(++i, "Pepito", "Fulanito"),
+            new BackDto(++i, "Pepito", "Fulanito"),
+            new BackDto(++i, "Pepito", "Fulanito"),
+            new BackDto(++i, "Pepito", "Fulanito"),
+            new BackDto(++i, "Pepito", "Fulanito"),
+            new BackDto(++i, "Pepito", "Fulanito"),
+            new BackDto(++i, "Pepito", "Fulanito"),
+            new BackDto(++i, "Pepito", "Fulanito"),
+            new BackDto(++i, "Pepito", "Fulanito"),
+            new BackDto(++i, "Pepito", "Fulanito"),
+            new BackDto(++i, "Pepito", "Fulanito"),
+            new BackDto(++i, "Pepito", "Fulanito"),
+            new BackDto(++i, "Pepito", "Fulanito"),
+            new BackDto(++i, "Pepito", "Fulanito"),
+            new BackDto(++i, "Pepito", "Fulanito"),
+            new BackDto(++i, "Pepito", "Fulanito"),
+            new BackDto(++i, "Pepito", "Fulanito"),
+            new BackDto(++i, "Pepito", "Fulanito"),
+            new BackDto(++i, "Pepito", "Fulanito"),
+            new BackDto(++i, "Pepito", "Fulanito"),
+            new BackDto(++i, "Pepito", "Fulanito"),
+            new BackDto(++i, "Pepito", "Fulanito"),
+            new BackDto(++i, "Pepito", "Fulanito"),
+            new BackDto(++i, "Pepito", "Fulanito"),
+            new BackDto(++i, "Pepito", "Fulanito"),
+            new BackDto(++i, "Pepito", "Fulanito"),
+            new BackDto(++i, "Pepito", "Fulanito"),
+            new BackDto(++i, "Pepito", "Fulanito"),
+            new BackDto(++i, "Pepito", "Fulanito"),
+            new BackDto(++i, "Pepito", "Fulanito"),
+            new BackDto(++i, "Pepito", "Fulanito"),
+            new BackDto(++i, "Pepito", "Fulanito"),
+            new BackDto(++i, "Pepito", "Fulanito"),
+            new BackDto(++i, "Pepito", "Fulanito"),
+            new BackDto(++i, "Pepito", "Fulanito"),
+            new BackDto(++i, "Pepito", "Fulanito"),
+            new BackDto(++i, "Pepito", "Fulanito"),
+            new BackDto(++i, "Pepito", "Fulanito"),
+            new BackDto(++i, "Pepito", "Fulanito"),
+            new BackDto(++i, "Pepito", "Fulanito"),
+            new BackDto(++i, "Pepito", "Fulanito"),
+            new BackDto(++i, "Pepito", "Fulanito"),
+            new BackDto(++i, "Pepito", "Fulanito"),
+            new BackDto(++i, "Pepito", "Fulanito"),
+            new BackDto(++i, "Pepito", "Fulanito"),
+            new BackDto(++i, "Pepito", "Fulanito"),
+            new BackDto(++i, "Pepito", "Fulanito"),
+            new BackDto(++i, "Pepito", "Fulanito"),
+            new BackDto(++i, "Pepito", "Fulanito"),
+            new BackDto(++i, "Pepito", "Fulanito"),
+            new BackDto(++i, "Pepito", "Fulanito"),
+            new BackDto(++i, "Pepito", "Fulanito"),
+            new BackDto(++i, "Pepito", "Fulanito"),
+            new BackDto(++i, "Pepito", "Fulanito"),
+            new BackDto(++i, "Pepito", "Fulanito"),
+            new BackDto(++i, "Pepito", "Fulanito"),
+            new BackDto(++i, "Pepito", "Fulanito"),
+            new BackDto(++i, "Pepito", "Fulanito"),
+            new BackDto(++i, "Pepito", "Fulanito"),
+            new BackDto(++i, "Pepito", "Fulanito"),
+            new BackDto(++i, "Pepito", "Fulanito"),
+            new BackDto(++i, "Pepito", "Fulanito"),
+            new BackDto(++i, "Pepito", "Fulanito"),
+            new BackDto(++i, "Pepito", "Fulanito"),
+            new BackDto(++i, "Pepito", "Fulanito"),
+            new BackDto(++i, "Pepito", "Fulanito"),
+            new BackDto(++i, "Pepito", "Fulanito"),
+            new BackDto(++i, "Pepito", "Fulanito"),
+            new BackDto(++i, "Pepito", "Fulanito"),
+            new BackDto(++i, "Pepito", "Fulanito"),
+            new BackDto(++i, "Pepito", "Fulanito"),
+            new BackDto(++i, "Pepito", "Fulanito"),
+            new BackDto(++i, "Pepito", "Fulanito"),
+            new BackDto(++i, "Pepito", "Fulanito")
+        ));
+        Collection<BackDto2> collection2 = new ArrayList<>(Arrays.asList(
+                new BackDto2(44, "Jose Manuel", "Garcia"),
+                new BackDto2(44, "Jose Manuel", "Garcia"),
+                new BackDto2(44, "Jose Manuel", "Garcia"),
+                new BackDto2(44, "Jose Manuel", "Garcia"),
+                new BackDto2(44, "Jose Manuel", "Garcia")
         ));
         final ReportGenerator reportGenerator = new ReportGenerator("es");
-        final ReportGeneratorResult result = reportGenerator.parse(collection, "Report1");
-        result.writeToFileOutputStream("/Users/ihorpatychenko/test.xlsx");
+        final ReportGeneratorResult result = reportGenerator
+                .parse(collection, "Report1")
+                .parse(collection2, "Report1")
+                .getResult();
+        result.writeToFileOutputStream("C:\\Users\\Ihor Patychenko\\Documents\\test.xlsx");
+        //result.writeToFileOutputStream("/Users/ihorpatychenko/test.xlsx");
     }
 
 }

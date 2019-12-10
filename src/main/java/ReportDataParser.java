@@ -1,13 +1,17 @@
 import annotations.Report;
 import annotations.ReportColumn;
 import annotations.ReportColumns;
+import annotations.ReportSpecialCell;
+import annotations.ReportSpecialRow;
 import annotations.ReportTemplate;
 import content.cell.ReportCell;
 import content.cell.ReportDataColumn;
+import content.cell.ReportDataSpecialCell;
 import content.cell.ReportHeaderCell;
 import content.ReportData;
-import content.ReportDataRow;
+import content.row.ReportDataRow;
 import content.ReportHeader;
+import content.row.ReportDataSpecialRow;
 import styles.interfaces.StripedRows;
 import styles.interfaces.StyledReport;
 import positioning.TranslationsParser;
@@ -34,15 +38,16 @@ final class ReportDataParser {
     }
 
     <T> ReportDataParser parse(Collection<T> collection, final String reportName) throws Exception {
-        reportData = new ReportData(reportName);
         T firstElement = collection.iterator().next();
         checkCollectionNotEmpty(collection);
-        reportAnnotation = getReportAnnotation(this.reportData, firstElement);
+        reportAnnotation = getReportAnnotation(reportName, firstElement);
+        reportData = new ReportData(reportName, reportAnnotation.sheetName());
         translations = new TranslationsParser(this.reportAnnotation.translationsDir()).parse(this.reportLang);
         checkReportAnnotation(firstElement);
         loadReportTemplate();
         loadReportHeader(firstElement);
         loadReportRows(collection);
+        loadReportSpecialRows();
         loadReportStyles(firstElement);
         return this;
     }
@@ -112,7 +117,8 @@ final class ReportDataParser {
                     ReportDataColumn reportDataColumn = new ReportDataColumn(
                             entry.getValue().position(),
                             entry.getValue().format(),
-                            invokedValue
+                            invokedValue,
+                            entry.getValue().id()
                     );
                     row.addColumn(reportDataColumn);
                 } catch (IllegalAccessException | InvocationTargetException e) {
@@ -123,6 +129,31 @@ final class ReportDataParser {
             emptyColumns.forEach(row::addColumn);
             row.getColumns().sort(Comparator.comparing(ReportCell::getPosition));
             reportData.addRow(row);
+        }
+    }
+
+    private void loadReportSpecialRows(){
+        final ReportSpecialRow[] reportSpecialRows = reportAnnotation.specialRows();
+        final List<ReportSpecialRow> reportSpecialRowsList = asList(reportSpecialRows);
+        for(ReportSpecialRow reportSpecialRow : reportSpecialRowsList){
+            final ReportDataSpecialRow reportDataSpecialRow = new ReportDataSpecialRow(reportSpecialRow.rowIndex());
+            for (final ReportSpecialCell column : reportSpecialRow.columns()) {
+                final ReportDataSpecialCell reportDataSpecialCell = new ReportDataSpecialCell(column.targetId(), column.valueType(), column.value());
+                getSpecialCellColumnIndex(reportDataSpecialCell);
+                reportDataSpecialRow.addCell(reportDataSpecialCell);
+            }
+            reportData.addSpecialRow(reportDataSpecialRow);
+        }
+    }
+
+    private void getSpecialCellColumnIndex(final ReportDataSpecialCell reportDataSpecialCell) {
+        final ReportDataRow firstRow = reportData.getRow(0);
+        for (int i = 0; i < firstRow.getColumns().size(); i++) {
+            final ReportDataColumn column = firstRow.getColumn(i);
+            if(reportDataSpecialCell.getTargetId().equalsIgnoreCase(column.getId())){
+                reportDataSpecialCell.setColumnIndex(i);
+                break;
+            }
         }
     }
 
@@ -168,15 +199,16 @@ final class ReportDataParser {
                         column.position(),
                         (String) translations.getOrDefault(column.title(), column.title()),
                         null,
+                        null,
                         null
                 )).collect(Collectors.toList());
     }
 
-    private static <T> Report getReportAnnotation(ReportData reportData, T dto) {
+    private static <T> Report getReportAnnotation(String reportName, T dto) {
         Annotation[] classAnnotations = dto.getClass().getAnnotations();
         List<Annotation> dtoAnnotations = asList(classAnnotations);
         return (Report) (dtoAnnotations.stream()
-                .filter(entry -> entry instanceof Report && asList(((Report) entry).name()).contains(reportData.getName()))
+                .filter(entry -> entry instanceof Report && asList(((Report) entry).name()).contains(reportName))
                 .findFirst()
                 .orElse(null));
     }

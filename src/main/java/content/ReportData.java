@@ -1,5 +1,10 @@
 package content;
 
+import content.row.ReportDataRow;
+import content.row.ReportDataSpecialRow;
+import org.apache.commons.codec.binary.StringUtils;
+import org.apache.poi.util.StringUtil;
+
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
@@ -7,21 +12,28 @@ import java.util.List;
 public class ReportData {
 
     private final String name;
+    private String sheetName;
     private InputStream template;
     private ReportHeader header;
     private boolean showHeader = true;
     private int headerStartRow;
     private int dataStartRow;
     private int columnsLength;
+    private List<ReportDataSpecialRow> specialRows = new ArrayList<>();
     private List<ReportDataRow> rows = new ArrayList<>();
     private ReportDataStyles reportDataStyles = new ReportDataStyles();
 
-    public ReportData(String name) {
+    public ReportData(String name, String sheetName) {
         this.name = name;
+        this.sheetName = sheetName != null && !sheetName.isEmpty() ? sheetName : null;
     }
 
     public String getName() {
         return name;
+    }
+
+    public String getSheetName() {
+        return sheetName;
     }
 
     public InputStream getTemplateInputStream() {
@@ -92,5 +104,13 @@ public class ReportData {
 
     public ReportDataStyles getStyles() {
         return reportDataStyles;
+    }
+
+    public List<ReportDataSpecialRow> getSpecialRows() {
+        return specialRows;
+    }
+
+    public void addSpecialRow(ReportDataSpecialRow reportDataSpecialRow) {
+        specialRows.add(reportDataSpecialRow);
     }
 }

@@ -4,15 +4,17 @@ public class ReportDataColumn extends ReportCell {
 
     private Object value;
     private String format;
+    private String id;
 
-    public ReportDataColumn(String position, String format, Object value) {
-        this(position, null, format, value);
+    public ReportDataColumn(String position, String format, Object value, String id) {
+        this(position, null, format, value, id);
     }
 
-    public ReportDataColumn(String position, String title, String format, Object value) {
+    public ReportDataColumn(String position, String title, String format, Object value, String id) {
         super(position, title);
         this.format = format;
         this.value = value;
+        this.id = id;
     }
 
     public Object getValue() {
@@ -23,4 +25,7 @@ public class ReportDataColumn extends ReportCell {
         return format;
     }
 
+    public String getId() {
+        return id;
+    }
 }

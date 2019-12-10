@@ -1,9 +1,12 @@
+import content.ReportData;
+
 import java.util.Collection;
 import java.util.Collections;
 
 public class ReportGenerator {
 
     private ReportDataParser reportDataParser;
+    private ReportGeneratorResult reportGeneratorResult = new ReportGeneratorResult();
 
     public ReportGenerator(){
         this("en");
@@ -13,12 +16,14 @@ public class ReportGenerator {
         reportDataParser = new ReportDataParser(lang);
     }
 
-    public <T> ReportGeneratorResult parse(T dto, final String reportName) throws Exception {
-        return parse(Collections.singletonList(dto), reportName);
+    public <T> ReportGenerator parse(Collection<T> collection, final String reportName) throws Exception {
+        final ReportData data = reportDataParser.parse(collection, reportName).getData();
+        reportGeneratorResult.addData(data);
+        return this;
     }
 
-    public <T> ReportGeneratorResult parse(Collection<T> collection, final String reportName) throws Exception {
-        return new ReportGeneratorResult(reportDataParser.parse(collection, reportName).getData());
+    public ReportGeneratorResult getResult(){
+        return this.reportGeneratorResult;
     }
 
 }

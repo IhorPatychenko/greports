@@ -10,6 +10,7 @@ import java.lang.annotation.Target;
 public @interface Report {
     String[] name();
     String translationsDir() default "src/main/java/resources/i18n/";
+    String sheetName() default "";
     boolean showHeader() default true;
     short headerOffset() default 0;
     short dataOffset() default 1;

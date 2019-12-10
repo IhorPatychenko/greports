@@ -1,4 +1,4 @@
-package content;
+package content.row;
 
 import content.cell.ReportDataColumn;
 
