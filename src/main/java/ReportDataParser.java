@@ -15,6 +15,7 @@ import content.row.ReportDataSpecialRow;
 import styles.interfaces.StripedRows;
 import styles.interfaces.StyledReport;
 import positioning.TranslationsParser;
+import utils.AnnotationUtils;
 
 import java.io.*;
 import java.lang.annotation.Annotation;
@@ -24,6 +25,8 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+
+import static java.util.Arrays.asList;
 
 final class ReportDataParser {
 
@@ -40,10 +43,10 @@ final class ReportDataParser {
     <T> ReportDataParser parse(Collection<T> collection, final String reportName) throws Exception {
         T firstElement = collection.iterator().next();
         checkCollectionNotEmpty(collection);
-        reportAnnotation = getReportAnnotation(reportName, firstElement);
+        reportAnnotation = AnnotationUtils.getReportAnnotation(reportName, firstElement.getClass());
         reportData = new ReportData(reportName, reportAnnotation.sheetName());
-        translations = new TranslationsParser(this.reportAnnotation.translationsDir()).parse(this.reportLang);
-        checkReportAnnotation(firstElement);
+        translations = new TranslationsParser(reportAnnotation.translationsDir()).parse(this.reportLang);
+        AnnotationUtils.checkReportAnnotation(reportAnnotation, firstElement.getClass(), reportData.getName());
         loadReportTemplate();
         loadReportHeader(firstElement);
         loadReportRows(collection);
@@ -53,8 +56,7 @@ final class ReportDataParser {
     }
 
     private void loadReportTemplate() throws Exception {
-        final ReportTemplate reportTemplate = asList(reportAnnotation.templates())
-                .stream()
+        final ReportTemplate reportTemplate = Arrays.stream(reportAnnotation.templates())
                 .filter(template -> template.reportName().equals(reportData.getName()))
                 .findFirst()
                 .orElse(null);
@@ -79,7 +81,7 @@ final class ReportDataParser {
                 cells.add(new ReportHeaderCell(column.position(), (String) translations.getOrDefault(column.title(), column.title())));
                 return null;
             };
-            loadMethodsColumns(dto, columnFunction);
+            AnnotationUtils.loadMethodsColumns(dto.getClass(), columnFunction, reportData.getName());
             cells.addAll(ReportHeaderCell.from(emptyColumns));
             cells.sort(Comparator.comparing(ReportCell::getPosition));
             reportData.setHeader(new ReportHeader(reportAnnotation.sortableHeader()))
@@ -104,7 +106,7 @@ final class ReportDataParser {
             return null;
         };
 
-        loadMethodsColumns(collection.iterator().next(), columnFunction);
+        AnnotationUtils.loadMethodsColumns(collection.iterator().next().getClass(), columnFunction, reportData.getName());
 
         methodsMap = sortMethodsMapByColumnOrder(finalMethodsMap);
         reportData.setColumnsLength(methodsMap.size());
@@ -133,9 +135,7 @@ final class ReportDataParser {
     }
 
     private void loadReportSpecialRows(){
-        final ReportSpecialRow[] reportSpecialRows = reportAnnotation.specialRows();
-        final List<ReportSpecialRow> reportSpecialRowsList = asList(reportSpecialRows);
-        for(ReportSpecialRow reportSpecialRow : reportSpecialRowsList){
+        for(ReportSpecialRow reportSpecialRow : reportAnnotation.specialRows()){
             final ReportDataSpecialRow reportDataSpecialRow = new ReportDataSpecialRow(reportSpecialRow.rowIndex());
             for (final ReportSpecialCell column : reportSpecialRow.columns()) {
                 final ReportDataSpecialCell reportDataSpecialCell = new ReportDataSpecialCell(column.targetId(), column.valueType(), column.value());
@@ -192,8 +192,7 @@ final class ReportDataParser {
     }
 
     private void loadEmptyColumns() {
-        emptyColumns = asList(reportAnnotation.emptyColumns())
-                .stream()
+        emptyColumns = Arrays.stream(reportAnnotation.emptyColumns())
                 .filter(column -> reportData.getName().equals(column.reportName()))
                 .map(column -> new ReportDataColumn(
                         column.position(),
@@ -204,45 +203,9 @@ final class ReportDataParser {
                 )).collect(Collectors.toList());
     }
 
-    private static <T> Report getReportAnnotation(String reportName, T dto) {
-        Annotation[] classAnnotations = dto.getClass().getAnnotations();
-        List<Annotation> dtoAnnotations = asList(classAnnotations);
-        return (Report) (dtoAnnotations.stream()
-                .filter(entry -> entry instanceof Report && asList(((Report) entry).name()).contains(reportName))
-                .findFirst()
-                .orElse(null));
-    }
-
-    private <T> void loadMethodsColumns(T dto, Function<AbstractMap.SimpleEntry<Method, ReportColumn>, Void> columnFunction){
-        for (Method method : dto.getClass().getMethods()) {
-            for (Annotation annotation : method.getDeclaredAnnotations()) {
-                if(annotation instanceof ReportColumn && getMethodAnnotationPredicate(reportData).test(annotation)){
-                    columnFunction.apply(new AbstractMap.SimpleEntry<>(method, (ReportColumn) annotation));
-                } else if(annotation instanceof ReportColumns){
-                    Optional<ReportColumn> first = asList(((ReportColumns) annotation).value()).stream()
-                            .filter(column -> getMethodAnnotationPredicate(reportData).test(column))
-                            .findFirst();
-                    first.ifPresent(column -> columnFunction.apply(new AbstractMap.SimpleEntry<>(method, column)));
-                }
-            }
-        }
-    }
-
-    private static Predicate<Annotation> getMethodAnnotationPredicate(ReportData reportData) {
-        return annotation -> annotation instanceof ReportColumn && ((ReportColumn) annotation).reportName().equals(reportData.getName());
-    }
-
     private <T> void checkCollectionNotEmpty(Collection<T> collection) throws Exception {
         if (collection.isEmpty()) {
             throw new Exception("The collection cannot be empty");
-        }
-    }
-
-    private <T> void checkReportAnnotation(T dto) throws Exception {
-        if (Objects.isNull(reportAnnotation)) {
-            throw new Exception(dto.getClass().toString() + " is not annotated as @Report or has no name \"" + reportData.getName() + "\"");
-        } else if(reportAnnotation.headerOffset() >= reportAnnotation.dataOffset()){
-            throw new Exception("Header offset cannot be greater or equals than data offset");
         }
     }
 
@@ -255,10 +218,6 @@ final class ReportDataParser {
         emptyColumns = null;
         reportAnnotation = null;
         return this;
-    }
-
-    private static <T> List<T> asList(T[] array) {
-        return new ArrayList<>(Arrays.asList(array));
     }
 
 }

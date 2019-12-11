@@ -9,12 +9,12 @@ import java.lang.annotation.Target;
 @Target(ElementType.TYPE)
 public @interface Report {
     String[] name();
+    String sheetName();
     String translationsDir() default "src/main/java/resources/i18n/";
-    String sheetName() default "";
     boolean showHeader() default true;
+    boolean sortableHeader() default false;
     short headerOffset() default 0;
     short dataOffset() default 1;
-    boolean sortableHeader() default false;
     ReportTemplate[] templates() default {};
     ReportColumn[] emptyColumns() default {};
     ReportSpecialRow[] specialRows() default {};
