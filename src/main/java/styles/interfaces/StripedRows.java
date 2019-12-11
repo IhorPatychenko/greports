@@ -2,6 +2,8 @@ package styles.interfaces;
 
 import org.apache.poi.ss.usermodel.IndexedColors;
 
+import java.util.Map;
+
 public interface StripedRows {
 
     enum StripedRowsIndex {
@@ -17,7 +19,7 @@ public interface StripedRows {
         }
     }
 
-    StripedRowsIndex getStripedRowsIndex();
-    IndexedColors getStripedRowsColor();
+    Map<String, StripedRowsIndex> getStripedRowsIndex();
+    Map<String, IndexedColors> getStripedRowsColor();
 
 }

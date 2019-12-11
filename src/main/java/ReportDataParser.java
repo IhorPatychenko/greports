@@ -177,8 +177,8 @@ final class ReportDataParser {
             StripedRows elem = (StripedRows) firstElement;
             if(elem.getStripedRowsIndex() != null && elem.getStripedRowsColor() != null){
                 reportData.getStyles()
-                        .setStripedRowsIndex(elem.getStripedRowsIndex())
-                        .setStripedRowsColor(elem.getStripedRowsColor());
+                        .setStripedRowsIndex(elem.getStripedRowsIndex().getOrDefault(reportData.getName(), null))
+                        .setStripedRowsColor(elem.getStripedRowsColor().getOrDefault(reportData.getName(), null));
             }
         }
     }
