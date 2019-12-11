@@ -8,7 +8,7 @@ import java.lang.annotation.*;
 public @interface ReportColumn {
     String reportName();
     String position();
-    String title();
+    String title() default "";
     String format() default "";
     String id() default "";
     boolean columnForLoader() default false;

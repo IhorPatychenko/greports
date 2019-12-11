@@ -31,8 +31,6 @@ public class AnnotationUtils {
     public static <T> void checkReportAnnotation(Report reportAnnotation, Class<T> clazz, String reportName) throws Exception {
         if (Objects.isNull(reportAnnotation)) {
             throw new Exception(clazz.toString() + " is not annotated as @Report or has no name \"" + reportName + "\"");
-        } else if(reportAnnotation.headerOffset() >= reportAnnotation.dataOffset()){
-            throw new Exception("Header offset cannot be greater or equals than data offset");
         }
     }
 
