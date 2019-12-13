@@ -1,7 +1,6 @@
 import content.ReportData;
 
 import java.util.Collection;
-import java.util.Collections;
 
 public class ReportGenerator {
 

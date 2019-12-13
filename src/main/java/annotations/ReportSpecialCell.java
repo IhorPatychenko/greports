@@ -13,7 +13,18 @@ public @interface ReportSpecialCell {
         LITERAL, FORMULA
     }
 
+    /**
+     * @return java.lang.String value of the target column for special data
+     */
     String targetId() default "";
+
+    /**
+     * @return one the possible values for value type of the cell containing special data
+     */
     ValueType valueType() default ValueType.LITERAL;
+
+    /**
+     * @return java.lang.String value of the cell with special data
+     */
     String value() default "";
 }

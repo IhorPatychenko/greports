@@ -1,5 +1,6 @@
 import annotations.Report;
 import annotations.ReportColumn;
+import annotations.ReportSpecialRow;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellType;
@@ -12,7 +13,6 @@ import utils.AnnotationUtils;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
@@ -27,6 +27,10 @@ public class ReportLoader {
 
     private String reportName;
     private Workbook workbook;
+
+    public ReportLoader(String reportName, String filePath) throws IOException, InvalidFormatException {
+        this(reportName, new File(filePath));
+    }
 
     public ReportLoader(String reportName, File file) throws IOException, InvalidFormatException {
         this(reportName, new FileInputStream(file));
@@ -44,18 +48,20 @@ public class ReportLoader {
         return this.loadData(reportAnnotation, simpleEntries, clazz);
     }
 
-    private <T> List<T> loadData(Report reportAnnotation, List<AbstractMap.SimpleEntry<Method, ReportColumn>> simpleEntries, Class<T> clazz) throws IllegalAccessException, InstantiationException, InvocationTargetException {
+    private <T> List<T> loadData(Report reportAnnotation, List<AbstractMap.SimpleEntry<Method, ReportColumn>> simpleEntries, Class<T> clazz) throws InstantiationException {
         List<T> data = new ArrayList<>();
         Sheet sheet = workbook.getSheet(reportAnnotation.sheetName());
         for(int i = reportAnnotation.dataOffset(); i <= sheet.getLastRowNum(); i++) {
-            final T instance = clazz.newInstance();
-            final Row row = sheet.getRow(i);
-            for(int cellIndex = row.getFirstCellNum(), methodIndex = 0; cellIndex < row.getLastCellNum(); cellIndex++, methodIndex++) {
-                final Cell cell = row.getCell(cellIndex);
-                final Method method = simpleEntries.get(methodIndex).getKey();
-                instanceSetCellValue(method, instance, cell);
-            }
-            data.add(instance);
+            try {
+                final T instance = clazz.newInstance();
+                final Row row = sheet.getRow(i);
+                for(int cellIndex = row.getFirstCellNum(), methodIndex = 0; cellIndex < row.getLastCellNum(); cellIndex++, methodIndex++) {
+                    final Cell cell = row.getCell(cellIndex);
+                    final Method method = simpleEntries.get(methodIndex).getKey();
+                    instanceSetCellValue(method, instance, cell);
+                }
+                data.add(instance);
+            } catch (InvocationTargetException | IllegalAccessException e) {}
         }
         return data;
     }

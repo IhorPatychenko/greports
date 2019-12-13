@@ -1,6 +1,5 @@
 import annotations.Report;
 import annotations.ReportColumn;
-import annotations.ReportColumns;
 import annotations.ReportSpecialCell;
 import annotations.ReportSpecialRow;
 import annotations.ReportTemplate;
@@ -18,15 +17,19 @@ import positioning.TranslationsParser;
 import utils.AnnotationUtils;
 
 import java.io.*;
-import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.*;
+import java.util.AbstractMap;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.function.Function;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
-
-import static java.util.Arrays.asList;
 
 final class ReportDataParser {
 
@@ -45,7 +48,7 @@ final class ReportDataParser {
         checkCollectionNotEmpty(collection);
         reportAnnotation = AnnotationUtils.getReportAnnotation(reportName, firstElement.getClass());
         reportData = new ReportData(reportName, reportAnnotation.sheetName());
-        translations = new TranslationsParser(reportAnnotation.translationsDir()).parse(this.reportLang);
+        translations = new TranslationsParser(reportAnnotation.translationsDir()).parse(reportLang);
         AnnotationUtils.checkReportAnnotation(reportAnnotation, firstElement.getClass(), reportData.getName());
         loadReportTemplate();
         loadReportHeader(firstElement);
@@ -209,15 +212,8 @@ final class ReportDataParser {
         }
     }
 
-    protected ReportData getData(){
+    ReportData getData(){
         return reportData;
-    }
-
-    public ReportDataParser clear(){
-        reportData = null;
-        emptyColumns = null;
-        reportAnnotation = null;
-        return this;
     }
 
 }
