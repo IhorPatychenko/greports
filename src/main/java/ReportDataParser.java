@@ -1,5 +1,6 @@
 import annotations.Report;
 import annotations.ReportColumn;
+import annotations.ReportConfiguration;
 import annotations.ReportSpecialCell;
 import annotations.ReportSpecialRow;
 import annotations.ReportTemplate;
@@ -37,7 +38,7 @@ final class ReportDataParser {
     private ReportData reportData;
     private Map<String, Object> translations;
     private Collection<ReportDataColumn> emptyColumns;
-    private Report reportAnnotation;
+    private ReportConfiguration reportConfiguration;
 
     ReportDataParser(String lang) {
         this.reportLang = lang;
@@ -46,10 +47,11 @@ final class ReportDataParser {
     <T> ReportDataParser parse(Collection<T> collection, final String reportName) throws Exception {
         T firstElement = collection.iterator().next();
         checkCollectionNotEmpty(collection);
-        reportAnnotation = AnnotationUtils.getReportAnnotation(reportName, firstElement.getClass());
-        reportData = new ReportData(reportName, reportAnnotation.sheetName());
+        final Report reportAnnotation = AnnotationUtils.getReportAnnotation(firstElement.getClass());
+        reportConfiguration = AnnotationUtils.getReportConfiguration(reportAnnotation, reportName);
+        AnnotationUtils.checkReportConfiguration(reportConfiguration, firstElement.getClass(), reportName);
+        reportData = new ReportData(reportName, reportConfiguration.sheetName());
         translations = new TranslationsParser(reportAnnotation.translationsDir()).parse(reportLang);
-        AnnotationUtils.checkReportAnnotation(reportAnnotation, firstElement.getClass(), reportData.getName());
         loadReportTemplate();
         loadReportHeader(firstElement);
         loadReportRows(collection);
@@ -59,7 +61,7 @@ final class ReportDataParser {
     }
 
     private void loadReportTemplate() throws Exception {
-        final ReportTemplate reportTemplate = Arrays.stream(reportAnnotation.templates())
+        final ReportTemplate reportTemplate = Arrays.stream(reportConfiguration.templates())
                 .filter(template -> template.reportName().equals(reportData.getName()))
                 .findFirst()
                 .orElse(null);
@@ -74,9 +76,9 @@ final class ReportDataParser {
     }
 
     private <T> void loadReportHeader(T dto) {
-        reportData.setShowHeader(reportAnnotation.showHeader());
+        reportData.setShowHeader(reportConfiguration.showHeader());
         if(reportData.isShowHeader()){
-            reportData.setHeaderStartRow(reportAnnotation.headerOffset());
+            reportData.setHeaderStartRow(reportConfiguration.headerOffset());
             loadEmptyColumns();
             List<ReportHeaderCell> cells = new ArrayList<>();
             Function<AbstractMap.SimpleEntry<Method, ReportColumn>, Void> columnFunction = list -> {
@@ -84,10 +86,10 @@ final class ReportDataParser {
                 cells.add(new ReportHeaderCell(column.position(), (String) translations.getOrDefault(column.title(), column.title())));
                 return null;
             };
-            AnnotationUtils.loadMethodsColumns(dto.getClass(), columnFunction, reportData.getName());
+            AnnotationUtils.reportGeneratorMethodsWithColumnAnnotations(dto.getClass(), columnFunction, AnnotationUtils.getReportColumnsPredicate(reportData.getName()));
             cells.addAll(ReportHeaderCell.from(emptyColumns));
             cells.sort(Comparator.comparing(ReportCell::getPosition));
-            reportData.setHeader(new ReportHeader(reportAnnotation.sortableHeader()))
+            reportData.setHeader(new ReportHeader(reportConfiguration.sortableHeader()))
                     .addCells(cells);
         }
     }
@@ -98,7 +100,7 @@ final class ReportDataParser {
     }
 
     private <T> void loadRowsData(Collection<T> collection) throws Exception {
-        reportData.setDataStartRow(reportAnnotation.dataOffset());
+        reportData.setDataStartRow(reportConfiguration.dataOffset());
 
         Map<Method, ReportColumn> methodsMap = new LinkedHashMap<>();
         Map<Method, ReportColumn> finalMethodsMap = methodsMap;
@@ -109,7 +111,7 @@ final class ReportDataParser {
             return null;
         };
 
-        AnnotationUtils.loadMethodsColumns(collection.iterator().next().getClass(), columnFunction, reportData.getName());
+        AnnotationUtils.reportGeneratorMethodsWithColumnAnnotations(collection.iterator().next().getClass(), columnFunction, AnnotationUtils.getReportColumnsPredicate(reportData.getName()));
 
         methodsMap = sortMethodsMapByColumnOrder(finalMethodsMap);
         reportData.setColumnsLength(methodsMap.size());
@@ -138,7 +140,7 @@ final class ReportDataParser {
     }
 
     private void loadReportSpecialRows(){
-        for(ReportSpecialRow reportSpecialRow : reportAnnotation.specialRows()){
+        for(ReportSpecialRow reportSpecialRow : reportConfiguration.specialRows()){
             final ReportDataSpecialRow reportDataSpecialRow = new ReportDataSpecialRow(reportSpecialRow.rowIndex());
             for (final ReportSpecialCell column : reportSpecialRow.columns()) {
                 final ReportDataSpecialCell reportDataSpecialCell = new ReportDataSpecialCell(column.targetId(), column.valueType(), column.value());
@@ -195,7 +197,7 @@ final class ReportDataParser {
     }
 
     private void loadEmptyColumns() {
-        emptyColumns = Arrays.stream(reportAnnotation.emptyColumns())
+        emptyColumns = Arrays.stream(reportConfiguration.emptyColumns())
                 .filter(column -> reportData.getName().equals(column.reportName()))
                 .map(column -> new ReportDataColumn(
                         column.position(),

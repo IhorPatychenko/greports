@@ -8,11 +8,11 @@ public class ReportGeneratorResult {
 
     private Collection<ReportData> reportData = new ArrayList<>();
 
-    void addData(ReportData data){
+    protected void addData(ReportData data){
         reportData.add(data);
     }
 
-    public OutputStream writeToFileOutputStream(String path) throws IOException {
+    public OutputStream writeToFile(String path) throws IOException {
         ReportDataInjector dataInjector = new ReportDataInjector(reportData);
         dataInjector.inject();
         OutputStream outputStream = new FileOutputStream(new File(path));

@@ -3,6 +3,7 @@
 # Compiled class file
 *.class
 target
+src/main/test
 
 # Log file
 *.log

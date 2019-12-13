@@ -1,6 +1,6 @@
 import annotations.Report;
-import annotations.ReportColumn;
-import annotations.ReportSpecialRow;
+import annotations.ReportConfiguration;
+import annotations.ReportLoaderColumn;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellType;
@@ -42,16 +42,17 @@ public class ReportLoader {
     }
 
     public <T> List<T> bindForClass(Class<T> clazz) throws Exception {
-        final Report reportAnnotation = AnnotationUtils.getReportAnnotation(reportName, clazz);
-        AnnotationUtils.checkReportAnnotation(reportAnnotation, clazz, reportName);
-        final List<AbstractMap.SimpleEntry<Method, ReportColumn>> simpleEntries = loadMethodColumns(clazz);
-        return this.loadData(reportAnnotation, simpleEntries, clazz);
+        final Report reportAnnotation = AnnotationUtils.getReportAnnotation(clazz);
+        final ReportConfiguration reportConfiguration = AnnotationUtils.getReportConfiguration(reportAnnotation, reportName);
+        AnnotationUtils.checkReportConfiguration(reportConfiguration, clazz, reportName);
+        final List<AbstractMap.SimpleEntry<Method, ReportLoaderColumn>> simpleEntries = reportLoaderMethodsWithColumnAnnotations(clazz);
+        return this.loadData(reportConfiguration, simpleEntries, clazz);
     }
 
-    private <T> List<T> loadData(Report reportAnnotation, List<AbstractMap.SimpleEntry<Method, ReportColumn>> simpleEntries, Class<T> clazz) throws InstantiationException {
+    private <T> List<T> loadData(ReportConfiguration reportConfiguration, List<AbstractMap.SimpleEntry<Method, ReportLoaderColumn>> simpleEntries, Class<T> clazz) throws InstantiationException {
         List<T> data = new ArrayList<>();
-        Sheet sheet = workbook.getSheet(reportAnnotation.sheetName());
-        for(int i = reportAnnotation.dataOffset(); i <= sheet.getLastRowNum(); i++) {
+        Sheet sheet = workbook.getSheet(reportConfiguration.sheetName());
+        for(int i = reportConfiguration.dataOffset(); i <= sheet.getLastRowNum(); i++) {
             try {
                 final T instance = clazz.newInstance();
                 final Row row = sheet.getRow(i);
@@ -61,7 +62,7 @@ public class ReportLoader {
                     instanceSetCellValue(method, instance, cell);
                 }
                 data.add(instance);
-            } catch (InvocationTargetException | IllegalAccessException e) {}
+            } catch (InvocationTargetException | IllegalAccessException ignored) {}
         }
         return data;
     }
@@ -76,15 +77,15 @@ public class ReportLoader {
                 method.invoke(instance, cell.getDateCellValue());
             } else {
                 final Class<?> parameterType = method.getParameterTypes()[0];
-                if(parameterType.equals(Double.class)){
+                if(parameterType.equals(Double.class) || parameterType.getName().equals("double")){
                     method.invoke(instance, cell.getNumericCellValue());
-                } else if(parameterType.equals(Integer.class)) {
+                } else if(parameterType.equals(Integer.class) || parameterType.getName().equals("int")) {
                     method.invoke(instance, new Double(cell.getNumericCellValue()).intValue());
-                } else if(parameterType.equals(Long.class)){
+                } else if(parameterType.equals(Long.class) || parameterType.getName().equals("long")){
                     method.invoke(instance, new Double(cell.getNumericCellValue()).longValue());
-                } else if(parameterType.equals(Float.class)){
+                } else if(parameterType.equals(Float.class) || parameterType.getName().equals("float")){
                     method.invoke(instance, new Double(cell.getNumericCellValue()).floatValue());
-                } else if(parameterType.equals(Short.class)){
+                } else if(parameterType.equals(Short.class) || parameterType.getName().equals("short")){
                     method.invoke(instance, new Double(cell.getNumericCellValue()).shortValue());
                 }
             }
@@ -95,13 +96,13 @@ public class ReportLoader {
         }
     }
 
-    private <T> List<AbstractMap.SimpleEntry<Method, ReportColumn>> loadMethodColumns(Class<T> clazz){
-        List<AbstractMap.SimpleEntry<Method, ReportColumn>> list = new ArrayList<>();
-        Function<AbstractMap.SimpleEntry<Method, ReportColumn>, Void> columnFunction = entry -> {
+    private <T> List<AbstractMap.SimpleEntry<Method, ReportLoaderColumn>> reportLoaderMethodsWithColumnAnnotations(Class<T> clazz){
+        List<AbstractMap.SimpleEntry<Method, ReportLoaderColumn>> list = new ArrayList<>();
+        Function<AbstractMap.SimpleEntry<Method, ReportLoaderColumn>, Void> columnFunction = entry -> {
             list.add(entry);
             return null;
         };
-        AnnotationUtils.loadMethodsColumns(clazz, columnFunction, reportName, true);
+        AnnotationUtils.reportLoaderMethodsWithColumnAnnotations(clazz, columnFunction, AnnotationUtils.getReportLoaderColumnsPredicate(reportName));
         list.sort(Comparator.comparing(a -> a.getValue().position()));
         return list;
     }

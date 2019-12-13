@@ -11,5 +11,4 @@ public @interface ReportColumn {
     String title() default "";
     String format() default "";
     String id() default "";
-    boolean columnForLoader() default false;
 }
