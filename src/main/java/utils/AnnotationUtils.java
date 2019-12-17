@@ -1,8 +1,8 @@
 package utils;
 
 import annotations.Report;
-import annotations.ReportColumn;
-import annotations.ReportColumns;
+import annotations.ReportGeneratorColumn;
+import annotations.ReportGeneratorColumns;
 import annotations.ReportConfiguration;
 import annotations.ReportLoaderColumn;
 import annotations.ReportLoaderColumns;
@@ -30,13 +30,13 @@ public class AnnotationUtils {
                 .orElseThrow(() -> new RuntimeException(clazz.toString() + " is not annotated as @Report"));
     }
 
-    public static <T> void reportGeneratorMethodsWithColumnAnnotations(Class<T> clazz, Function<AbstractMap.SimpleEntry<Method, ReportColumn>, Void> columnFunction, Predicate<Annotation> predicate){
+    public static <T> void reportGeneratorMethodsWithColumnAnnotations(Class<T> clazz, Function<AbstractMap.SimpleEntry<Method, ReportGeneratorColumn>, Void> columnFunction, Predicate<Annotation> predicate){
         for (Method method : clazz.getMethods()) {
             for (Annotation annotation : method.getDeclaredAnnotations()) {
-                if(annotation instanceof ReportColumn && predicate.test(annotation)){
-                    columnFunction.apply(new AbstractMap.SimpleEntry<>(method, (ReportColumn) annotation));
-                } else if(annotation instanceof ReportColumns){
-                    Optional<ReportColumn> first = Arrays.stream(((ReportColumns) annotation).value())
+                if(annotation instanceof ReportGeneratorColumn && predicate.test(annotation)){
+                    columnFunction.apply(new AbstractMap.SimpleEntry<>(method, (ReportGeneratorColumn) annotation));
+                } else if(annotation instanceof ReportGeneratorColumns){
+                    Optional<ReportGeneratorColumn> first = Arrays.stream(((ReportGeneratorColumns) annotation).value())
                             .filter(predicate)
                             .findFirst();
                     first.ifPresent(column -> columnFunction.apply(new AbstractMap.SimpleEntry<>(method, column)));
@@ -61,8 +61,8 @@ public class AnnotationUtils {
     }
 
     public static Predicate<Annotation> getReportColumnsPredicate(String reportName) {
-        return annotation -> annotation instanceof ReportColumn
-                && ((ReportColumn) annotation).reportName().equals(reportName);
+        return annotation -> annotation instanceof ReportGeneratorColumn
+                && ((ReportGeneratorColumn) annotation).reportName().equals(reportName);
     }
 
     public static Predicate<Annotation> getReportLoaderColumnsPredicate(String reportName) {

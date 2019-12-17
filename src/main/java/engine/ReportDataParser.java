@@ -1,7 +1,7 @@
 package engine;
 
 import annotations.Report;
-import annotations.ReportColumn;
+import annotations.ReportGeneratorColumn;
 import annotations.ReportConfiguration;
 import annotations.ReportSpecialCell;
 import annotations.ReportSpecialRow;
@@ -63,8 +63,8 @@ final class ReportDataParser {
         loadEmptyColumns();
         if(reportData.isShowHeader()){
             List<ReportHeaderCell> cells = new ArrayList<>();
-            Function<AbstractMap.SimpleEntry<Method, ReportColumn>, Void> columnFunction = list -> {
-                ReportColumn column = list.getValue();
+            Function<AbstractMap.SimpleEntry<Method, ReportGeneratorColumn>, Void> columnFunction = list -> {
+                ReportGeneratorColumn column = list.getValue();
                 cells.add(new ReportHeaderCell(column.position(), (String) translations.getOrDefault(column.title(), column.title()), column.autoSizeColumn()));
                 return null;
             };
@@ -88,11 +88,11 @@ final class ReportDataParser {
     private <T> void loadRowsData(Collection<T> collection) throws Exception {
         reportData.setDataStartRow(reportConfiguration.dataOffset());
 
-        Map<Method, ReportColumn> methodsMap = new LinkedHashMap<>();
-        Map<Method, ReportColumn> finalMethodsMap = methodsMap;
-        Function<AbstractMap.SimpleEntry<Method, ReportColumn>, Void> columnFunction = list -> {
+        Map<Method, ReportGeneratorColumn> methodsMap = new LinkedHashMap<>();
+        Map<Method, ReportGeneratorColumn> finalMethodsMap = methodsMap;
+        Function<AbstractMap.SimpleEntry<Method, ReportGeneratorColumn>, Void> columnFunction = list -> {
             Method method = list.getKey();
-            ReportColumn column = list.getValue();
+            ReportGeneratorColumn column = list.getValue();
             finalMethodsMap.put(method, column);
             return null;
         };
@@ -104,7 +104,7 @@ final class ReportDataParser {
 
         for (T dto : collection) {
             ReportDataRow row = new ReportDataRow();
-            for(Map.Entry<Method, ReportColumn> entry : methodsMap.entrySet()){
+            for(Map.Entry<Method, ReportGeneratorColumn> entry : methodsMap.entrySet()){
                 try {
                     final Object invokedValue = entry.getKey().invoke(dto);
                     ReportDataColumn reportDataColumn = new ReportDataColumn(
@@ -174,8 +174,8 @@ final class ReportDataParser {
         }
     }
 
-    private Map<Method, ReportColumn> sortMethodsMapByColumnOrder(Map<Method, ReportColumn> methodsMap) {
-        List<Map.Entry<Method, ReportColumn>> list = new ArrayList<>(methodsMap.entrySet());
+    private Map<Method, ReportGeneratorColumn> sortMethodsMapByColumnOrder(Map<Method, ReportGeneratorColumn> methodsMap) {
+        List<Map.Entry<Method, ReportGeneratorColumn>> list = new ArrayList<>(methodsMap.entrySet());
         return list
                 .stream()
                 .sorted(Comparator.comparing(o -> o.getValue().position()))

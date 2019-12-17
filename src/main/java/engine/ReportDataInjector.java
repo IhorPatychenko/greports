@@ -189,7 +189,7 @@ class ReportDataInjector {
         final Collection<VerticalRangedStyle> styles = rowStyles.getStyles();
         for (VerticalRangedStyle style : styles) {
             final VerticalRange range = style.getRange();
-            checkRangeEnd(range, reportData);
+            checkRange(range, reportData);
             for(int i = range.getStart(); i <= range.getEnd(); i++){
                 final Row row = sheet.getRow(i);
                 for(int y = 0; y < row.getLastCellNum(); y++){
@@ -205,7 +205,7 @@ class ReportDataInjector {
             for(int i = 0; i <= sheet.getLastRowNum(); i++) {
                 final Row row = sheet.getRow(i);
                 final HorizontalRange range = style.getRange();
-                checkRangeEnd(range, reportData);
+                checkRange(range, reportData);
                 for(int y = range.getStart(); y <= range.getEnd(); y++){
                     cellApplyStyles(row.getCell(y), style);
                 }
@@ -225,9 +225,9 @@ class ReportDataInjector {
         for (RectangleRangedStyle rangedStyle : rangedStyles) {
             final RectangleRange range = rangedStyle.getRange();
             final VerticalRange verticalRange = range.getVerticalRange();
-            checkRangeEnd(verticalRange, reportData);
+            checkRange(verticalRange, reportData);
             final HorizontalRange horizontalRange = range.getHorizontalRange();
-            checkRangeEnd(horizontalRange, reportData);
+            checkRange(horizontalRange, reportData);
             for(int i = verticalRange.getStart(); i <= verticalRange.getEnd(); i++) {
                 for(int y = horizontalRange.getStart(); y <= horizontalRange.getEnd(); y++){
                     cellApplyStyles(sheet.getRow(i).getCell(y), rangedStyle);
@@ -236,15 +236,23 @@ class ReportDataInjector {
         }
     }
 
-    private void checkRangeEnd(VerticalRange range, ReportData reportData){
+    private void checkRange(VerticalRange range, ReportData reportData){
         if(Objects.isNull(range.getEnd())) {
-            range.setEnd(reportData.getRowsCount() + reportData.getDataStartRow() - 1);
+            int end = reportData.getRowsCount() + reportData.getDataStartRow() - 1;
+            if (range.getStart() <= 0){
+                range.setStart(end + range.getStart());
+            }
+            range.setEnd(end);
         }
     }
 
-    private void checkRangeEnd(HorizontalRange range, ReportData reportData){
+    private void checkRange(HorizontalRange range, ReportData reportData){
         if(Objects.isNull(range.getEnd())){
-            range.setEnd(reportData.getColumnsCount());
+            int end = reportData.getColumnsCount() - 1;
+            if(range.getStart() <= 0){
+                range.setStart(end + range.getStart());
+            }
+            range.setEnd(end);
         }
     }
 

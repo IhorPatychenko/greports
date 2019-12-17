@@ -10,6 +10,6 @@ import java.lang.annotation.Target;
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
-public @interface ReportColumns {
-    ReportColumn[] value();
+public @interface ReportGeneratorColumns {
+    ReportGeneratorColumn[] value();
 }

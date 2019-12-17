@@ -4,8 +4,8 @@ import java.lang.annotation.*;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.METHOD, ElementType.ANNOTATION_TYPE})
-@Repeatable(value = ReportColumns.class)
-public @interface ReportColumn {
+@Repeatable(value = ReportGeneratorColumns.class)
+public @interface ReportGeneratorColumn {
     String reportName();
     String position();
     String title() default "";
