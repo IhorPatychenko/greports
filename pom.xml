@@ -8,6 +8,14 @@
     <version>1.0.3</version>
     <packaging>jar</packaging>
 
+    <distributionManagement>
+        <repository>
+            <id>github</id>
+            <name>GitHub OWNER Apache Maven Packages</name>
+            <url>https://maven.pkg.github.com/IhorPatychenko/report-engine</url>
+        </repository>
+    </distributionManagement>
+
     <build>
         <plugins>
             <plugin>
