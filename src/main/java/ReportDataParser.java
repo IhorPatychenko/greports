@@ -3,7 +3,6 @@ import annotations.ReportColumn;
 import annotations.ReportConfiguration;
 import annotations.ReportSpecialCell;
 import annotations.ReportSpecialRow;
-import annotations.ReportTemplate;
 import content.cell.ReportCell;
 import content.cell.ReportDataColumn;
 import content.cell.ReportDataSpecialCell;
@@ -17,7 +16,6 @@ import styles.interfaces.StyledReport;
 import positioning.TranslationsParser;
 import utils.AnnotationUtils;
 
-import java.io.*;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.AbstractMap;
@@ -28,7 +26,6 @@ import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -48,55 +45,42 @@ final class ReportDataParser {
         T firstElement = collection.iterator().next();
         checkCollectionNotEmpty(collection);
         final Report reportAnnotation = AnnotationUtils.getReportAnnotation(firstElement.getClass());
-        reportConfiguration = AnnotationUtils.getReportConfiguration(reportAnnotation, reportName);
-        AnnotationUtils.checkReportConfiguration(reportConfiguration, firstElement.getClass(), reportName);
+        reportConfiguration = AnnotationUtils.getReportConfiguration(reportAnnotation, firstElement.getClass(), reportName);
         reportData = new ReportData(reportName, reportConfiguration.sheetName());
         translations = new TranslationsParser(reportAnnotation.translationsDir()).parse(reportLang);
-        loadReportTemplate();
         loadReportHeader(firstElement);
-        loadReportRows(collection);
+        loadRowsData(collection);
         loadReportSpecialRows();
         loadReportStyles(firstElement);
         return this;
     }
 
-    private void loadReportTemplate() throws Exception {
-        final ReportTemplate reportTemplate = Arrays.stream(reportConfiguration.templates())
-                .filter(template -> template.reportName().equals(reportData.getName()))
-                .findFirst()
-                .orElse(null);
-        if(!Objects.isNull(reportTemplate)){
-            try {
-                InputStream fileStream = new FileInputStream(reportTemplate.templatePath());
-                reportData.setTemplateInputStream(fileStream);
-            } catch (FileNotFoundException e) {
-                throw new Exception("No template found with path \"" + reportTemplate.templatePath() + "\"");
-            }
-        }
-    }
-
     private <T> void loadReportHeader(T dto) {
         reportData.setShowHeader(reportConfiguration.showHeader());
+        reportData.setHeaderStartRow(reportConfiguration.headerOffset());
+        loadEmptyColumns();
         if(reportData.isShowHeader()){
-            reportData.setHeaderStartRow(reportConfiguration.headerOffset());
-            loadEmptyColumns();
             List<ReportHeaderCell> cells = new ArrayList<>();
             Function<AbstractMap.SimpleEntry<Method, ReportColumn>, Void> columnFunction = list -> {
                 ReportColumn column = list.getValue();
-                cells.add(new ReportHeaderCell(column.position(), (String) translations.getOrDefault(column.title(), column.title())));
+                cells.add(new ReportHeaderCell(column.position(), (String) translations.getOrDefault(column.title(), column.title()), column.autoSizeColumn()));
                 return null;
             };
             AnnotationUtils.reportGeneratorMethodsWithColumnAnnotations(dto.getClass(), columnFunction, AnnotationUtils.getReportColumnsPredicate(reportData.getName()));
-            cells.addAll(ReportHeaderCell.from(emptyColumns));
+            cells.addAll(ReportHeaderCell.fromEmptyColumns(emptyColumns));
             cells.sort(Comparator.comparing(ReportCell::getPosition));
+            loadAutosizeColumns(cells);
             reportData.setHeader(new ReportHeader(reportConfiguration.sortableHeader()))
                     .addCells(cells);
         }
     }
 
-    private <T> void loadReportRows(Collection<T> collection) throws Exception {
-        loadEmptyColumns();
-        loadRowsData(collection);
+    private void loadAutosizeColumns(List<ReportHeaderCell> cells){
+        for (int i = 0; i < cells.size(); i++) {
+            if(cells.get(i).isAutoSizeColumn()){
+                reportData.getAutoSizedColumns().add(i);
+            }
+        }
     }
 
     private <T> void loadRowsData(Collection<T> collection) throws Exception {
@@ -114,7 +98,7 @@ final class ReportDataParser {
         AnnotationUtils.reportGeneratorMethodsWithColumnAnnotations(collection.iterator().next().getClass(), columnFunction, AnnotationUtils.getReportColumnsPredicate(reportData.getName()));
 
         methodsMap = sortMethodsMapByColumnOrder(finalMethodsMap);
-        reportData.setColumnsLength(methodsMap.size());
+        reportData.setColumnsCount(methodsMap.size());
 
         for (T dto : collection) {
             ReportDataRow row = new ReportDataRow();

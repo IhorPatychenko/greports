@@ -14,7 +14,6 @@ public @interface ReportConfiguration {
     boolean sortableHeader() default false;
     short headerOffset() default 0;
     short dataOffset() default 1;
-    ReportTemplate[] templates() default {};
     ReportColumn[] emptyColumns() default {};
     ReportSpecialRow[] specialRows() default {};
 }

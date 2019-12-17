@@ -3,14 +3,15 @@ package styles;
 import org.apache.poi.ss.usermodel.BorderStyle;
 import org.apache.poi.ss.usermodel.FillPatternType;
 import org.apache.poi.ss.usermodel.HorizontalAlignment;
-import org.apache.poi.ss.usermodel.IndexedColors;
 import org.apache.poi.ss.usermodel.VerticalAlignment;
 import styles.interfaces.StripedRows.StripedRowsIndex;
 
+import java.awt.*;
+
 public class ReportStyle {
 
-    private IndexedColors foregroundColor;
-    private IndexedColors fontColor;
+    private Color foregroundColor;
+    private Color fontColor;
     private FillPatternType fillPattern;
     private Boolean boldFont;
     private HorizontalAlignment horizontalAlignment;
@@ -19,8 +20,9 @@ public class ReportStyle {
     private BorderStyle borderBottom;
     private BorderStyle borderLeft;
     private BorderStyle borderRight;
+    private Color borderColor;
     private StripedRowsIndex stripedRowsIndex;
-    private IndexedColors stripedRowsColor;
+    private Color stripedRowsColor;
 
     protected ReportStyle(){}
 
@@ -35,24 +37,25 @@ public class ReportStyle {
         this.borderBottom = rs.getBorderBottom();
         this.borderLeft = rs.getBorderLeft();
         this.borderRight = rs.getBorderRight();
+        this.borderColor = rs.getBorderColor();
         this.stripedRowsIndex = rs.getStripedRowsIndex();
         this.stripedRowsColor = rs.getStripedRowsColor();
     }
 
-    public IndexedColors getForegroundColor() {
+    public Color getForegroundColor() {
         return foregroundColor;
     }
 
-    public ReportStyle setForegroundColor(IndexedColors foregroundColor) {
+    public ReportStyle setForegroundColor(Color foregroundColor) {
         this.foregroundColor = foregroundColor;
         return this;
     }
 
-    public IndexedColors getFontColor() {
+    public Color getFontColor() {
         return fontColor;
     }
 
-    public ReportStyle setFontColor(IndexedColors fontColor) {
+    public ReportStyle setFontColor(Color fontColor) {
         this.fontColor = fontColor;
         return this;
     }
@@ -138,12 +141,21 @@ public class ReportStyle {
         return this;
     }
 
-    public IndexedColors getStripedRowsColor() {
+    public Color getStripedRowsColor() {
         return stripedRowsColor;
     }
 
-    public ReportStyle setStripedRowsColor(IndexedColors stripedRowsColor) {
+    public ReportStyle setStripedRowsColor(Color stripedRowsColor) {
         this.stripedRowsColor = stripedRowsColor;
+        return this;
+    }
+
+    public Color getBorderColor() {
+        return borderColor;
+    }
+
+    public ReportStyle setBorderColor(Color borderColor) {
+        this.borderColor = borderColor;
         return this;
     }
 }

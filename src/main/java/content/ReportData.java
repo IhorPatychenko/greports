@@ -2,8 +2,6 @@ package content;
 
 import content.row.ReportDataRow;
 import content.row.ReportDataSpecialRow;
-import org.apache.commons.codec.binary.StringUtils;
-import org.apache.poi.util.StringUtil;
 
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -18,7 +16,8 @@ public class ReportData {
     private boolean showHeader = true;
     private int headerStartRow;
     private int dataStartRow;
-    private int columnsLength;
+    private int columnsCount;
+    private List<Integer> autoSizedColumns = new ArrayList<>();
     private List<ReportDataSpecialRow> specialRows = new ArrayList<>();
     private List<ReportDataRow> rows = new ArrayList<>();
     private ReportDataStyles reportDataStyles = new ReportDataStyles();
@@ -93,13 +92,17 @@ public class ReportData {
         this.dataStartRow = dataStartRow;
     }
 
-    public int getColumnsLength() {
-        return columnsLength;
+    public int getColumnsCount() {
+        return columnsCount;
     }
 
-    public ReportData setColumnsLength(int columns) {
-        this.columnsLength = columns;
+    public ReportData setColumnsCount(int columns) {
+        this.columnsCount = columns;
         return this;
+    }
+
+    public List<Integer> getAutoSizedColumns() {
+        return autoSizedColumns;
     }
 
     public ReportDataStyles getStyles() {

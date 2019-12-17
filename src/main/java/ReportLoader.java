@@ -26,7 +26,7 @@ import java.util.function.Function;
 public class ReportLoader {
 
     private String reportName;
-    private Workbook workbook;
+    private Workbook currentWorkbook;
 
     public ReportLoader(String reportName, String filePath) throws IOException, InvalidFormatException {
         this(reportName, new File(filePath));
@@ -38,20 +38,19 @@ public class ReportLoader {
 
     public ReportLoader(String reportName, InputStream inputStream) throws IOException, InvalidFormatException {
         this.reportName = reportName;
-        this.workbook = WorkbookFactory.create(inputStream);
+        this.currentWorkbook = WorkbookFactory.create(inputStream);
     }
 
-    public <T> List<T> bindForClass(Class<T> clazz) throws Exception {
+    public <T> List<T> bindForClass(Class<T> clazz) {
         final Report reportAnnotation = AnnotationUtils.getReportAnnotation(clazz);
-        final ReportConfiguration reportConfiguration = AnnotationUtils.getReportConfiguration(reportAnnotation, reportName);
-        AnnotationUtils.checkReportConfiguration(reportConfiguration, clazz, reportName);
+        final ReportConfiguration reportConfiguration = AnnotationUtils.getReportConfiguration(reportAnnotation, clazz, reportName);
         final List<AbstractMap.SimpleEntry<Method, ReportLoaderColumn>> simpleEntries = reportLoaderMethodsWithColumnAnnotations(clazz);
         return this.loadData(reportConfiguration, simpleEntries, clazz);
     }
 
-    private <T> List<T> loadData(ReportConfiguration reportConfiguration, List<AbstractMap.SimpleEntry<Method, ReportLoaderColumn>> simpleEntries, Class<T> clazz) throws InstantiationException {
+    private <T> List<T> loadData(ReportConfiguration reportConfiguration, List<AbstractMap.SimpleEntry<Method, ReportLoaderColumn>> simpleEntries, Class<T> clazz) {
         List<T> data = new ArrayList<>();
-        Sheet sheet = workbook.getSheet(reportConfiguration.sheetName());
+        Sheet sheet = currentWorkbook.getSheet(reportConfiguration.sheetName());
         for(int i = reportConfiguration.dataOffset(); i <= sheet.getLastRowNum(); i++) {
             try {
                 final T instance = clazz.newInstance();
@@ -59,15 +58,17 @@ public class ReportLoader {
                 for(int cellIndex = row.getFirstCellNum(), methodIndex = 0; cellIndex < row.getLastCellNum(); cellIndex++, methodIndex++) {
                     final Cell cell = row.getCell(cellIndex);
                     final Method method = simpleEntries.get(methodIndex).getKey();
-                    instanceSetCellValue(method, instance, cell);
+                    instanceSetValueFromCell(method, instance, cell);
                 }
                 data.add(instance);
+            } catch(InstantiationException e) {
+                throw new RuntimeException("Cannot create new instance of @" + clazz.getSimpleName() + " class. Needs to have public constructor without parameters");
             } catch (InvocationTargetException | IllegalAccessException ignored) {}
         }
         return data;
     }
 
-    private <T> void instanceSetCellValue(final Method method, final T instance, final Cell cell) throws InvocationTargetException, IllegalAccessException {
+    private <T> void instanceSetValueFromCell(final Method method, final T instance, final Cell cell) throws InvocationTargetException, IllegalAccessException {
         if(CellType.BOOLEAN.equals(cell.getCellTypeEnum())){
             method.invoke(instance, cell.getBooleanCellValue());
         } else if(CellType.STRING.equals(cell.getCellTypeEnum())){

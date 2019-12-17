@@ -11,29 +11,23 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.AbstractMap;
 import java.util.Arrays;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
 public class AnnotationUtils {
 
-    public static <T> ReportConfiguration getReportConfiguration(Report report, String reportName) {
-        if(Objects.isNull(report)) return null;
+    public static <T> ReportConfiguration getReportConfiguration(Report report, Class<T> clazz, String reportName) {
         return Arrays.stream(report.reportConfigurations())
                 .filter(entry -> entry.name().equals(reportName))
                 .findFirst()
-                .orElse(null);
+                .orElseThrow(() -> new RuntimeException(clazz.toString() + " is not annotated as @Report or has no @ReportConfiguration annotation with name \"" + reportName + "\""));
     }
 
     public static <T> Report getReportAnnotation(Class<T> clazz) {
-        return Arrays.stream(clazz.getAnnotationsByType(Report.class)).findFirst().orElse(null);
-    }
-
-    public static <T> void checkReportConfiguration(ReportConfiguration reportConfiguration, Class<T> clazz, String reportName) throws Exception {
-        if (Objects.isNull(reportConfiguration)) {
-            throw new Exception(clazz.toString() + " is not annotated as @Report or has no @ReportConfiguration with name \"" + reportName + "\"");
-        }
+        return Arrays.stream(clazz.getAnnotationsByType(Report.class))
+                .findFirst()
+                .orElseThrow(() -> new RuntimeException(clazz.toString() + " is not annotated as @Report"));
     }
 
     public static <T> void reportGeneratorMethodsWithColumnAnnotations(Class<T> clazz, Function<AbstractMap.SimpleEntry<Method, ReportColumn>, Void> columnFunction, Predicate<Annotation> predicate){

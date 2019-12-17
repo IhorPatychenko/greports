@@ -8,7 +8,7 @@ public class ReportGeneratorResult {
 
     private Collection<ReportData> reportData = new ArrayList<>();
 
-    protected void addData(ReportData data){
+    void addData(ReportData data){
         reportData.add(data);
     }
 
