@@ -17,6 +17,10 @@ public class ReportDataSpecialRow {
         return index;
     }
 
+    public void setIndex(int index) {
+        this.index = index;
+    }
+
     public List<ReportDataSpecialCell> getSpecialCells() {
         return specialCells;
     }

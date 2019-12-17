@@ -1,3 +1,5 @@
+package engine;
+
 import annotations.ReportSpecialCell;
 import content.ReportData;
 import content.ReportHeader;
@@ -130,6 +132,9 @@ class ReportDataInjector {
     private void createSpecialRows(Sheet sheet, ReportData reportData) {
         final List<ReportDataSpecialRow> specialRows = reportData.getSpecialRows();
         for (final ReportDataSpecialRow specialRow : specialRows) {
+            if(specialRow.getIndex() == Integer.MAX_VALUE) {
+                specialRow.setIndex(reportData.getDataStartRow() + reportData.getRowsCount());
+            }
             final Row row = sheet.createRow(specialRow.getIndex());
             for (final ReportDataSpecialCell specialCell : specialRow.getSpecialCells()) {
                 final Cell cell = row.createCell(specialCell.getColumnIndex());
