@@ -118,11 +118,11 @@ public class ReportStylesBuilder<T extends ReportStyle> {
         private Boolean boldFont;
         private HorizontalAlignment horizontalAlignment;
         private VerticalAlignment verticalAlignment;
-        private BorderStyle borderTop = BorderStyle.THIN;
-        private BorderStyle borderRight = BorderStyle.THIN;
-        private BorderStyle borderBottom = BorderStyle.THIN;
-        private BorderStyle borderLeft = BorderStyle.THIN;
-        private Color borderColor = new Color(190, 190, 190);
+        private BorderStyle borderTop;
+        private BorderStyle borderRight;
+        private BorderStyle borderBottom;
+        private BorderStyle borderLeft;
+        private Color borderColor;
         private Tuple tuple;
 
         ReportStyleBuilder(Class<T> forClass, Tuple tuple){
