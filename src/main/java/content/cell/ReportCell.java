@@ -1,19 +1,19 @@
 package content.cell;
 
 public abstract class ReportCell {
-    private String position;
+    private Float position;
     private String title;
 
-    public ReportCell(String position) {
+    public ReportCell(Float position) {
         this.position = position;
     }
 
-    public ReportCell(String position, String title) {
+    public ReportCell(Float position, String title) {
         this(position);
         this.title = title;
     }
 
-    public String getPosition() {
+    public Float getPosition() {
         return position;
     }
 

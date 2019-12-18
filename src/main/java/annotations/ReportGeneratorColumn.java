@@ -7,7 +7,7 @@ import java.lang.annotation.*;
 @Repeatable(value = ReportGeneratorColumns.class)
 public @interface ReportGeneratorColumn {
     String reportName();
-    String position();
+    float position();
     String title() default "";
     String format() default "";
     String id() default "";

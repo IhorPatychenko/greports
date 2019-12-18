@@ -6,11 +6,11 @@ public class ReportDataColumn extends ReportCell {
     private String format;
     private String id;
 
-    public ReportDataColumn(String position, String format, Object value, String id) {
+    public ReportDataColumn(Float position, String format, Object value, String id) {
         this(position, null, format, value, id);
     }
 
-    public ReportDataColumn(String position, String title, String format, Object value, String id) {
+    public ReportDataColumn(Float position, String title, String format, Object value, String id) {
         super(position, title);
         this.format = format;
         this.value = value;

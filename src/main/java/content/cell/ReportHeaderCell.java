@@ -11,7 +11,7 @@ public class ReportHeaderCell extends ReportCell {
         return columns.stream().map(column -> new ReportHeaderCell(column.getPosition(), column.getTitle(), false)).collect(Collectors.toList());
     }
 
-    public ReportHeaderCell(String position, String title, boolean autoSizeColumn) {
+    public ReportHeaderCell(Float position, String title, boolean autoSizeColumn) {
         super(position);
         this.title = title;
         this.autoSizeColumn = autoSizeColumn;
