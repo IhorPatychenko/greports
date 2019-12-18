@@ -129,7 +129,7 @@ final class ReportDataParser {
         for(ReportSpecialRow reportSpecialRow : reportConfiguration.specialRows()){
             final ReportDataSpecialRow reportDataSpecialRow = new ReportDataSpecialRow(reportSpecialRow.rowIndex());
             for (final ReportSpecialCell column : reportSpecialRow.columns()) {
-                final ReportDataSpecialCell reportDataSpecialCell = new ReportDataSpecialCell(column.targetId(), column.valueType(), column.value());
+                final ReportDataSpecialCell reportDataSpecialCell = new ReportDataSpecialCell(column.targetId(), column.valueType(), column.value(), column.format());
                 getSpecialCellColumnIndex(reportDataSpecialCell);
                 reportDataSpecialRow.addCell(reportDataSpecialCell);
             }

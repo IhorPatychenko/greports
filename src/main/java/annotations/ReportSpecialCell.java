@@ -27,4 +27,9 @@ public @interface ReportSpecialCell {
      * @return java.lang.String value of the cell with special data
      */
     String value() default "";
+
+    /**
+     *
+     */
+    String format() default "";
 }
