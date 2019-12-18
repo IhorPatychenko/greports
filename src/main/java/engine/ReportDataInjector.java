@@ -136,6 +136,10 @@ class ReportDataInjector {
                 specialRow.setIndex(reportData.getDataStartRow() + reportData.getRowsCount());
             }
             final Row row = sheet.createRow(specialRow.getIndex());
+            for(int i = 0; i < reportData.getColumnsCount(); i++){
+                final Cell cell = row.createCell(i);
+                setCellValue(cell, "");
+            }
             for (final ReportDataSpecialCell specialCell : specialRow.getSpecialCells()) {
                 final Cell cell = row.createCell(specialCell.getColumnIndex());
                 CellReference firstCellReference = new CellReference(sheet.getRow(reportData.getDataStartRow() - 1).getCell(specialCell.getColumnIndex()));
@@ -238,9 +242,9 @@ class ReportDataInjector {
 
     private void checkRange(VerticalRange range, ReportData reportData){
         if(Objects.isNull(range.getEnd())) {
-            int end = reportData.getRowsCount() + reportData.getDataStartRow() - 1;
-            if (range.getStart() <= 0){
-                range.setStart(end + range.getStart());
+            int end = reportData.getRowsCount() + reportData.getDataStartRow() + reportData.getSpecialRows().size() - 1;
+            if (range.getStart() < 0){
+                range.setStart(end + range.getStart() + 1);
             }
             range.setEnd(end);
         }
@@ -249,8 +253,8 @@ class ReportDataInjector {
     private void checkRange(HorizontalRange range, ReportData reportData){
         if(Objects.isNull(range.getEnd())){
             int end = reportData.getColumnsCount() - 1;
-            if(range.getStart() <= 0){
-                range.setStart(end + range.getStart());
+            if(range.getStart() < 0){
+                range.setStart(end + range.getStart() + 1);
             }
             range.setEnd(end);
         }
