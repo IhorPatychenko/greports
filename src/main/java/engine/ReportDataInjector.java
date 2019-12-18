@@ -195,7 +195,7 @@ class ReportDataInjector {
         final Collection<VerticalRangedStyle> styles = rowStyles.getStyles();
         for (VerticalRangedStyle style : styles) {
             final VerticalRange range = style.getRange();
-            checkRange(range, reportData);
+            checkRange(range, sheet);
             for(int i = range.getStart(); i <= range.getEnd(); i++){
                 final Row row = sheet.getRow(i);
                 for(int y = 0; y < row.getLastCellNum(); y++){
@@ -231,7 +231,7 @@ class ReportDataInjector {
         for (RectangleRangedStyle rangedStyle : rangedStyles) {
             final RectangleRange range = rangedStyle.getRange();
             final VerticalRange verticalRange = range.getVerticalRange();
-            checkRange(verticalRange, reportData);
+            checkRange(verticalRange, sheet);
             final HorizontalRange horizontalRange = range.getHorizontalRange();
             checkRange(horizontalRange, reportData);
             for(int i = verticalRange.getStart(); i <= verticalRange.getEnd(); i++) {
@@ -242,9 +242,9 @@ class ReportDataInjector {
         }
     }
 
-    private void checkRange(VerticalRange range, ReportData reportData){
+    private void checkRange(VerticalRange range, Sheet sheet){
         if(Objects.isNull(range.getEnd())) {
-            int end = reportData.getRowsCount() + reportData.getDataStartRow() + reportData.getSpecialRows().size() - 1;
+            int end = sheet.getLastRowNum();
             if (range.getStart() < 0){
                 range.setStart(end + range.getStart() + 1);
             }
