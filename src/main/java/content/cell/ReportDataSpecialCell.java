@@ -7,11 +7,13 @@ public class ReportDataSpecialCell {
     private ReportSpecialCell.ValueType valueType;
     private String value;
     private int columnIndex;
+    private String format;
 
-    public ReportDataSpecialCell(final String targetId, final ReportSpecialCell.ValueType valueType, final String value) {
+    public ReportDataSpecialCell(final String targetId, final ReportSpecialCell.ValueType valueType, final String value, final String format) {
         this.targetId = targetId;
         this.valueType = valueType;
         this.value = value;
+        this.format = format;
     }
 
     public String getTargetId() {
@@ -33,5 +35,9 @@ public class ReportDataSpecialCell {
     public ReportDataSpecialCell setColumnIndex(final int columnIndex) {
         this.columnIndex = columnIndex;
         return this;
+    }
+
+    public String getFormat() {
+        return format;
     }
 }

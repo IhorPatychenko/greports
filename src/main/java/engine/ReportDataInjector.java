@@ -146,11 +146,13 @@ class ReportDataInjector {
                 CellReference lastCellReference = new CellReference(sheet.getRow(reportData.getDataStartRow() + reportData.getRowsCount() - 1).getCell(specialCell.getColumnIndex()));
                 if(ReportSpecialCell.ValueType.LITERAL.equals(specialCell.getValueType())){
                     setCellValue(cell, specialCell.getValue());
+                    setCellFormat(cell, specialCell.getFormat());
                 } else if(ReportSpecialCell.ValueType.FORMULA.equals(specialCell.getValueType())){
                     final String replace = specialCell.getValue()
                             .replace(FIRST_CELL, firstCellReference.formatAsString())
                             .replace(LAST_CELL, lastCellReference.formatAsString());
                     cell.setCellFormula(replace);
+                    setCellFormat(cell, specialCell.getFormat());
                 }
             }
         }
