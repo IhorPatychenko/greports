@@ -11,5 +11,5 @@ import java.lang.annotation.Target;
 @Repeatable(value = ReportLoaderColumns.class)
 public @interface ReportLoaderColumn {
     String reportName();
-    String position();
+    float position();
 }

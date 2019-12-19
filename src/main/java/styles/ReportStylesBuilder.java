@@ -2,6 +2,7 @@ package styles;
 
 import org.apache.poi.ss.usermodel.BorderStyle;
 import org.apache.poi.ss.usermodel.FillPatternType;
+import org.apache.poi.ss.usermodel.FontUnderline;
 import org.apache.poi.ss.usermodel.HorizontalAlignment;
 import org.apache.poi.ss.usermodel.VerticalAlignment;
 import positioning.HorizontalRange;
@@ -47,6 +48,21 @@ public class ReportStylesBuilder<T extends ReportStyle> {
 
     public ReportStylesBuilder<T> setBoldFont(Boolean boldFont) {
         this.styleBuilder.setBoldFont(boldFont);
+        return this;
+    }
+
+    public ReportStylesBuilder<T> setItalicFont(Boolean italicFont) {
+        this.styleBuilder.setItalicFont(italicFont);
+        return this;
+    }
+
+    public ReportStylesBuilder<T> setUnderlineFont(FontUnderline underlineFont) {
+        this.styleBuilder.setUnderlineFont(underlineFont);
+        return this;
+    }
+
+    public ReportStylesBuilder<T> setStrikeoutFont(Boolean strikeoutFont) {
+        this.styleBuilder.setStrikeoutFont(strikeoutFont);
         return this;
     }
 
@@ -116,6 +132,9 @@ public class ReportStylesBuilder<T extends ReportStyle> {
         private Color fontColor;
         private FillPatternType fillPattern = FillPatternType.SOLID_FOREGROUND;
         private Boolean boldFont;
+        private Boolean italicFont;
+        private FontUnderline underlineFont;
+        private Boolean strikeoutFont;
         private HorizontalAlignment horizontalAlignment;
         private VerticalAlignment verticalAlignment;
         private BorderStyle borderTop;
@@ -144,6 +163,18 @@ public class ReportStylesBuilder<T extends ReportStyle> {
 
         void setBoldFont(Boolean boldFont) {
             this.boldFont = boldFont;
+        }
+
+        void setItalicFont(Boolean italicFont) {
+            this.italicFont = italicFont;
+        }
+
+        void setUnderlineFont(FontUnderline underlineFont) {
+            this.underlineFont = underlineFont;
+        }
+
+        void setStrikeoutFont(Boolean strikeoutFont) {
+            this.strikeoutFont = strikeoutFont;
         }
 
         void setHorizontalAlignment(HorizontalAlignment horizontalAlignment) {
@@ -180,6 +211,9 @@ public class ReportStylesBuilder<T extends ReportStyle> {
                     .setFontColor(fontColor)
                     .setFillPattern(fillPattern)
                     .setBoldFont(boldFont)
+                    .setItalicFont(italicFont)
+                    .setUnderlineFont(underlineFont)
+                    .setStrikeoutFont(strikeoutFont)
                     .setHorizontalAlignment(horizontalAlignment)
                     .setVerticalAlignment(verticalAlignment)
                     .setBorderTop(borderTop)

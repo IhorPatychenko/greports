@@ -2,6 +2,7 @@ package styles;
 
 import org.apache.poi.ss.usermodel.BorderStyle;
 import org.apache.poi.ss.usermodel.FillPatternType;
+import org.apache.poi.ss.usermodel.FontUnderline;
 import org.apache.poi.ss.usermodel.HorizontalAlignment;
 import org.apache.poi.ss.usermodel.VerticalAlignment;
 import styles.interfaces.StripedRows.StripedRowsIndex;
@@ -14,6 +15,9 @@ public class ReportStyle {
     private Color fontColor;
     private FillPatternType fillPattern;
     private Boolean boldFont;
+    private Boolean italicFont;
+    private FontUnderline underlineFont;
+    private Boolean strikeoutFont;
     private HorizontalAlignment horizontalAlignment;
     private VerticalAlignment verticalAlignment;
     private BorderStyle borderTop;
@@ -31,6 +35,9 @@ public class ReportStyle {
         this.fontColor = rs.getFontColor();
         this.fillPattern = rs.getFillPattern();
         this.boldFont = rs.getBoldFont();
+        this.italicFont = rs.getItalicFont();
+        this.underlineFont = rs.getUnderlineFont();
+        this.strikeoutFont = rs.getStrikeoutFont();
         this.horizontalAlignment = rs.getHorizontalAlignment();
         this.verticalAlignment = rs.getVerticalAlignment();
         this.borderTop = rs.getBorderTop();
@@ -75,6 +82,33 @@ public class ReportStyle {
 
     public ReportStyle setBoldFont(Boolean boldFont) {
         this.boldFont = boldFont;
+        return this;
+    }
+
+    public Boolean getItalicFont() {
+        return italicFont;
+    }
+
+    public ReportStyle setItalicFont(Boolean italicFont) {
+        this.italicFont = italicFont;
+        return this;
+    }
+
+    public FontUnderline getUnderlineFont() {
+        return underlineFont;
+    }
+
+    public ReportStyle setUnderlineFont(FontUnderline underlineFont) {
+        this.underlineFont = underlineFont;
+        return this;
+    }
+
+    public Boolean getStrikeoutFont() {
+        return strikeoutFont;
+    }
+
+    public ReportStyle setStrikeoutFont(Boolean strikeoutFont) {
+        this.strikeoutFont = strikeoutFont;
         return this;
     }
 

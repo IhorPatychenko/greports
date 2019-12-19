@@ -325,6 +325,15 @@ class ReportDataInjector {
         if(style.getBoldFont() != null) {
             font.setBold(style.getBoldFont());
         }
+        if(style.getItalicFont() != null) {
+            font.setItalic(style.getItalicFont());
+        }
+        if(style.getUnderlineFont() != null) {
+            font.setUnderline(style.getUnderlineFont());
+        }
+        if(style.getStrikeoutFont() != null){
+            font.setStrikeout(style.getStrikeoutFont());
+        }
 
         cellStyle.setFont(font);
 
