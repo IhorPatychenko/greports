@@ -259,22 +259,30 @@ class ReportDataInjector {
     }
 
     private void checkRange(VerticalRange range, Sheet sheet){
+        if(Objects.isNull(range.getStart())){
+            range.setStart(sheet.getLastRowNum());
+        } else if(range.getStart() < 0){
+            range.setStart(sheet.getLastRowNum() + range.getStart() + 1);
+        }
+
         if(Objects.isNull(range.getEnd())) {
-            int end = sheet.getLastRowNum();
-            if (range.getStart() < 0){
-                range.setStart(end + range.getStart() + 1);
-            }
-            range.setEnd(end);
+            range.setEnd(sheet.getLastRowNum());
+        } else if(range.getEnd() < 0) {
+            range.setEnd(sheet.getLastRowNum() + range.getEnd());
         }
     }
 
     private void checkRange(HorizontalRange range, ReportData reportData){
-        if(Objects.isNull(range.getEnd())){
-            int end = reportData.getColumnsCount() - 1;
-            if(range.getStart() < 0){
-                range.setStart(end + range.getStart() + 1);
-            }
-            range.setEnd(end);
+        if(Objects.isNull(range.getStart())){
+            range.setStart(reportData.getColumnsCount() - 1);
+        } else if(range.getStart() < 0){
+            range.setStart(reportData.getColumnsCount() + range.getStart() - 1);
+        }
+
+        if(Objects.isNull(range.getEnd())) {
+            range.setEnd(reportData.getColumnsCount() - 1);
+        } else if(range.getEnd() < 0) {
+            range.setEnd(reportData.getColumnsCount() + range.getEnd() - 1);
         }
     }
 
