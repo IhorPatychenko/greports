@@ -13,4 +13,12 @@ public class Position extends Tuple<Integer, Integer> {
     public Integer getColumn(){
         return super.getB();
     }
+
+    public void setRow(Integer row) {
+        super.setA(row);
+    }
+
+    public void setColumn(Integer column) {
+        super.setB(column);
+    }
 }

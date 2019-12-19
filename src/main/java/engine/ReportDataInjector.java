@@ -23,6 +23,7 @@ import org.apache.poi.xssf.usermodel.XSSFFormulaEvaluator;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.apache.poi.xssf.usermodel.extensions.XSSFCellBorder;
 import positioning.HorizontalRange;
+import positioning.Position;
 import positioning.RectangleRange;
 import positioning.VerticalRange;
 import styles.HorizontalRangedStyle;
@@ -184,7 +185,7 @@ class ReportDataInjector {
             } else if(reportData.getStyles().getColumnStyles() != null && priority.equals(reportData.getStyles().getColumnStyles().getPriority())){
                 applyColumnStyles(sheet, reportData.getStyles().getColumnStyles(), reportData);
             } else if(reportData.getStyles().getPositionedStyles() != null && priority.equals(reportData.getStyles().getPositionedStyles().getPriority())){
-                applyPositionedStyles(sheet, reportData.getStyles().getPositionedStyles());
+                applyPositionedStyles(sheet, reportData.getStyles().getPositionedStyles(), reportData);
             } else if(reportData.getStyles().getRangedStyleReportStyles() != null && priority.equals(reportData.getStyles().getRangedStyleReportStyles().getPriority())){
                 applyRangedStyles(sheet, reportData.getStyles().getRangedStyleReportStyles(), reportData);
             }
@@ -219,9 +220,10 @@ class ReportDataInjector {
         }
     }
 
-    private void applyPositionedStyles(Sheet sheet, ReportStylesBuilder<PositionedStyle> positionedStyles) {
+    private void applyPositionedStyles(Sheet sheet, ReportStylesBuilder<PositionedStyle> positionedStyles, ReportData reportData) {
         final Collection<PositionedStyle> styles = positionedStyles.getStyles();
         for (PositionedStyle style : styles) {
+            checkPosition(style.getPosition(), sheet, reportData);
             cellApplyStyles(sheet.getRow(style.getPosition().getRow()).getCell(style.getPosition().getColumn()), style);
         }
     }
@@ -239,6 +241,20 @@ class ReportDataInjector {
                     cellApplyStyles(sheet.getRow(i).getCell(y), rangedStyle);
                 }
             }
+        }
+    }
+
+    private void checkPosition(Position position, Sheet sheet, ReportData reportData) {
+        if(Objects.isNull(position.getRow())){
+            position.setRow(sheet.getLastRowNum());
+        } else if(position.getRow() < 0) {
+            position.setRow(sheet.getLastRowNum() + position.getRow() + 1);
+        }
+
+        if(Objects.isNull(position.getColumn())){
+            position.setColumn(reportData.getColumnsCount() - 1);
+        } else if(position.getColumn() < 0){
+            position.setColumn(reportData.getColumnsCount() + position.getColumn() - 1);
         }
     }
 
