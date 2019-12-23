@@ -1,5 +1,8 @@
 package annotations;
 
+import engine.ValueType;
+import formula.Formula;
+
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -7,16 +10,9 @@ import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.ANNOTATION_TYPE)
-public @interface ReportSpecialCell {
+public @interface ReportSpecialRowCell {
 
-    enum ValueType {
-        LITERAL, FORMULA
-    }
-
-    /**
-     * @return java.lang.String value of the target column for special data
-     */
-    String targetId() default "";
+    String targetId();
 
     /**
      * @return one the possible values for value type of the cell containing special data
@@ -26,10 +22,11 @@ public @interface ReportSpecialCell {
     /**
      * @return java.lang.String value of the cell with special data
      */
-    String value() default "";
+    Formula value();
 
     /**
-     *
+     * @return java.lang.String representation format
      */
     String format() default "";
+
 }

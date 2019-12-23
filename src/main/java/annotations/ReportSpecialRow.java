@@ -17,7 +17,7 @@ public @interface ReportSpecialRow {
 
     /**
      *
-     * @return ReportSpecialCell[] with columns containing special data in the report
+     * @return ReportSpecialCell[] with cells containing special data in the report
      */
-    ReportSpecialCell[] columns() default {};
+    ReportSpecialRowCell[] cells() default {};
 }

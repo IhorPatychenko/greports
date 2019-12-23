@@ -1,12 +1,14 @@
 package engine;
 
-import annotations.ReportSpecialCell;
 import content.ReportData;
 import content.ReportHeader;
-import content.cell.ReportDataColumn;
-import content.cell.ReportDataSpecialCell;
+import content.column.ReportDataCell;
+import content.cell.ReportDataSpecialRowCell;
 import content.cell.ReportHeaderCell;
 import content.row.ReportDataSpecialRow;
+import formula.Formula;
+import formula.FormulaBuilder;
+import org.apache.commons.collections4.map.HashedMap;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.CreationHelper;
@@ -33,22 +35,24 @@ import styles.ReportStyle;
 import styles.ReportStylesBuilder;
 import styles.VerticalRangedStyle;
 import styles.interfaces.StripedRows;
+import utils.Utils;
 
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
-
-import static formula.Formulas.FIRST_CELL;
-import static formula.Formulas.LAST_CELL;
 
 class ReportDataInjector {
 
     private final Collection<ReportData> reportData;
     private final XSSFWorkbook currentWorkbook = new XSSFWorkbook();
     private CreationHelper creationHelper = currentWorkbook.getCreationHelper();
+    private final Map<ReportStyle, XSSFCellStyle> _stylesCache = new HashedMap<>();
+    private final Map<String, XSSFCellStyle> _formatsCache = new HashMap<>();
 
     ReportDataInjector(Collection<ReportData> reportData){
         this.reportData = reportData;
@@ -70,16 +74,16 @@ class ReportDataInjector {
         }
     }
 
-    private void injectData(Sheet sheet, ReportData data) {
-        createRows(sheet, data);
-        createSpecialRows(sheet, data);
-        addStripedRows(sheet, data);
-        addStyles(sheet, data);
-        adjustColumns(sheet, data);
+    private void injectData(Sheet sheet, ReportData reportData) {
+        createHeader(sheet, reportData);
+        createDataRows(sheet, reportData);
+        createSpecialRows(sheet, reportData);
+        addStripedRows(sheet, reportData);
+        addStyles(sheet, reportData);
+        adjustColumns(sheet, reportData);
     }
 
-    private void createRows(Sheet sheet, ReportData reportData){
-        // Create a header row
+    private void createHeader(Sheet sheet, ReportData reportData) {
         if(reportData.isShowHeader()){
             final ReportHeader header = reportData.getHeader();
             final Row headerRow = sheet.createRow(reportData.getHeaderStartRow());
@@ -90,24 +94,38 @@ class ReportDataInjector {
                 sheet.setAutoFilter(new CellRangeAddress(headerRow.getRowNum(), headerRow.getRowNum(), 0, header.getCells().size() - 1));
             }
         }
-        // Create data rows
+    }
+
+    private void createDataRows(Sheet sheet, ReportData reportData){
         for (int i = 0; i < reportData.getRows().size(); i++) {
             Row dataRow = sheet.createRow(reportData.getDataStartRow() + i);
             for (int y = 0; y < reportData.getRow(i).getColumns().size(); y++) {
-                final ReportDataColumn column = reportData.getRow(i).getColumn(y);
-                createCell(dataRow, column.getValue(), column.getFormat(), y);
+                final ReportDataCell column = reportData.getRow(i).getColumn(y);
+                createDataCell(dataRow, column, y, reportData);
             }
         }
     }
 
     private void createHeaderCell(Row row, ReportHeaderCell headerCell, int cellIndex){
-        createCell(row, headerCell.getTitle(), null, cellIndex);
+        final Cell cell = row.createCell(cellIndex);
+        setCellValue(cell, headerCell.getTitle());
     }
 
-    private void createCell(Row row, Object value, String format, int cellIndex) {
+    private void createDataCell(Row row, ReportDataCell reportDataCell, int cellIndex, ReportData reportData){
         final Cell cell = row.createCell(cellIndex);
-        setCellValue(cell, value);
-        setCellFormat(cell, format);
+        if(reportDataCell.getValueType().equals(ValueType.LITERAL)){
+            setCellValue(cell, reportDataCell.getValue());
+            setCellFormat(cell, reportDataCell.getFormat());
+        } else {
+            String formulaString = new FormulaBuilder((Formula) reportDataCell.getValue(), reportDataCell.getTargetIds().size()).build();
+            for (String targetId : reportDataCell.getTargetIds()) {
+                final int columnIndexForTarget = reportData.getColumnIndexForTarget(targetId);
+                CellReference cellReference = new CellReference(row.getCell(columnIndexForTarget));
+                formulaString = formulaString.replaceFirst(FormulaBuilder.FORMULA_TOKENIZER, cellReference.formatAsString());
+            }
+            cell.setCellFormula(formulaString);
+            setCellFormat(cell, reportDataCell.getFormat());
+        }
     }
 
     private void setCellValue(Cell cell, Object value) {
@@ -124,8 +142,14 @@ class ReportDataInjector {
 
     private void setCellFormat(Cell cell, String format) {
         if(format != null && !format.isEmpty()){
-            CellStyle cellStyle = currentWorkbook.createCellStyle();
-            cellStyle.setDataFormat(creationHelper.createDataFormat().getFormat(format));
+            XSSFCellStyle cellStyle;
+            if(!_formatsCache.containsKey(format)){
+                cellStyle = currentWorkbook.createCellStyle();
+                cellStyle.setDataFormat(creationHelper.createDataFormat().getFormat(format));
+            } else {
+                cellStyle = _formatsCache.get(format);
+            }
+
             cell.setCellStyle(cellStyle);
         }
     }
@@ -141,17 +165,18 @@ class ReportDataInjector {
                 final Cell cell = row.createCell(i);
                 setCellValue(cell, "");
             }
-            for (final ReportDataSpecialCell specialCell : specialRow.getSpecialCells()) {
-                final Cell cell = row.createCell(specialCell.getColumnIndex());
-                CellReference firstCellReference = new CellReference(sheet.getRow(reportData.getDataStartRow() - 1).getCell(specialCell.getColumnIndex()));
-                CellReference lastCellReference = new CellReference(sheet.getRow(reportData.getDataStartRow() + reportData.getRowsCount() - 1).getCell(specialCell.getColumnIndex()));
-                if(ReportSpecialCell.ValueType.LITERAL.equals(specialCell.getValueType())){
+            for (final ReportDataSpecialRowCell specialCell : specialRow.getSpecialCells()) {
+                final Cell cell = row.createCell(reportData.getColumnIndexForTarget(specialCell.getTargetId()));
+                if(ValueType.LITERAL.equals(specialCell.getValueType())){
                     setCellValue(cell, specialCell.getValue());
                     setCellFormat(cell, specialCell.getFormat());
-                } else if(ReportSpecialCell.ValueType.FORMULA.equals(specialCell.getValueType())){
-                    final String replace = specialCell.getValue()
-                            .replace(FIRST_CELL, firstCellReference.formatAsString())
-                            .replace(LAST_CELL, lastCellReference.formatAsString());
+                } else if(ValueType.FORMULA.equals(specialCell.getValueType())){
+                    final Formula formula = (Formula) specialCell.getValue();
+                    final int columnIndexForTarget = reportData.getColumnIndexForTarget(specialCell.getTargetId());
+                    CellReference firstCellReference = new CellReference(sheet.getRow(reportData.getDataStartRow() - 1).getCell(columnIndexForTarget));
+                    CellReference lastCellReference = new CellReference(sheet.getRow(reportData.getDataStartRow() + reportData.getRowsCount() - 1).getCell(columnIndexForTarget));
+                    final String replace = formula.toString()
+                            .replace(FormulaBuilder.FORMULA_TOKENIZER, firstCellReference.formatAsString() + ":" + lastCellReference.formatAsString());
                     cell.setCellFormula(replace);
                     setCellFormat(cell, specialCell.getFormat());
                 }
@@ -181,7 +206,7 @@ class ReportDataInjector {
     private void addStyles(Sheet sheet, ReportData reportData) {
         for (ReportStylesBuilder.StylePriority priority : ReportStylesBuilder.StylePriority.values()) {
             if(reportData.getStyles().getRowStyles() != null && priority.equals(reportData.getStyles().getRowStyles().getPriority())){
-                applyRowStyles(sheet, reportData.getStyles().getRowStyles(), reportData);
+                applyRowStyles(sheet, reportData.getStyles().getRowStyles());
             } else if(reportData.getStyles().getColumnStyles() != null && priority.equals(reportData.getStyles().getColumnStyles().getPriority())){
                 applyColumnStyles(sheet, reportData.getStyles().getColumnStyles(), reportData);
             } else if(reportData.getStyles().getPositionedStyles() != null && priority.equals(reportData.getStyles().getPositionedStyles().getPriority())){
@@ -192,7 +217,7 @@ class ReportDataInjector {
         }
     }
 
-    private void applyRowStyles(Sheet sheet, ReportStylesBuilder<VerticalRangedStyle> rowStyles, ReportData reportData) {
+    private void applyRowStyles(Sheet sheet, ReportStylesBuilder<VerticalRangedStyle> rowStyles) {
         final Collection<VerticalRangedStyle> styles = rowStyles.getStyles();
         for (VerticalRangedStyle style : styles) {
             final VerticalRange range = style.getRange();
@@ -287,64 +312,68 @@ class ReportDataInjector {
     }
 
     private void cellApplyStyles(Cell cell, ReportStyle style) {
-        final XSSFCellStyle cellStyle = currentWorkbook.createCellStyle();
+        XSSFCellStyle cellStyle;
+        if(!_stylesCache.containsKey(style)){
+            cellStyle = currentWorkbook.createCellStyle();
+            cellStyle.cloneStyleFrom(cell.getCellStyle());
 
-        cellStyle.cloneStyleFrom(cell.getCellStyle());
+            // Borders
+            if(style.getBorderBottom() != null) {
+                cellStyle.setBorderBottom(style.getBorderBottom());
+            }
+            if(style.getBorderTop() != null) {
+                cellStyle.setBorderTop(style.getBorderTop());
+            }
+            if(style.getBorderLeft() != null) {
+                cellStyle.setBorderLeft(style.getBorderLeft());
+            }
+            if(style.getBorderRight() != null) {
+                cellStyle.setBorderRight(style.getBorderRight());
+            }
 
-        // Borders
-        if(style.getBorderBottom() != null) {
-            cellStyle.setBorderBottom(style.getBorderBottom());
-        }
-        if(style.getBorderTop() != null) {
-            cellStyle.setBorderTop(style.getBorderTop());
-        }
-        if(style.getBorderLeft() != null) {
-            cellStyle.setBorderLeft(style.getBorderLeft());
-        }
-        if(style.getBorderRight() != null) {
-            cellStyle.setBorderRight(style.getBorderRight());
-        }
+            // Colors
+            if(style.getForegroundColor() != null) {
+                cellStyle.setFillForegroundColor(new XSSFColor(style.getForegroundColor()));
+                cellStyle.setFillPattern(style.getFillPattern());
+            }
+            if(style.getBorderColor() != null){
+                cellStyle.setBorderColor(XSSFCellBorder.BorderSide.TOP, new XSSFColor(style.getBorderColor()));
+                cellStyle.setBorderColor(XSSFCellBorder.BorderSide.RIGHT, new XSSFColor(style.getBorderColor()));
+                cellStyle.setBorderColor(XSSFCellBorder.BorderSide.BOTTOM, new XSSFColor(style.getBorderColor()));
+                cellStyle.setBorderColor(XSSFCellBorder.BorderSide.LEFT, new XSSFColor(style.getBorderColor()));
+            }
 
-        // Colors
-        if(style.getForegroundColor() != null) {
-            cellStyle.setFillForegroundColor(new XSSFColor(style.getForegroundColor()));
-            cellStyle.setFillPattern(style.getFillPattern());
-        }
-        if(style.getBorderColor() != null){
-            cellStyle.setBorderColor(XSSFCellBorder.BorderSide.TOP, new XSSFColor(style.getBorderColor()));
-            cellStyle.setBorderColor(XSSFCellBorder.BorderSide.RIGHT, new XSSFColor(style.getBorderColor()));
-            cellStyle.setBorderColor(XSSFCellBorder.BorderSide.BOTTOM, new XSSFColor(style.getBorderColor()));
-            cellStyle.setBorderColor(XSSFCellBorder.BorderSide.LEFT, new XSSFColor(style.getBorderColor()));
-        }
+            // Font
+            if(Utils.anyNotNull(style.getFontColor(), style.getBoldFont(), style.getItalicFont(), style.getUnderlineFont(), style.getStrikeoutFont())){
+                XSSFFont font = currentWorkbook.createFont();
+                if(style.getFontColor() != null) {
+                    font.setColor(new XSSFColor(style.getFontColor()));
+                }
+                if(style.getBoldFont() != null) {
+                    font.setBold(style.getBoldFont());
+                }
+                if(style.getItalicFont() != null) {
+                    font.setItalic(style.getItalicFont());
+                }
+                if(style.getUnderlineFont() != null) {
+                    font.setUnderline(style.getUnderlineFont());
+                }
+                if(style.getStrikeoutFont() != null){
+                    font.setStrikeout(style.getStrikeoutFont());
+                }
+                cellStyle.setFont(font);
+            }
 
-        // Font
-        XSSFFont font = currentWorkbook.createFont();
-        if(style.getFontColor() != null) {
-            font.setColor(new XSSFColor(style.getFontColor()));
+            // Alignment
+            if(style.getHorizontalAlignment() != null) {
+                cellStyle.setAlignment(style.getHorizontalAlignment());
+            }
+            if(style.getVerticalAlignment() != null) {
+                cellStyle.setVerticalAlignment(style.getVerticalAlignment());
+            }
+        } else {
+            cellStyle = _stylesCache.get(style);
         }
-        if(style.getBoldFont() != null) {
-            font.setBold(style.getBoldFont());
-        }
-        if(style.getItalicFont() != null) {
-            font.setItalic(style.getItalicFont());
-        }
-        if(style.getUnderlineFont() != null) {
-            font.setUnderline(style.getUnderlineFont());
-        }
-        if(style.getStrikeoutFont() != null){
-            font.setStrikeout(style.getStrikeoutFont());
-        }
-
-        cellStyle.setFont(font);
-
-        // Alignment
-        if(style.getHorizontalAlignment() != null) {
-            cellStyle.setAlignment(style.getHorizontalAlignment());
-        }
-        if(style.getVerticalAlignment() != null) {
-            cellStyle.setVerticalAlignment(style.getVerticalAlignment());
-        }
-
         cell.setCellStyle(cellStyle);
     }
 

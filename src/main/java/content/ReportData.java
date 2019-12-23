@@ -6,6 +6,7 @@ import content.row.ReportDataSpecialRow;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class ReportData {
 
@@ -21,6 +22,7 @@ public class ReportData {
     private List<ReportDataSpecialRow> specialRows = new ArrayList<>();
     private List<ReportDataRow> rows = new ArrayList<>();
     private ReportDataStyles reportDataStyles = new ReportDataStyles();
+    private Map<String, Integer> targetIndexes;
 
     public ReportData(String name, String sheetName) {
         this.name = name;
@@ -115,5 +117,13 @@ public class ReportData {
 
     public void addSpecialRow(ReportDataSpecialRow reportDataSpecialRow) {
         specialRows.add(reportDataSpecialRow);
+    }
+
+    public void setTargetsIndexes(Map<String, Integer> targetIndexes) {
+        this.targetIndexes = targetIndexes;
+    }
+
+    public Integer getColumnIndexForTarget(String target) {
+        return targetIndexes.get(target);
     }
 }

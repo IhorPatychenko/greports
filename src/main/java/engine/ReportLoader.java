@@ -45,7 +45,7 @@ public class ReportLoader {
 
     public <T> List<T> bindForClass(Class<T> clazz) {
         final Report reportAnnotation = AnnotationUtils.getReportAnnotation(clazz);
-        final ReportConfiguration reportConfiguration = AnnotationUtils.getReportConfiguration(reportAnnotation, clazz, reportName);
+        final ReportConfiguration reportConfiguration = AnnotationUtils.getReportConfiguration(reportAnnotation, reportName);
         final List<AbstractMap.SimpleEntry<Method, ReportLoaderColumn>> simpleEntries = reportLoaderMethodsWithColumnAnnotations(clazz);
         return this.loadData(reportConfiguration, simpleEntries, clazz);
     }
@@ -105,7 +105,7 @@ public class ReportLoader {
             list.add(entry);
             return null;
         };
-        AnnotationUtils.reportLoaderMethodsWithColumnAnnotations(clazz, columnFunction, AnnotationUtils.getReportLoaderColumnsPredicate(reportName));
+        AnnotationUtils.reportLoaderMethodsWithColumnAnnotations(clazz, columnFunction, reportName);
         list.sort(Comparator.comparing(a -> a.getValue().position()));
         return list;
     }

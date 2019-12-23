@@ -1,13 +1,13 @@
 package content.row;
 
-import content.cell.ReportDataSpecialCell;
+import content.cell.ReportDataSpecialRowCell;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class ReportDataSpecialRow {
     private int index;
-    private List<ReportDataSpecialCell> specialCells = new ArrayList<>();
+    private List<ReportDataSpecialRowCell> specialCells = new ArrayList<>();
 
     public ReportDataSpecialRow(int index){
         this.index = index;
@@ -21,11 +21,11 @@ public class ReportDataSpecialRow {
         this.index = index;
     }
 
-    public List<ReportDataSpecialCell> getSpecialCells() {
+    public List<ReportDataSpecialRowCell> getSpecialCells() {
         return specialCells;
     }
 
-    public void addCell(ReportDataSpecialCell cell) {
+    public void addCell(ReportDataSpecialRowCell cell) {
         this.specialCells.add(cell);
     }
 }

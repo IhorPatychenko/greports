@@ -1,25 +1,25 @@
 package content.row;
 
-import content.cell.ReportDataColumn;
+import content.column.ReportDataCell;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class ReportDataRow {
 
-    private List<ReportDataColumn> columns = new ArrayList<>();
+    private List<ReportDataCell> columns = new ArrayList<>();
 
     public ReportDataRow() {}
 
-    public List<ReportDataColumn> getColumns() {
+    public List<ReportDataCell> getColumns() {
         return columns;
     }
 
-    public void addColumn(ReportDataColumn column){
+    public void addCell(ReportDataCell column){
         this.columns.add(column);
     }
 
-    public ReportDataColumn getColumn(int index) {
+    public ReportDataCell getColumn(int index) {
         return this.columns.get(index);
     }
 

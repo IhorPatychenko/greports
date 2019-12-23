@@ -17,8 +17,8 @@ public class ReportGenerator {
         reportDataParser = new ReportDataParser(lang);
     }
 
-    public <T> ReportGenerator parse(Collection<T> collection, final String reportName) throws Exception {
-        final ReportData data = reportDataParser.parse(collection, reportName).getData();
+    public <T> ReportGenerator parse(Collection<T> collection, final String reportName, Class<T> clazz) throws Exception {
+        final ReportData data = reportDataParser.parse(collection, reportName, clazz).getData();
         reportGeneratorResult.addData(data);
         return this;
     }
