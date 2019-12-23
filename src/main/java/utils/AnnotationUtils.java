@@ -30,7 +30,7 @@ public class AnnotationUtils {
     }
 
     public static <T> void reportGeneratorMethodsWithColumnAnnotations(Class<T> clazz, Function<AbstractMap.SimpleEntry<Method, ReportGeneratorColumn>, Void> columnFunction, String reportName){
-        for (Method method : clazz.getMethods()) {
+        for (Method method : clazz.getDeclaredMethods()) {
             final ReportGeneratorColumn[] annotationsByType = method.getAnnotationsByType(ReportGeneratorColumn.class);
             for (ReportGeneratorColumn reportGeneratorColumn : annotationsByType) {
                 if(getReportGeneratorColumnsPredicate(reportName).test(reportGeneratorColumn)){
@@ -41,7 +41,7 @@ public class AnnotationUtils {
     }
 
     public static <T> void reportLoaderMethodsWithColumnAnnotations(Class<T> clazz, Function<AbstractMap.SimpleEntry<Method, ReportLoaderColumn>, Void> columnFunction, String reportName){
-        for (Method method : clazz.getMethods()) {
+        for (Method method : clazz.getDeclaredMethods()) {
             final ReportLoaderColumn[] annotationsByType = method.getAnnotationsByType(ReportLoaderColumn.class);
             for (ReportLoaderColumn reportLoaderColumn : annotationsByType) {
                 if(getReportLoaderColumnsPredicate(reportName).test(reportLoaderColumn)){

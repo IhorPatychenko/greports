@@ -115,6 +115,7 @@ final class ReportDataParser {
             ReportDataRow row = new ReportDataRow();
             for(Map.Entry<Method, ReportGeneratorColumn> entry : methodsMap.entrySet()){
                 try {
+                    entry.getKey().setAccessible(true);
                     final Object invokedValue = entry.getKey().invoke(dto);
                     ReportDataCell reportDataCell = new ReportDataCell(
                             entry.getValue().position(),
