@@ -7,12 +7,12 @@ import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.ANNOTATION_TYPE)
-public @interface ReportConfiguration {
+public @interface Configuration {
     String name();
-    String sheetName();
+    String sheetName() default "";
     boolean showHeader() default true;
     boolean sortableHeader() default false;
     short headerOffset() default 0;
     short dataOffset() default 1;
-    ReportSpecialRow[] specialRows() default {};
+    SpecialRow[] specialRows() default {};
 }

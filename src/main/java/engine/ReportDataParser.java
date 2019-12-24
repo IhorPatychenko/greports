@@ -1,11 +1,11 @@
 package engine;
 
 import annotations.Report;
-import annotations.ReportGeneratorColumn;
-import annotations.ReportConfiguration;
-import annotations.ReportSpecialRowCell;
-import annotations.ReportSpecialRow;
-import content.cell.ReportCell;
+import annotations.GeneratorColumn;
+import annotations.Configuration;
+import annotations.SpecialRowCell;
+import annotations.SpecialRow;
+import annotations.GeneratorSubreport;
 import content.column.ReportDataCell;
 import content.cell.ReportDataSpecialRowCell;
 import content.cell.ReportHeaderCell;
@@ -26,20 +26,17 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 final class ReportDataParser {
 
     private String reportLang;
     private ReportData reportData;
     private Map<String, Object> translations;
-    private ReportConfiguration reportConfiguration;
+    private Configuration configuration;
 
     ReportDataParser(String lang) {
         this.reportLang = lang;
@@ -51,30 +48,30 @@ final class ReportDataParser {
 
     <T> ReportDataParser parse(Collection<T> collection, final String reportName, Class<T> clazz) throws Exception {
         final Report reportAnnotation = AnnotationUtils.getReportAnnotation(clazz);
-        reportConfiguration = AnnotationUtils.getReportConfiguration(reportAnnotation, reportName);
-        reportData = new ReportData(reportName, reportConfiguration.sheetName());
+        configuration = AnnotationUtils.getReportConfiguration(reportAnnotation, reportName);
+        reportData = new ReportData(reportName, configuration.sheetName());
         translations = new TranslationsParser(reportAnnotation.translationsDir()).parse(reportLang);
         loadReportHeader(clazz);
         loadRowsData(collection, clazz);
         loadReportSpecialRows();
         loadReportStyles(clazz);
+        loadSubreports(collection, clazz);
         return this;
     }
 
     private <T> void loadReportHeader(Class<T> clazz) {
-        reportData.setShowHeader(reportConfiguration.showHeader());
-        reportData.setHeaderStartRow(reportConfiguration.headerOffset());
+        reportData.setShowHeader(configuration.showHeader());
+        reportData.setHeaderStartRow(configuration.headerOffset());
         if(reportData.isShowHeader()){
             List<ReportHeaderCell> cells = new ArrayList<>();
-            Function<AbstractMap.SimpleEntry<Method, ReportGeneratorColumn>, Void> columnFunction = list -> {
-                ReportGeneratorColumn column = list.getValue();
-                cells.add(new ReportHeaderCell(column.position(), (String) translations.getOrDefault(column.title(), column.title()), column.autoSizeColumn()));
+            Function<AbstractMap.SimpleEntry<Method, GeneratorColumn>, Void> columnFunction = list -> {
+                GeneratorColumn column = list.getValue();
+                cells.add(new ReportHeaderCell(column.position(), (String) translations.getOrDefault(column.title(), column.title()), column.id(), column.autoSizeColumn()));
                 return null;
             };
-            AnnotationUtils.reportGeneratorMethodsWithColumnAnnotations(clazz, columnFunction, reportData.getName());
-            cells.sort(Comparator.comparing(ReportCell::getPosition));
+            AnnotationUtils.generatorMethodsWithColumnAnnotations(clazz, columnFunction, reportData.getName());
             loadAutosizeColumns(cells);
-            reportData.setHeader(new ReportHeader(reportConfiguration.sortableHeader()))
+            reportData.setHeader(new ReportHeader(configuration.sortableHeader()))
                     .addCells(cells);
         }
     }
@@ -88,68 +85,80 @@ final class ReportDataParser {
     }
 
     private <T> void loadRowsData(Collection<T> collection, Class<T> clazz) throws Exception {
-        reportData.setDataStartRow(reportConfiguration.dataOffset());
+        reportData.setDataStartRow(configuration.dataOffset());
 
-        Map<Method, ReportGeneratorColumn> methodsMap = new LinkedHashMap<>();
-        Map<Method, ReportGeneratorColumn> finalMethodsMap = methodsMap;
-        Function<AbstractMap.SimpleEntry<Method, ReportGeneratorColumn>, Void> columnFunction = list -> {
-            Method method = list.getKey();
-            ReportGeneratorColumn column = list.getValue();
-            finalMethodsMap.put(method, column);
+        Map<Method, GeneratorColumn> methodsMap = new LinkedHashMap<>();
+        Function<AbstractMap.SimpleEntry<Method, GeneratorColumn>, Void> columnFunction = list -> {
+            methodsMap.put(list.getKey(), list.getValue());
             return null;
         };
 
-        AnnotationUtils.reportGeneratorMethodsWithColumnAnnotations(clazz, columnFunction, reportData.getName());
-
-        methodsMap = sortMethodsMapByColumnOrder(finalMethodsMap);
-        reportData.setColumnsCount(methodsMap.size());
-
-        final List<ReportGeneratorColumn> columns = new ArrayList<>(methodsMap.values());
-        final Map<String, Integer> targetIndexes = new HashMap<>();
-        for (int i = 0; i < columns.size(); i++) {
-            targetIndexes.put(columns.get(i).id(), i);
-        }
-        reportData.setTargetsIndexes(targetIndexes);
+        AnnotationUtils.generatorMethodsWithColumnAnnotations(clazz, columnFunction, reportData.getName());
 
         for (T dto : collection) {
             ReportDataRow row = new ReportDataRow();
-            for(Map.Entry<Method, ReportGeneratorColumn> entry : methodsMap.entrySet()){
+            for(Map.Entry<Method, GeneratorColumn> entry : methodsMap.entrySet()){
                 try {
                     entry.getKey().setAccessible(true);
-                    final Object invokedValue = entry.getKey().invoke(dto);
+                    final Object invokedValue = dto != null ? entry.getKey().invoke(dto) : null;
                     ReportDataCell reportDataCell = new ReportDataCell(
-                            entry.getValue().position(),
-                            entry.getValue().format(),
-                            invokedValue,
-                            entry.getValue().id(),
-                            Arrays.asList(entry.getValue().targetIds()),
-                            entry.getValue().valueType()
+                        entry.getValue().position(),
+                        entry.getValue().format(),
+                        invokedValue,
+                        Arrays.asList(entry.getValue().targetIds()),
+                        entry.getValue().valueType()
                     );
                     row.addCell(reportDataCell);
                 } catch (IllegalAccessException | InvocationTargetException e) {
                     throw new Exception("Error obtaining the value of column");
                 }
-
             }
-            row.getColumns().sort(Comparator.comparing(ReportCell::getPosition));
             reportData.addRow(row);
         }
     }
 
+    private <T> void loadSubreports(Collection<T> collection, Class<T> clazz) throws Exception {
+        Map<Method, GeneratorSubreport> methodsMap = new LinkedHashMap<>();
+        Function<AbstractMap.SimpleEntry<Method, GeneratorSubreport>, Void> subreportFunction = list -> {
+            methodsMap.put(list.getKey(), list.getValue());
+            return null;
+        };
+        AnnotationUtils.generatorMethodWithSubreportAnnotations(clazz, subreportFunction, reportData.getName());
+        List<ReportData> subreportsData = new ArrayList<>();
+        for (Map.Entry<Method, GeneratorSubreport> entry : methodsMap.entrySet()) {
+            final Method method = entry.getKey();
+            final Class<?> returnType = method.getReturnType();
+            final Collection subreportData = new ArrayList<>();
+            for (T collectionEntry : collection) {
+                method.setAccessible(true);
+                try {
+                    final Object invoke = method.invoke(collectionEntry);
+                    subreportData.add(invoke);
+                } catch (IllegalAccessException | InvocationTargetException e) {
+                    throw new Exception("Error obtaining the value of column");
+                }
+            }
+            final ReportDataParser reportDataParser = new ReportDataParser(reportLang);
+            final ReportData data = reportDataParser.parse(subreportData, reportData.getName(), returnType).getData();
+            subreportsData.add(data);
+        }
+        reportData.mergeReportData(subreportsData);
+    }
+
     private void loadReportSpecialRows(){
-        for(ReportSpecialRow reportSpecialRow : reportConfiguration.specialRows()){
-            final ReportDataSpecialRow reportDataSpecialRow = new ReportDataSpecialRow(reportSpecialRow.rowIndex());
-            for (final ReportSpecialRowCell column : reportSpecialRow.cells()) {
+        for(SpecialRow specialRow : configuration.specialRows()){
+            final ReportDataSpecialRow reportDataSpecialRow = new ReportDataSpecialRow(specialRow.rowIndex());
+            for (final SpecialRowCell column : specialRow.cells()) {
                 reportDataSpecialRow.addCell(new ReportDataSpecialRowCell(column.valueType(), column.value(), column.format(), column.targetId()));
             }
             reportData.addSpecialRow(reportDataSpecialRow);
         }
     }
 
-    private <T> void loadReportStyles(Class<T> clazz) throws IllegalAccessException, InstantiationException, NoSuchMethodException {
-        final Constructor<T> constructor = clazz.getConstructor();
+    private <T> void loadReportStyles(Class<T> clazz) throws IllegalAccessException, InstantiationException, NoSuchMethodException, InvocationTargetException {
+        final Constructor<T> constructor = clazz.getDeclaredConstructor();
         constructor.setAccessible(true);
-        final T newInstance = clazz.newInstance();
+        final T newInstance = constructor.newInstance();
         final List<Class<?>> interfaces = Arrays.asList(clazz.getInterfaces());
         if(interfaces.contains(StyledReport.class)){
             StyledReport elem = (StyledReport) newInstance;
@@ -174,14 +183,6 @@ final class ReportDataParser {
                         .setStripedRowsColor(elem.getStripedRowsColor().getOrDefault(reportData.getName(), null));
             }
         }
-    }
-
-    private Map<Method, ReportGeneratorColumn> sortMethodsMapByColumnOrder(Map<Method, ReportGeneratorColumn> methodsMap) {
-        List<Map.Entry<Method, ReportGeneratorColumn>> list = new ArrayList<>(methodsMap.entrySet());
-        return list
-                .stream()
-                .sorted(Comparator.comparing(o -> o.getValue().position()))
-                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e2, LinkedHashMap::new));
     }
 
     ReportData getData(){

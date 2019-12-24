@@ -1,10 +1,14 @@
 package content;
 
+import content.cell.ReportCell;
+import content.cell.ReportHeaderCell;
 import content.row.ReportDataRow;
 import content.row.ReportDataSpecialRow;
 
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -17,16 +21,15 @@ public class ReportData {
     private boolean showHeader = true;
     private int headerStartRow;
     private int dataStartRow;
-    private int columnsCount;
     private List<Integer> autoSizedColumns = new ArrayList<>();
     private List<ReportDataSpecialRow> specialRows = new ArrayList<>();
     private List<ReportDataRow> rows = new ArrayList<>();
     private ReportDataStyles reportDataStyles = new ReportDataStyles();
-    private Map<String, Integer> targetIndexes;
+    private Map<String, Integer> targetIndexes = new HashMap<>();
 
     public ReportData(String name, String sheetName) {
         this.name = name;
-        this.sheetName = sheetName != null && !sheetName.isEmpty() ? sheetName : null;
+        this.sheetName = !sheetName.isEmpty() ? sheetName : null;
     }
 
     public String getName() {
@@ -95,12 +98,7 @@ public class ReportData {
     }
 
     public int getColumnsCount() {
-        return columnsCount;
-    }
-
-    public ReportData setColumnsCount(int columns) {
-        this.columnsCount = columns;
-        return this;
+        return header.getCells().size();
     }
 
     public List<Integer> getAutoSizedColumns() {
@@ -119,11 +117,36 @@ public class ReportData {
         specialRows.add(reportDataSpecialRow);
     }
 
-    public void setTargetsIndexes(Map<String, Integer> targetIndexes) {
-        this.targetIndexes = targetIndexes;
-    }
-
     public Integer getColumnIndexForTarget(String target) {
         return targetIndexes.get(target);
+    }
+
+    public void mergeReportData(List<ReportData> subreportsData) {
+        for (ReportData other : subreportsData) {
+            mergeHeaders(other);
+            mergeRows(other);
+            mergeStyles(other);
+        }
+
+        header.getCells().sort(Comparator.comparing(ReportCell::getPosition));
+        rows.forEach(row -> row.getCells().sort(Comparator.comparing(ReportCell::getPosition)));
+
+        for (int i = 0; i < header.getCells().size(); i++) {
+            targetIndexes.put(header.getCell(i).getId(), i);
+        }
+    }
+
+    private void mergeHeaders(ReportData other) {
+        header.addCells(other.getHeader().getCells());
+    }
+
+    private void mergeRows(ReportData other) {
+        for (int i = 0; i < rows.size(); i++) {
+            getRow(i).addCells(other.getRow(i).getCells());
+        }
+    }
+
+    private void mergeStyles(ReportData other) {
+
     }
 }

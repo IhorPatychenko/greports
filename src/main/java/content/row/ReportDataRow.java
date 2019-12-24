@@ -7,20 +7,24 @@ import java.util.List;
 
 public class ReportDataRow {
 
-    private List<ReportDataCell> columns = new ArrayList<>();
+    private List<ReportDataCell> cells = new ArrayList<>();
 
     public ReportDataRow() {}
 
-    public List<ReportDataCell> getColumns() {
-        return columns;
+    public List<ReportDataCell> getCells() {
+        return cells;
     }
 
-    public void addCell(ReportDataCell column){
-        this.columns.add(column);
+    public void addCell(ReportDataCell cell){
+        this.cells.add(cell);
+    }
+
+    public void addCells(List<ReportDataCell> cells) {
+        this.cells.addAll(cells);
     }
 
     public ReportDataCell getColumn(int index) {
-        return this.columns.get(index);
+        return this.cells.get(index);
     }
 
 }

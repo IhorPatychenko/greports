@@ -8,8 +8,8 @@ import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.METHOD, ElementType.ANNOTATION_TYPE})
-@Repeatable(value = ReportLoaderColumns.class)
-public @interface ReportLoaderColumn {
+@Repeatable(value = LoaderColumns.class)
+public @interface LoaderColumn {
     String reportName();
     float position();
 }

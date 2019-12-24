@@ -1,8 +1,8 @@
 package engine;
 
 import annotations.Report;
-import annotations.ReportConfiguration;
-import annotations.ReportLoaderColumn;
+import annotations.Configuration;
+import annotations.LoaderColumn;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellType;
@@ -45,15 +45,15 @@ public class ReportLoader {
 
     public <T> List<T> bindForClass(Class<T> clazz) {
         final Report reportAnnotation = AnnotationUtils.getReportAnnotation(clazz);
-        final ReportConfiguration reportConfiguration = AnnotationUtils.getReportConfiguration(reportAnnotation, reportName);
-        final List<AbstractMap.SimpleEntry<Method, ReportLoaderColumn>> simpleEntries = reportLoaderMethodsWithColumnAnnotations(clazz);
-        return this.loadData(reportConfiguration, simpleEntries, clazz);
+        final Configuration configuration = AnnotationUtils.getReportConfiguration(reportAnnotation, reportName);
+        final List<AbstractMap.SimpleEntry<Method, LoaderColumn>> simpleEntries = reportLoaderMethodsWithColumnAnnotations(clazz);
+        return this.loadData(configuration, simpleEntries, clazz);
     }
 
-    private <T> List<T> loadData(ReportConfiguration reportConfiguration, List<AbstractMap.SimpleEntry<Method, ReportLoaderColumn>> simpleEntries, Class<T> clazz) {
+    private <T> List<T> loadData(Configuration configuration, List<AbstractMap.SimpleEntry<Method, LoaderColumn>> simpleEntries, Class<T> clazz) {
         List<T> data = new ArrayList<>();
-        Sheet sheet = currentWorkbook.getSheet(reportConfiguration.sheetName());
-        for(int i = reportConfiguration.dataOffset(); i <= sheet.getLastRowNum(); i++) {
+        Sheet sheet = currentWorkbook.getSheet(configuration.sheetName());
+        for(int i = configuration.dataOffset(); i <= sheet.getLastRowNum(); i++) {
             try {
                 final T instance = clazz.newInstance();
                 final Row row = sheet.getRow(i);
@@ -99,14 +99,13 @@ public class ReportLoader {
         }
     }
 
-    private <T> List<AbstractMap.SimpleEntry<Method, ReportLoaderColumn>> reportLoaderMethodsWithColumnAnnotations(Class<T> clazz){
-        List<AbstractMap.SimpleEntry<Method, ReportLoaderColumn>> list = new ArrayList<>();
-        Function<AbstractMap.SimpleEntry<Method, ReportLoaderColumn>, Void> columnFunction = entry -> {
+    private <T> List<AbstractMap.SimpleEntry<Method, LoaderColumn>> reportLoaderMethodsWithColumnAnnotations(Class<T> clazz){
+        List<AbstractMap.SimpleEntry<Method, LoaderColumn>> list = new ArrayList<>();
+        Function<AbstractMap.SimpleEntry<Method, LoaderColumn>, Void> columnFunction = entry -> {
             list.add(entry);
             return null;
         };
-        AnnotationUtils.reportLoaderMethodsWithColumnAnnotations(clazz, columnFunction, reportName);
-        list.sort(Comparator.comparing(a -> a.getValue().position()));
+        AnnotationUtils.loaderMethodsWithColumnAnnotations(clazz, columnFunction, reportName);
         return list;
     }
 

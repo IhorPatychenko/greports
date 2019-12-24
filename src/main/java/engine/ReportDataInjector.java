@@ -99,7 +99,7 @@ class ReportDataInjector {
     private void createDataRows(Sheet sheet, ReportData reportData){
         for (int i = 0; i < reportData.getRows().size(); i++) {
             Row dataRow = sheet.createRow(reportData.getDataStartRow() + i);
-            for (int y = 0; y < reportData.getRow(i).getColumns().size(); y++) {
+            for (int y = 0; y < reportData.getRow(i).getCells().size(); y++) {
                 final ReportDataCell column = reportData.getRow(i).getColumn(y);
                 createDataCell(dataRow, column, y, reportData);
             }
@@ -146,6 +146,7 @@ class ReportDataInjector {
             if(!_formatsCache.containsKey(format)){
                 cellStyle = currentWorkbook.createCellStyle();
                 cellStyle.setDataFormat(creationHelper.createDataFormat().getFormat(format));
+                _formatsCache.put(format, cellStyle);
             } else {
                 cellStyle = _formatsCache.get(format);
             }
@@ -371,6 +372,8 @@ class ReportDataInjector {
             if(style.getVerticalAlignment() != null) {
                 cellStyle.setVerticalAlignment(style.getVerticalAlignment());
             }
+
+            _stylesCache.put(style,cellStyle);
         } else {
             cellStyle = _stylesCache.get(style);
         }

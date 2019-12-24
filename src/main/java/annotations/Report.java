@@ -12,5 +12,5 @@ import java.lang.annotation.Target;
 @Target(ElementType.TYPE)
 public @interface Report {
     String translationsDir() default "src/main/java/resources/i18n/";
-    ReportConfiguration[] reportConfigurations() default {};
+    Configuration[] reportConfigurations() default {};
 }

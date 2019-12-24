@@ -7,7 +7,7 @@ import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.ANNOTATION_TYPE)
-public @interface ReportSpecialRow {
+public @interface SpecialRow {
 
     /**
      *
@@ -19,5 +19,5 @@ public @interface ReportSpecialRow {
      *
      * @return ReportSpecialCell[] with cells containing special data in the report
      */
-    ReportSpecialRowCell[] cells() default {};
+    SpecialRowCell[] cells() default {};
 }
