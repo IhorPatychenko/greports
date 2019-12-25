@@ -120,8 +120,18 @@ public class ReportStylesBuilder<T extends ReportStyle> {
                 .collect(Collectors.toList());
     }
 
+    private Collection<ReportStyleBuilder<T>> getStyleBuilders(){
+        return styleBuilders;
+    }
+
     public StylePriority getPriority(){
         return priority;
+    }
+
+    public void mergeStyles(ReportStylesBuilder<T> other) {
+        if(other != null){
+            styleBuilders.addAll(other.getStyleBuilders());
+        }
     }
 
     private static class ReportStyleBuilder<T> {

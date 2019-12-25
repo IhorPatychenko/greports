@@ -4,22 +4,23 @@ import java.util.StringJoiner;
 
 public class FormulaBuilder {
 
-    private Formula formula;
+    private String formula;
+    private boolean isRangedFormula;
     private int cellsCount;
     public static final String FORMULA_TOKENIZER = "CELL";
 
-    public FormulaBuilder(Formula formula, int cellsCount) {
+    public FormulaBuilder(String formula, boolean isRangedFormula, int cellsCount) {
         this.formula = formula;
+        this.isRangedFormula = isRangedFormula;
         this.cellsCount = cellsCount;
     }
 
     public String build(){
-        final String formulaJoiner = formula.isRanged() ? ":" : ",";
+        final String formulaJoiner = isRangedFormula ? ":" : ",";
         final StringJoiner joiner = new StringJoiner(formulaJoiner);
-        String[] formulaParts = formula.toString().split(FORMULA_TOKENIZER);
         for (int i = 0; i < cellsCount; i++) {
             joiner.add(FORMULA_TOKENIZER);
         }
-        return formulaParts[0] + joiner.toString() + formulaParts[1];
+        return formula + "(" + joiner.toString() + ")";
     }
 }

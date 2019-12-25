@@ -3,6 +3,7 @@ package engine;
 import annotations.Report;
 import annotations.GeneratorColumn;
 import annotations.Configuration;
+import annotations.SpecialColumn;
 import annotations.SpecialRowCell;
 import annotations.SpecialRow;
 import annotations.GeneratorSubreport;
@@ -37,6 +38,7 @@ final class ReportDataParser {
     private ReportData reportData;
     private Map<String, Object> translations;
     private Configuration configuration;
+    private List<ReportData> subreportsData = new ArrayList<>();
 
     ReportDataParser(String lang) {
         this.reportLang = lang;
@@ -53,27 +55,30 @@ final class ReportDataParser {
         translations = new TranslationsParser(reportAnnotation.translationsDir()).parse(reportLang);
         loadReportHeader(clazz);
         loadRowsData(collection, clazz);
-        loadReportSpecialRows();
-        loadReportStyles(clazz);
+        loadSpecialColumns();
+        loadSpecialRows();
+        loadStyles(clazz);
         loadSubreports(collection, clazz);
+        reportData.mergeReportData(subreportsData);
         return this;
     }
 
     private <T> void loadReportHeader(Class<T> clazz) {
         reportData.setShowHeader(configuration.showHeader());
         reportData.setHeaderStartRow(configuration.headerOffset());
-        if(reportData.isShowHeader()){
-            List<ReportHeaderCell> cells = new ArrayList<>();
-            Function<AbstractMap.SimpleEntry<Method, GeneratorColumn>, Void> columnFunction = list -> {
-                GeneratorColumn column = list.getValue();
-                cells.add(new ReportHeaderCell(column.position(), (String) translations.getOrDefault(column.title(), column.title()), column.id(), column.autoSizeColumn()));
-                return null;
-            };
-            AnnotationUtils.generatorMethodsWithColumnAnnotations(clazz, columnFunction, reportData.getName());
-            loadAutosizeColumns(cells);
-            reportData.setHeader(new ReportHeader(configuration.sortableHeader()))
-                    .addCells(cells);
+        List<ReportHeaderCell> cells = new ArrayList<>();
+        Function<AbstractMap.SimpleEntry<Method, GeneratorColumn>, Void> columnFunction = list -> {
+            GeneratorColumn column = list.getValue();
+            cells.add(new ReportHeaderCell(column.position(), (String) translations.getOrDefault(column.title(), column.title()), column.id(), column.autoSizeColumn()));
+            return null;
+        };
+        AnnotationUtils.generatorMethodsWithColumnAnnotations(clazz, columnFunction, reportData.getName());
+        for (SpecialColumn specialColumn : configuration.specialColumns()) {
+            cells.add(new ReportHeaderCell(specialColumn.position(), specialColumn.title(), "", specialColumn.autoSizeColumn()));
         }
+        loadAutosizeColumns(cells);
+        reportData.setHeader(new ReportHeader(configuration.sortableHeader()))
+                .addCells(cells);
     }
 
     private void loadAutosizeColumns(List<ReportHeaderCell> cells){
@@ -106,7 +111,8 @@ final class ReportDataParser {
                         entry.getValue().format(),
                         invokedValue,
                         Arrays.asList(entry.getValue().targetIds()),
-                        entry.getValue().valueType()
+                        entry.getValue().valueType(),
+                        false
                     );
                     row.addCell(reportDataCell);
                 } catch (IllegalAccessException | InvocationTargetException e) {
@@ -124,7 +130,7 @@ final class ReportDataParser {
             return null;
         };
         AnnotationUtils.generatorMethodWithSubreportAnnotations(clazz, subreportFunction, reportData.getName());
-        List<ReportData> subreportsData = new ArrayList<>();
+
         for (Map.Entry<Method, GeneratorSubreport> entry : methodsMap.entrySet()) {
             final Method method = entry.getKey();
             final Class<?> returnType = method.getReturnType();
@@ -142,10 +148,23 @@ final class ReportDataParser {
             final ReportData data = reportDataParser.parse(subreportData, reportData.getName(), returnType).getData();
             subreportsData.add(data);
         }
-        reportData.mergeReportData(subreportsData);
     }
 
-    private void loadReportSpecialRows(){
+    private void loadSpecialColumns(){
+        for (SpecialColumn specialColumn : configuration.specialColumns()) {
+            for (ReportDataRow row : reportData.getRows()) {
+                row.addCell(new ReportDataCell(
+                    specialColumn.position(),
+                    specialColumn.format(),
+                    specialColumn.value(),
+                    Arrays.asList(specialColumn.targetIds()),
+                    specialColumn.valueType(),
+                    specialColumn.isRangedFormula()));
+            }
+        }
+    }
+
+    private void loadSpecialRows(){
         for(SpecialRow specialRow : configuration.specialRows()){
             final ReportDataSpecialRow reportDataSpecialRow = new ReportDataSpecialRow(specialRow.rowIndex());
             for (final SpecialRowCell column : specialRow.cells()) {
@@ -155,7 +174,7 @@ final class ReportDataParser {
         }
     }
 
-    private <T> void loadReportStyles(Class<T> clazz) throws IllegalAccessException, InstantiationException, NoSuchMethodException, InvocationTargetException {
+    private <T> void loadStyles(Class<T> clazz) throws IllegalAccessException, InstantiationException, NoSuchMethodException, InvocationTargetException {
         final Constructor<T> constructor = clazz.getDeclaredConstructor();
         constructor.setAccessible(true);
         final T newInstance = constructor.newInstance();

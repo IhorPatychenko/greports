@@ -6,7 +6,6 @@ import content.column.ReportDataCell;
 import content.cell.ReportDataSpecialRowCell;
 import content.cell.ReportHeaderCell;
 import content.row.ReportDataSpecialRow;
-import formula.Formula;
 import formula.FormulaBuilder;
 import org.apache.commons.collections4.map.HashedMap;
 import org.apache.poi.ss.usermodel.Cell;
@@ -51,7 +50,7 @@ class ReportDataInjector {
     private final Collection<ReportData> reportData;
     private final XSSFWorkbook currentWorkbook = new XSSFWorkbook();
     private CreationHelper creationHelper = currentWorkbook.getCreationHelper();
-    private final Map<ReportStyle, XSSFCellStyle> _stylesCache = new HashedMap<>();
+    private final Map<StyleKey, XSSFCellStyle> _stylesCache = new HashedMap<>();
     private final Map<String, XSSFCellStyle> _formatsCache = new HashMap<>();
 
     ReportDataInjector(Collection<ReportData> reportData){
@@ -97,11 +96,20 @@ class ReportDataInjector {
     }
 
     private void createDataRows(Sheet sheet, ReportData reportData){
+        // First create cells with data
         for (int i = 0; i < reportData.getRows().size(); i++) {
             Row dataRow = sheet.createRow(reportData.getDataStartRow() + i);
             for (int y = 0; y < reportData.getRow(i).getCells().size(); y++) {
                 final ReportDataCell column = reportData.getRow(i).getColumn(y);
-                createDataCell(dataRow, column, y, reportData);
+                createDataCell(dataRow, column, y);
+            }
+        }
+        // After create cells with formulas to can evaluate
+        for (int i = 0; i < reportData.getRows().size(); i++) {
+            Row dataRow = sheet.getRow(reportData.getDataStartRow() + i);
+            for (int y = 0; y < reportData.getRow(i).getCells().size(); y++) {
+                final ReportDataCell column = reportData.getRow(i).getColumn(y);
+                createFormulaCell(dataRow, column, y, reportData);
             }
         }
     }
@@ -111,13 +119,18 @@ class ReportDataInjector {
         setCellValue(cell, headerCell.getTitle());
     }
 
-    private void createDataCell(Row row, ReportDataCell reportDataCell, int cellIndex, ReportData reportData){
-        final Cell cell = row.createCell(cellIndex);
+    private void createDataCell(Row row, ReportDataCell reportDataCell, int cellIndex){
         if(reportDataCell.getValueType().equals(ValueType.LITERAL)){
+            final Cell cell = row.createCell(cellIndex);
             setCellValue(cell, reportDataCell.getValue());
             setCellFormat(cell, reportDataCell.getFormat());
-        } else {
-            String formulaString = new FormulaBuilder((Formula) reportDataCell.getValue(), reportDataCell.getTargetIds().size()).build();
+        }
+    }
+
+    private void createFormulaCell(Row row, ReportDataCell reportDataCell, int cellIndex, ReportData reportData) {
+        if(reportDataCell.getValueType().equals(ValueType.FORMULA)){
+            final Cell cell = row.createCell(cellIndex);
+            String formulaString = new FormulaBuilder(reportDataCell.getValue().toString(), reportDataCell.isRangedFormula(), reportDataCell.getTargetIds().size()).build();
             for (String targetId : reportDataCell.getTargetIds()) {
                 final int columnIndexForTarget = reportData.getColumnIndexForTarget(targetId);
                 CellReference cellReference = new CellReference(row.getCell(columnIndexForTarget));
@@ -150,7 +163,6 @@ class ReportDataInjector {
             } else {
                 cellStyle = _formatsCache.get(format);
             }
-
             cell.setCellStyle(cellStyle);
         }
     }
@@ -172,11 +184,11 @@ class ReportDataInjector {
                     setCellValue(cell, specialCell.getValue());
                     setCellFormat(cell, specialCell.getFormat());
                 } else if(ValueType.FORMULA.equals(specialCell.getValueType())){
-                    final Formula formula = (Formula) specialCell.getValue();
+                    final String formula = new FormulaBuilder(specialCell.getValue().toString(), true, 1).build();
                     final int columnIndexForTarget = reportData.getColumnIndexForTarget(specialCell.getTargetId());
-                    CellReference firstCellReference = new CellReference(sheet.getRow(reportData.getDataStartRow() - 1).getCell(columnIndexForTarget));
+                    CellReference firstCellReference = new CellReference(sheet.getRow(reportData.getDataStartRow()).getCell(columnIndexForTarget));
                     CellReference lastCellReference = new CellReference(sheet.getRow(reportData.getDataStartRow() + reportData.getRowsCount() - 1).getCell(columnIndexForTarget));
-                    final String replace = formula.toString()
+                    final String replace = formula
                             .replace(FormulaBuilder.FORMULA_TOKENIZER, firstCellReference.formatAsString() + ":" + lastCellReference.formatAsString());
                     cell.setCellFormula(replace);
                     setCellFormat(cell, specialCell.getFormat());
@@ -208,11 +220,14 @@ class ReportDataInjector {
         for (ReportStylesBuilder.StylePriority priority : ReportStylesBuilder.StylePriority.values()) {
             if(reportData.getStyles().getRowStyles() != null && priority.equals(reportData.getStyles().getRowStyles().getPriority())){
                 applyRowStyles(sheet, reportData.getStyles().getRowStyles());
-            } else if(reportData.getStyles().getColumnStyles() != null && priority.equals(reportData.getStyles().getColumnStyles().getPriority())){
+            }
+            if(reportData.getStyles().getColumnStyles() != null && priority.equals(reportData.getStyles().getColumnStyles().getPriority())){
                 applyColumnStyles(sheet, reportData.getStyles().getColumnStyles(), reportData);
-            } else if(reportData.getStyles().getPositionedStyles() != null && priority.equals(reportData.getStyles().getPositionedStyles().getPriority())){
+            }
+            if(reportData.getStyles().getPositionedStyles() != null && priority.equals(reportData.getStyles().getPositionedStyles().getPriority())){
                 applyPositionedStyles(sheet, reportData.getStyles().getPositionedStyles(), reportData);
-            } else if(reportData.getStyles().getRangedStyleReportStyles() != null && priority.equals(reportData.getStyles().getRangedStyleReportStyles().getPriority())){
+            }
+            if(reportData.getStyles().getRangedStyleReportStyles() != null && priority.equals(reportData.getStyles().getRangedStyleReportStyles().getPriority())){
                 applyRangedStyles(sheet, reportData.getStyles().getRangedStyleReportStyles(), reportData);
             }
         }
@@ -314,7 +329,8 @@ class ReportDataInjector {
 
     private void cellApplyStyles(Cell cell, ReportStyle style) {
         XSSFCellStyle cellStyle;
-        if(!_stylesCache.containsKey(style)){
+        final StyleKey styleKey = new StyleKey(style, cell.getCellStyle().getDataFormatString());
+        if(!_stylesCache.containsKey(styleKey)){
             cellStyle = currentWorkbook.createCellStyle();
             cellStyle.cloneStyleFrom(cell.getCellStyle());
 
@@ -373,9 +389,9 @@ class ReportDataInjector {
                 cellStyle.setVerticalAlignment(style.getVerticalAlignment());
             }
 
-            _stylesCache.put(style,cellStyle);
+            _stylesCache.put(styleKey, cellStyle);
         } else {
-            cellStyle = _stylesCache.get(style);
+            cellStyle = _stylesCache.get(styleKey);
         }
         cell.setCellStyle(cellStyle);
     }
@@ -386,10 +402,32 @@ class ReportDataInjector {
         }
     }
 
-
-    void writeToFileOutputStream(OutputStream fileOutputStream) throws IOException {
+    synchronized void writeToFileOutputStream(OutputStream fileOutputStream) throws IOException {
         currentWorkbook.write(fileOutputStream);
         fileOutputStream.close();
         currentWorkbook.close();
+    }
+
+    private static class StyleKey {
+        private final ReportStyle style;
+        private final String format;
+
+        StyleKey(ReportStyle style, String format) {
+            this.style = style;
+            this.format = format;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (!(o instanceof StyleKey)) return false;
+            StyleKey key = (StyleKey) o;
+            return style.equals(key.style) && format.equals(key.format);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(style, format);
+        }
     }
 }

@@ -15,4 +15,5 @@ public @interface Configuration {
     short headerOffset() default 0;
     short dataOffset() default 1;
     SpecialRow[] specialRows() default {};
+    SpecialColumn[] specialColumns() default {};
 }

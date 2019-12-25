@@ -11,13 +11,15 @@ public class ReportDataCell extends ReportCell {
     private String format;
     private List<String> targetIds;
     private ValueType valueType;
+    private boolean isRangedFormula;
 
-    public ReportDataCell(Float position, String format, Object value, List<String> targetIds, ValueType valueType) {
+    public ReportDataCell(Float position, String format, Object value, List<String> targetIds, ValueType valueType, boolean isRangedFormula) {
         super(position, null);
         this.format = format;
         this.value = value;
         this.targetIds = targetIds;
         this.valueType = valueType;
+        this.isRangedFormula = isRangedFormula;
     }
 
     public Object getValue() {
@@ -34,5 +36,9 @@ public class ReportDataCell extends ReportCell {
 
     public ValueType getValueType() {
         return valueType;
+    }
+
+    public boolean isRangedFormula() {
+        return isRangedFormula;
     }
 }

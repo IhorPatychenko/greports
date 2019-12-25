@@ -1,9 +1,9 @@
 package content;
 
 import content.cell.ReportCell;
-import content.cell.ReportHeaderCell;
 import content.row.ReportDataRow;
 import content.row.ReportDataSpecialRow;
+import styles.ReportDataStyles;
 
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -147,6 +147,6 @@ public class ReportData {
     }
 
     private void mergeStyles(ReportData other) {
-
+        reportDataStyles.mergeStyles(other.reportDataStyles);
     }
 }

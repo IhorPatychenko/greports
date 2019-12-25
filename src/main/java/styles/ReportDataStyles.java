@@ -1,11 +1,6 @@
-package content;
+package styles;
 
 import org.apache.poi.ss.usermodel.IndexedColors;
-import styles.HorizontalRangedStyle;
-import styles.PositionedStyle;
-import styles.RectangleRangedStyle;
-import styles.ReportStylesBuilder;
-import styles.VerticalRangedStyle;
 import styles.interfaces.StripedRows.StripedRowsIndex;
 
 public class ReportDataStyles {
@@ -65,5 +60,31 @@ public class ReportDataStyles {
     public ReportDataStyles setStripedRowsColor(IndexedColors stripedRowsColor) {
         this.stripedRowsColor = stripedRowsColor;
         return this;
+    }
+
+    public void mergeStyles(ReportDataStyles other) {
+        if(rowStyles == null){
+            rowStyles = other.getRowStyles();
+        } else {
+            rowStyles.mergeStyles(other.getRowStyles());
+        }
+
+        if(columnStyles == null){
+            columnStyles = other.getColumnStyles();
+        } else {
+            columnStyles.mergeStyles(other.getColumnStyles());
+        }
+
+        if(positionedStyles == null){
+            positionedStyles = other.getPositionedStyles();
+        } else {
+            positionedStyles.mergeStyles(other.getPositionedStyles());
+        }
+
+        if(rangedStyleReportStyles == null){
+            rangedStyleReportStyles = other.getRangedStyleReportStyles();
+        } else {
+            rangedStyleReportStyles.mergeStyles(other.getRangedStyleReportStyles());
+        }
     }
 }

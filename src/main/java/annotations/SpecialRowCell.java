@@ -1,7 +1,6 @@
 package annotations;
 
 import engine.ValueType;
-import formula.Formula;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -22,7 +21,7 @@ public @interface SpecialRowCell {
     /**
      * @return java.lang.String value of the cell with special data
      */
-    Formula value();
+    String value();
 
     /**
      * @return java.lang.String representation format
