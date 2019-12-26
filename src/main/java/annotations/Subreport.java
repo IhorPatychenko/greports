@@ -7,9 +7,8 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.METHOD, ElementType.ANNOTATION_TYPE})
-@Repeatable(value = LoaderColumns.class)
-public @interface LoaderColumn {
+@Target({ElementType.FIELD, ElementType.ANNOTATION_TYPE})
+@Repeatable(value = Subreports.class)
+public @interface Subreport {
     String reportName();
-    float position();
 }

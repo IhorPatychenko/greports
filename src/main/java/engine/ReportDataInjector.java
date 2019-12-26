@@ -34,6 +34,7 @@ import styles.ReportStyle;
 import styles.ReportStylesBuilder;
 import styles.VerticalRangedStyle;
 import styles.interfaces.StripedRows;
+import utils.Pair;
 import utils.Utils;
 
 import java.io.IOException;
@@ -50,7 +51,7 @@ class ReportDataInjector {
     private final Collection<ReportData> reportData;
     private final XSSFWorkbook currentWorkbook = new XSSFWorkbook();
     private CreationHelper creationHelper = currentWorkbook.getCreationHelper();
-    private final Map<StyleKey, XSSFCellStyle> _stylesCache = new HashedMap<>();
+    private final Map<Pair, XSSFCellStyle> _stylesCache = new HashedMap<>();
     private final Map<String, XSSFCellStyle> _formatsCache = new HashMap<>();
 
     ReportDataInjector(Collection<ReportData> reportData){
@@ -329,7 +330,7 @@ class ReportDataInjector {
 
     private void cellApplyStyles(Cell cell, ReportStyle style) {
         XSSFCellStyle cellStyle;
-        final StyleKey styleKey = new StyleKey(style, cell.getCellStyle().getDataFormatString());
+        final Pair<ReportStyle, String> styleKey = new Pair<>(style, cell.getCellStyle().getDataFormatString());
         if(!_stylesCache.containsKey(styleKey)){
             cellStyle = currentWorkbook.createCellStyle();
             cellStyle.cloneStyleFrom(cell.getCellStyle());
@@ -408,26 +409,5 @@ class ReportDataInjector {
         currentWorkbook.close();
     }
 
-    private static class StyleKey {
-        private final ReportStyle style;
-        private final String format;
 
-        StyleKey(ReportStyle style, String format) {
-            this.style = style;
-            this.format = format;
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (!(o instanceof StyleKey)) return false;
-            StyleKey key = (StyleKey) o;
-            return style.equals(key.style) && format.equals(key.format);
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(style, format);
-        }
-    }
 }

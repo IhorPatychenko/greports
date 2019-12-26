@@ -1,12 +1,12 @@
 package engine;
 
+import annotations.Column;
 import annotations.Report;
-import annotations.GeneratorColumn;
 import annotations.Configuration;
 import annotations.SpecialColumn;
 import annotations.SpecialRowCell;
 import annotations.SpecialRow;
-import annotations.GeneratorSubreport;
+import annotations.Subreport;
 import content.column.ReportDataCell;
 import content.cell.ReportDataSpecialRowCell;
 import content.cell.ReportHeaderCell;
@@ -18,11 +18,12 @@ import styles.interfaces.StripedRows;
 import styles.interfaces.StyledReport;
 import positioning.TranslationsParser;
 import utils.AnnotationUtils;
+import utils.Pair;
 
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -67,12 +68,9 @@ final class ReportDataParser {
         reportData.setShowHeader(configuration.showHeader());
         reportData.setHeaderStartRow(configuration.headerOffset());
         List<ReportHeaderCell> cells = new ArrayList<>();
-        Function<AbstractMap.SimpleEntry<Method, GeneratorColumn>, Void> columnFunction = list -> {
-            GeneratorColumn column = list.getValue();
-            cells.add(new ReportHeaderCell(column.position(), (String) translations.getOrDefault(column.title(), column.title()), column.id(), column.autoSizeColumn()));
-            return null;
-        };
-        AnnotationUtils.generatorMethodsWithColumnAnnotations(clazz, columnFunction, reportData.getName());
+        Function<Pair<Field, Column>, Void> columnFunction = AnnotationUtils.getHeadersFunction(cells, translations);
+        AnnotationUtils.fieldsWithColumnAnnotations(clazz, columnFunction, reportData.getName());
+
         for (SpecialColumn specialColumn : configuration.specialColumns()) {
             cells.add(new ReportHeaderCell(specialColumn.position(), specialColumn.title(), "", specialColumn.autoSizeColumn()));
         }
@@ -92,26 +90,31 @@ final class ReportDataParser {
     private <T> void loadRowsData(Collection<T> collection, Class<T> clazz) throws Exception {
         reportData.setDataStartRow(configuration.dataOffset());
 
-        Map<Method, GeneratorColumn> methodsMap = new LinkedHashMap<>();
-        Function<AbstractMap.SimpleEntry<Method, GeneratorColumn>, Void> columnFunction = list -> {
-            methodsMap.put(list.getKey(), list.getValue());
-            return null;
-        };
+        Map<Field, Column> columnsMap = new LinkedHashMap<>();
+        Map<Field, Method> methodsMap = new LinkedHashMap<>();
+        Function<Pair<Field, Column>, Void> columnFunction = AnnotationUtils.getFieldsAndColumnsFunction(columnsMap);
 
-        AnnotationUtils.generatorMethodsWithColumnAnnotations(clazz, columnFunction, reportData.getName());
+        AnnotationUtils.fieldsWithColumnAnnotations(clazz, columnFunction, reportData.getName());
+
+        for (Map.Entry<Field, Column> entry : columnsMap.entrySet()) {
+            methodsMap.put(entry.getKey(), AnnotationUtils.fetchFieldGetter(entry.getKey(), clazz));
+        }
 
         for (T dto : collection) {
             ReportDataRow row = new ReportDataRow();
-            for(Map.Entry<Method, GeneratorColumn> entry : methodsMap.entrySet()){
+            for(Map.Entry<Field, Method> entry : methodsMap.entrySet()){
                 try {
-                    entry.getKey().setAccessible(true);
-                    final Object invokedValue = dto != null ? entry.getKey().invoke(dto) : null;
+                    final Field field = entry.getKey();
+                    final Method method = entry.getValue();
+                    final Column column = columnsMap.get(field);
+                    method.setAccessible(true);
+                    final Object invokedValue = dto != null ? method.invoke(dto) : null;
                     ReportDataCell reportDataCell = new ReportDataCell(
-                        entry.getValue().position(),
-                        entry.getValue().format(),
+                        column.position(),
+                        column.format(),
                         invokedValue,
-                        Arrays.asList(entry.getValue().targetIds()),
-                        entry.getValue().valueType(),
+                        Arrays.asList(column.targetIds()),
+                        column.valueType(),
                         false
                     );
                     row.addCell(reportDataCell);
@@ -124,15 +127,18 @@ final class ReportDataParser {
     }
 
     private <T> void loadSubreports(Collection<T> collection, Class<T> clazz) throws Exception {
-        Map<Method, GeneratorSubreport> methodsMap = new LinkedHashMap<>();
-        Function<AbstractMap.SimpleEntry<Method, GeneratorSubreport>, Void> subreportFunction = list -> {
-            methodsMap.put(list.getKey(), list.getValue());
-            return null;
-        };
-        AnnotationUtils.generatorMethodWithSubreportAnnotations(clazz, subreportFunction, reportData.getName());
+        Map<Field, Subreport> subreportMap = new LinkedHashMap<>();
+        Map<Field, Method> methodsMap = new LinkedHashMap<>();
+        Function<Pair<Field, Subreport>, Void> subreportFunction = AnnotationUtils.getSubreportsFunction(subreportMap);
+        AnnotationUtils.fieldsWithSubreportAnnotations(clazz, subreportFunction, reportData.getName());
 
-        for (Map.Entry<Method, GeneratorSubreport> entry : methodsMap.entrySet()) {
-            final Method method = entry.getKey();
+        for (Map.Entry<Field, Subreport> entry : subreportMap.entrySet()) {
+            methodsMap.put(entry.getKey(), AnnotationUtils.fetchFieldGetter(entry.getKey(), clazz));
+        }
+
+        for (Map.Entry<Field, Subreport> entry : subreportMap.entrySet()) {
+            final Field field = entry.getKey();
+            final Method method = methodsMap.get(field);
             final Class<?> returnType = method.getReturnType();
             final Collection subreportData = new ArrayList<>();
             for (T collectionEntry : collection) {
