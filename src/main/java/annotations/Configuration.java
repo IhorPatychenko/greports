@@ -8,7 +8,7 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.ANNOTATION_TYPE)
 public @interface Configuration {
-    String name();
+    String reportName();
     String sheetName() default "";
     boolean showHeader() default true;
     boolean sortableHeader() default false;

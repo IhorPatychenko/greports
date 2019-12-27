@@ -9,7 +9,6 @@ import content.cell.ReportHeaderCell;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -24,7 +23,7 @@ public class AnnotationUtils {
 
     public static Configuration getReportConfiguration(Report report, String reportName) {
         return Arrays.stream(report.reportConfigurations())
-                .filter(entry -> entry.name().equals(reportName))
+                .filter(entry -> entry.reportName().equals(reportName))
                 .findFirst()
                 .orElseThrow(() -> new RuntimeException("@Report has no @ReportConfiguration annotation with name \"" + reportName + "\""));
     }

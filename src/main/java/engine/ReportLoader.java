@@ -80,8 +80,7 @@ public class ReportLoader {
                 if(annotation instanceof Column){
                     final Method method = pair.getRight();
                     instanceSetValueFromCell(method, instance, row.getCell(keys.indexOf(annotation)));
-                }
-                else if(annotation instanceof Subreport){
+                } else if(annotation instanceof Subreport){
                     final Class subreportClass = pair.getLeft();
                     final Configuration subreportConfiguration = getClassReportConfiguration(subreportClass);
                     final Map<Annotation, Pair<Class, Method>> subreportAnnotations = loadColumns(subreportClass, subreportConfiguration, false);
