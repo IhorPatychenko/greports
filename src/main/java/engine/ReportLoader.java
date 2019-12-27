@@ -27,6 +27,7 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
@@ -56,55 +57,52 @@ public class ReportLoader {
         this.currentWorkbook = workbook;
     }
 
-    public <T> List<T> bindForClass(Class<T> clazz) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
+    public <T> List<T> bindForClass(Class<T> clazz) throws NoSuchMethodException, IllegalAccessException, InstantiationException, InvocationTargetException {
         final Configuration configuration = getClassReportConfiguration(clazz);
-        final Map<Annotation, Pair<Class, Method>> orderedAnnotations = loadColumns(clazz, configuration);
-        final Map<Class, List<Pair<Integer, Method>>> groupColumnsByClass = groupByClass(orderedAnnotations);
-        return bindData(clazz, configuration, groupColumnsByClass);
+        final Map<Annotation, Pair<Class, Method>> annotations = loadColumns(clazz, configuration, false);
+        final Map<Annotation, Pair<Class, Method>> unwindedAnnotations = loadColumns(clazz, configuration, true);
+        return bindForClass(clazz, configuration, annotations, unwindedAnnotations);
     }
 
-    private <T> List<T> bindData(Class<T> clazz, Configuration configuration, Map<Class, List<Pair<Integer, Method>>> groupColumnsByClass) throws IllegalAccessException, InstantiationException, InvocationTargetException {
-        List<T> list = new ArrayList<>();
+    public <T> List<T> bindForClass(Class<T> clazz, Configuration configuration, Map<Annotation, Pair<Class, Method>> annotations, Map<Annotation, Pair<Class, Method>> unwindedAnnotations) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
+        List<Pair<List<?>, Method>> subreportsData = new ArrayList<>();
+        List<T> instances = new ArrayList<>();
+        List<Annotation> keys = new ArrayList<>(unwindedAnnotations.keySet());
+        final Constructor<T> declaredConstructor = clazz.getDeclaredConstructor();
+        declaredConstructor.setAccessible(true);
         final Sheet sheet = currentWorkbook.getSheet(configuration.sheetName());
-        for(int i = configuration.dataOffset(); i < sheet.getLastRowNum(); i++) {
+        for(int  i = configuration.dataOffset(); i <= sheet.getLastRowNum(); i++) {
             final Row row = sheet.getRow(i);
-            List<Object> instances = new ArrayList<>();
-            for (Map.Entry<Class, List<Pair<Integer, Method>>> entry : groupColumnsByClass.entrySet()) {
-                final Class aClass = entry.getKey();
-                final Constructor declaredConstructor = aClass.getDeclaredConstructors()[0];
-                declaredConstructor.setAccessible(true);
-                final Object instance = declaredConstructor.newInstance();
-                final List<Pair<Integer, Method>> pairs = entry.getValue();
-                for (Pair<Integer, Method> pair : pairs) {
-                    final Integer cellIndex = pair.getLeft();
+            final T instance = declaredConstructor.newInstance();
+            for (final Map.Entry<Annotation, Pair<Class, Method>> entry : annotations.entrySet()) {
+                final Annotation annotation = entry.getKey();
+                final Pair<Class, Method> pair = entry.getValue();
+                if(annotation instanceof Column){
                     final Method method = pair.getRight();
-                    final Cell cell = row.getCell(cellIndex);
-                    instanceSetValueFromCell(method, instance, cell);
+                    instanceSetValueFromCell(method, instance, row.getCell(keys.indexOf(annotation)));
                 }
-                instances.add(instance);
+                else if(annotation instanceof Subreport){
+                    final Class subreportClass = pair.getLeft();
+                    final Configuration subreportConfiguration = getClassReportConfiguration(subreportClass);
+                    final Map<Annotation, Pair<Class, Method>> subreportAnnotations = loadColumns(subreportClass, subreportConfiguration, false);
+                    final List<?> list = bindForClass(subreportClass, subreportConfiguration, subreportAnnotations, unwindedAnnotations);
+                    subreportsData.add(new Pair<>(list, pair.getRight()));
+                }
             }
-            System.out.println(instances);
+            instances.add(instance);
         }
-        return list;
-    }
 
-    private Map<Class, List<Pair<Integer, Method>>> groupByClass(Map<Annotation, Pair<Class, Method>> orderedAnnotations) {
-        Map<Class, List<Pair<Integer, Method>>> map = new LinkedHashMap<>();
-        Integer columnPosition = 0;
-        for (Map.Entry<Annotation, Pair<Class, Method>> entry : orderedAnnotations.entrySet()) {
-            final Pair<Class, Method> pair = entry.getValue();
-            final Class clazz = pair.getLeft();
+        for (final Pair<List<?>, Method> pair : subreportsData) {
             final Method method = pair.getRight();
-            if(!map.containsKey(clazz)){
-                final ArrayList<Pair<Integer, Method>> pairs = new ArrayList<>();
-                pairs.add(new Pair<>(columnPosition, method));
-                map.put(clazz, pairs);
-            } else {
-                map.get(clazz).add(new Pair<>(columnPosition, method));
+            final List<?> results = pair.getLeft();
+            for (int i = 0; i < results.size(); i++) {
+                final T t = instances.get(i);
+                final Object o = results.get(i);
+                method.invoke(t, o);
             }
-            columnPosition++;
         }
-        return map;
+
+        return instances;
     }
 
     private Configuration getClassReportConfiguration(Class clazz) {
@@ -112,13 +110,13 @@ public class ReportLoader {
         return AnnotationUtils.getReportConfiguration(reportAnnotation, reportName);
     }
 
-    private <T> Map<Annotation, Pair<Class, Method>> loadColumns(Class<T> clazz, Configuration configuration) throws NoSuchMethodException {
-        Map<Annotation, Pair<Class, Method>> sortedAnnotations = new LinkedHashMap<>();
+    private <T> Map<Annotation, Pair<Class, Method>> loadColumns(Class<T> clazz, Configuration configuration, boolean recursive) throws NoSuchMethodException {
+        Map<Annotation, Pair<Class, Method>> annotations = new LinkedHashMap<>();
 
         Map<Column, Pair<Class, Method>> columnsMap = new LinkedHashMap<>();
         final Function<Pair<Column, Pair<Class, Method>>, Void> columnsFunction = AnnotationUtils.getColumnsWithFieldAndMethodsFunction(columnsMap);
         AnnotationUtils.columnsWithMethodAnnotations(clazz, columnsFunction, reportName);
-        sortedAnnotations.putAll(columnsMap);
+        annotations.putAll(columnsMap);
 
         Map<Subreport, Pair<Class, Method>> subreportsMap = new LinkedHashMap<>();
         final Function<Pair<Subreport, Pair<Class, Method>>, Void> subreportsFunction = AnnotationUtils.getSubreportsWithFieldsAndMethodsFunction(subreportsMap);
@@ -126,16 +124,23 @@ public class ReportLoader {
 
         final SpecialColumn[] specialColumns = configuration.specialColumns();
 
-        for (Map.Entry<Subreport, Pair<Class, Method>> entry : subreportsMap.entrySet()) {
-            final Map<Column, Pair<Class, Method>> map = loadColumns(entry.getValue().getLeft(), getClassReportConfiguration(entry.getValue().getLeft()));
-            sortedAnnotations.putAll(map);
+        if(recursive) {
+            for (Map.Entry<Subreport, Pair<Class, Method>> entry : subreportsMap.entrySet()) {
+                final Map<Column, Pair<Class, Method>> map = loadColumns(entry.getValue().getLeft(), getClassReportConfiguration(entry.getValue().getLeft()), true);
+                annotations.putAll(map);
+            }
+        } else {
+            annotations.putAll(subreportsMap);
         }
 
         for (SpecialColumn specialColumn : specialColumns) {
-            sortedAnnotations.put(specialColumn, new Pair<>(null, null));
+            annotations.put(specialColumn, new Pair<>(null, null));
         }
 
-        return sortAnnotationsByPosition(sortedAnnotations);
+        if(recursive){
+            annotations = sortAnnotationsByPosition(annotations);
+        }
+        return annotations;
     }
 
     private static Map<Annotation, Pair<Class, Method>> sortAnnotationsByPosition(Map<Annotation, Pair<Class, Method>> map) {
@@ -163,44 +168,6 @@ public class ReportLoader {
 
         return result;
     }
-
-    private int getLastColumnIndex(Configuration configuration){
-        final Sheet sheet = currentWorkbook.getSheet(configuration.sheetName());
-        int lastColumnIndex = 0;
-        for(int i = sheet.getFirstRowNum(); i < sheet.getLastRowNum(); i++){
-            if(lastColumnIndex < sheet.getRow(i).getLastCellNum()) {
-                lastColumnIndex = sheet.getRow(i).getLastCellNum();
-            }
-        }
-        return lastColumnIndex;
-    }
-
-//    public <T> List<T> bindForClass(Class<T> clazz) {
-//        final Report reportAnnotation = AnnotationUtils.getReportAnnotation(clazz);
-//        final Configuration configuration = AnnotationUtils.getReportConfiguration(reportAnnotation, reportName);
-//        final List<AbstractMap.SimpleEntry<Method, LoaderColumn>> simpleEntries = reportLoaderMethodsWithColumnAnnotations(clazz);
-//        return this.loadData(configuration, simpleEntries, clazz);
-//    }
-
-//    private <T> List<T> loadData(Configuration configuration, List<AbstractMap.SimpleEntry<Method, LoaderColumn>> simpleEntries, Class<T> clazz) {
-//        List<T> data = new ArrayList<>();
-//        Sheet sheet = currentWorkbook.getSheet(configuration.sheetName());
-//        for(int i = configuration.dataOffset(); i <= sheet.getLastRowNum(); i++) {
-//            try {
-//                final T instance = clazz.newInstance();
-//                final Row row = sheet.getRow(i);
-//                for(int cellIndex = row.getFirstCellNum(), methodIndex = 0; cellIndex < row.getLastCellNum(); cellIndex++, methodIndex++) {
-//                    final Cell cell = row.getCell(cellIndex);
-//                    final Method method = simpleEntries.get(methodIndex).getKey();
-//                    instanceSetValueFromCell(method, instance, cell);
-//                }
-//                data.add(instance);
-//            } catch(InstantiationException e) {
-//                throw new RuntimeException("Cannot create new instance of @" + clazz.getSimpleName() + " class. Needs to have a constructor without parameters");
-//            } catch (InvocationTargetException | IllegalAccessException ignored) {}
-//        }
-//        return data;
-//    }
 
     private <T> void instanceSetValueFromCell(final Method method, final Object instance, final Cell cell) throws InvocationTargetException, IllegalAccessException {
         method.setAccessible(true);
@@ -231,15 +198,5 @@ public class ReportLoader {
             method.invoke(instance, "");
         }
     }
-
-//    private <T> List<AbstractMap.SimpleEntry<Method, LoaderColumn>> reportLoaderMethodsWithColumnAnnotations(Class<T> clazz){
-//        List<AbstractMap.SimpleEntry<Method, LoaderColumn>> list = new ArrayList<>();
-//        Function<AbstractMap.SimpleEntry<Method, LoaderColumn>, Void> columnFunction = entry -> {
-//            list.add(entry);
-//            return null;
-//        };
-//        AnnotationUtils.loaderMethodsWithColumnAnnotations(clazz, columnFunction, reportName);
-//        return list;
-//    }
 
 }
