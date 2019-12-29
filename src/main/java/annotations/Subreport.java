@@ -11,5 +11,6 @@ import java.lang.annotation.Target;
 @Repeatable(value = Subreports.class)
 public @interface Subreport {
     String reportName();
+    float positionIncrement() default 0.0f;
     String id();
 }

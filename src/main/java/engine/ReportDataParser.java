@@ -41,21 +41,25 @@ final class ReportDataParser {
     private Configuration configuration;
     private List<ReportData> subreportsData = new ArrayList<>();
 
-    ReportDataParser(String lang) {
+    public ReportDataParser(String lang) {
         this.reportLang = lang;
     }
 
-    <T> ReportDataParser parse(T item, final String reportName, Class<T> clazz) throws Exception {
+    public <T> ReportDataParser parse(T item, final String reportName, Class<T> clazz) throws Exception {
         return parse(Collections.singletonList(item), reportName, clazz);
     }
 
-    <T> ReportDataParser parse(Collection<T> collection, final String reportName, Class<T> clazz) throws Exception {
+    public <T> ReportDataParser parse(Collection<T> collection, final String reportName, Class<T> clazz) throws Exception {
+        return parse(collection, reportName, clazz, 0f);
+    }
+
+    private <T> ReportDataParser parse(Collection<T> collection, final String reportName, Class<T> clazz, Float positionIncrement) throws Exception {
         final Report reportAnnotation = AnnotationUtils.getReportAnnotation(clazz);
         configuration = AnnotationUtils.getReportConfiguration(reportAnnotation, reportName);
         reportData = new ReportData(reportName, configuration.sheetName());
         translations = new TranslationsParser(reportAnnotation.translationsDir()).parse(reportLang);
-        loadReportHeader(clazz);
-        loadRowsData(collection, clazz);
+        loadReportHeader(clazz, positionIncrement);
+        loadRowsData(collection, clazz, positionIncrement);
         loadSpecialColumns();
         loadSpecialRows();
         loadStyles(clazz);
@@ -64,11 +68,11 @@ final class ReportDataParser {
         return this;
     }
 
-    private <T> void loadReportHeader(Class<T> clazz) {
+    private <T> void loadReportHeader(Class<T> clazz, Float positionIncrement) {
         reportData.setShowHeader(configuration.showHeader());
         reportData.setHeaderStartRow(configuration.headerOffset());
         List<ReportHeaderCell> cells = new ArrayList<>();
-        Function<Pair<Field, Column>, Void> columnFunction = AnnotationUtils.getHeadersFunction(cells, translations);
+        Function<Pair<Field, Column>, Void> columnFunction = AnnotationUtils.getHeadersFunction(cells, translations, positionIncrement);
         AnnotationUtils.fieldsWithColumnAnnotations(clazz, columnFunction, reportData.getName());
 
         for (SpecialColumn specialColumn : configuration.specialColumns()) {
@@ -87,7 +91,7 @@ final class ReportDataParser {
         }
     }
 
-    private <T> void loadRowsData(Collection<T> collection, Class<T> clazz) throws Exception {
+    private <T> void loadRowsData(Collection<T> collection, Class<T> clazz, Float positionIncrement) throws Exception {
         reportData.setDataStartRow(configuration.dataOffset());
 
         Map<Field, Column> columnsMap = new LinkedHashMap<>();
@@ -110,7 +114,7 @@ final class ReportDataParser {
                     method.setAccessible(true);
                     final Object invokedValue = dto != null ? method.invoke(dto) : null;
                     ReportDataCell reportDataCell = new ReportDataCell(
-                        column.position(),
+                        column.position() + positionIncrement,
                         column.format(),
                         invokedValue,
                         Arrays.asList(column.targetIds()),
@@ -127,32 +131,31 @@ final class ReportDataParser {
     }
 
     private <T> void loadSubreports(Collection<T> collection, Class<T> clazz) throws Exception {
+        final ReportDataParser reportDataParser = new ReportDataParser(reportLang);
         Map<Field, Subreport> subreportMap = new LinkedHashMap<>();
-        Map<Field, Method> methodsMap = new LinkedHashMap<>();
         Function<Pair<Field, Subreport>, Void> subreportFunction = AnnotationUtils.getSubreportsFunction(subreportMap);
         AnnotationUtils.fieldsWithSubreportAnnotations(clazz, subreportFunction, reportData.getName());
 
         for (Map.Entry<Field, Subreport> entry : subreportMap.entrySet()) {
-            methodsMap.put(entry.getKey(), AnnotationUtils.fetchFieldGetter(entry.getKey(), clazz));
-        }
-
-        for (Map.Entry<Field, Subreport> entry : subreportMap.entrySet()) {
             final Field field = entry.getKey();
-            final Method method = methodsMap.get(field);
+            final Method method = AnnotationUtils.fetchFieldGetter(field, clazz);
+            final Subreport subreport = entry.getValue();
             final Class<?> returnType = method.getReturnType();
+            method.setAccessible(true);
+
             final Collection subreportData = new ArrayList<>();
             for (T collectionEntry : collection) {
-                method.setAccessible(true);
                 try {
-                    final Object invoke = method.invoke(collectionEntry);
-                    subreportData.add(invoke);
+                    final Object invokeResult = method.invoke(collectionEntry);
+                    subreportData.add(invokeResult);
                 } catch (IllegalAccessException | InvocationTargetException e) {
                     throw new Exception("Error obtaining the value of column");
                 }
             }
-            final ReportDataParser reportDataParser = new ReportDataParser(reportLang);
-            final ReportData data = reportDataParser.parse(subreportData, reportData.getName(), returnType).getData();
-            subreportsData.add(data);
+            if(!subreportData.isEmpty()){
+                final ReportData data = reportDataParser.parse(subreportData, reportData.getName(), returnType, subreport.positionIncrement()).getData();
+                subreportsData.add(data);
+            }
         }
     }
 
@@ -165,7 +168,8 @@ final class ReportDataParser {
                     specialColumn.value(),
                     Arrays.asList(specialColumn.targetIds()),
                     specialColumn.valueType(),
-                    specialColumn.isRangedFormula()));
+                    specialColumn.isRangedFormula())
+                );
             }
         }
     }

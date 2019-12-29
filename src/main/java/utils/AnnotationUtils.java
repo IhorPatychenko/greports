@@ -105,7 +105,7 @@ public class AnnotationUtils {
             } catch (NoSuchMethodException ignored) {
             }
         }
-        throw new NoSuchMethodException("No getter was found with any of these names \"" + String.join(", ", getterPossibleNames) + "\" for field " + field.getName());
+        throw new NoSuchMethodException("No getter was found with any of these names \"" + String.join(", ", getterPossibleNames) + "\" for field " + field.getName() + " in class @" + clazz.getSimpleName());
     }
 
     public static <T> Method fetchFieldSetter(Field field, Class<T> clazz) throws NoSuchMethodException {
@@ -154,10 +154,10 @@ public class AnnotationUtils {
         };
     }
 
-    public static Function<Pair<Field, Column>, Void> getHeadersFunction(List<ReportHeaderCell> cells, Map<String, Object> translations){
+    public static Function<Pair<Field, Column>, Void> getHeadersFunction(List<ReportHeaderCell> cells, Map<String, Object> translations, Float positionIncrement){
         return pair -> {
             Column column = pair.getRight();
-            cells.add(new ReportHeaderCell(column.position(), (String) translations.getOrDefault(column.title(), column.title()), column.id(), column.autoSizeColumn()));
+            cells.add(new ReportHeaderCell(column.position() + positionIncrement, (String) translations.getOrDefault(column.title(), column.title()), column.id(), column.autoSizeColumn()));
             return null;
         };
     }
