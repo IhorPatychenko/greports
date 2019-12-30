@@ -1,5 +1,5 @@
 package engine;
 
 public enum ValueType {
-    LITERAL, FORMULA
+    LITERAL, FORMULA, METHOD
 }

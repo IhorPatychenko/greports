@@ -19,6 +19,7 @@ import styles.interfaces.StyledReport;
 import positioning.TranslationsParser;
 import utils.AnnotationUtils;
 import utils.Pair;
+import utils.ReflectionUtils;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -60,7 +61,7 @@ final class ReportDataParser {
         translations = new TranslationsParser(reportAnnotation.translationsDir()).parse(reportLang);
         loadReportHeader(clazz, positionIncrement);
         loadRowsData(collection, clazz, positionIncrement);
-        loadSpecialColumns();
+        loadSpecialColumns(collection, clazz);
         loadSpecialRows();
         loadStyles(clazz);
         loadSubreports(collection, clazz);
@@ -159,13 +160,23 @@ final class ReportDataParser {
         }
     }
 
-    private void loadSpecialColumns(){
+    private <T> void loadSpecialColumns(Collection<T> collection, Class<T> clazz) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+        List<T> list = new ArrayList<>(collection);
         for (SpecialColumn specialColumn : configuration.specialColumns()) {
-            for (ReportDataRow row : reportData.getRows()) {
-                row.addCell(new ReportDataCell(
+            Method method = null;
+            if(ValueType.METHOD.equals(specialColumn.valueType())){
+                method = ReflectionUtils.getMethodWithName(clazz, specialColumn.value());
+            }
+            for (int i = 0; i < list.size(); i++) {
+                Object value = specialColumn.value();
+                if(method != null) {
+                    final T listElement = list.get(i);
+                    value = method.invoke(listElement);
+                }
+                reportData.getRows().get(i).addCell(new ReportDataCell(
                     specialColumn.position(),
                     specialColumn.format(),
-                    specialColumn.value(),
+                    value,
                     Arrays.asList(specialColumn.targetIds()),
                     specialColumn.valueType(),
                     specialColumn.isRangedFormula())

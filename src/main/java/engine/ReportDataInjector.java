@@ -121,7 +121,8 @@ class ReportDataInjector {
     }
 
     private void createDataCell(Row row, ReportDataCell reportDataCell, int cellIndex){
-        if(reportDataCell.getValueType().equals(ValueType.LITERAL)){
+        final ValueType valueType = reportDataCell.getValueType();
+        if(!ValueType.FORMULA.equals(valueType)){
             final Cell cell = row.createCell(cellIndex);
             setCellValue(cell, reportDataCell.getValue());
             setCellFormat(cell, reportDataCell.getFormat());
@@ -181,10 +182,11 @@ class ReportDataInjector {
             }
             for (final ReportDataSpecialRowCell specialCell : specialRow.getSpecialCells()) {
                 final Cell cell = row.createCell(reportData.getColumnIndexForTarget(specialCell.getTargetId()));
-                if(ValueType.LITERAL.equals(specialCell.getValueType())){
+                final ValueType valueType = specialCell.getValueType();
+                if(!ValueType.FORMULA.equals(valueType)){
                     setCellValue(cell, specialCell.getValue());
                     setCellFormat(cell, specialCell.getFormat());
-                } else if(ValueType.FORMULA.equals(specialCell.getValueType())){
+                } else {
                     final String formula = new FormulaBuilder(specialCell.getValue().toString(), true, 1).build();
                     final int columnIndexForTarget = reportData.getColumnIndexForTarget(specialCell.getTargetId());
                     CellReference firstCellReference = new CellReference(sheet.getRow(reportData.getDataStartRow()).getCell(columnIndexForTarget));
