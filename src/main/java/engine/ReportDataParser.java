@@ -47,15 +47,15 @@ final class ReportDataParser {
         this.reportLang = lang;
     }
 
-    public <T> ReportDataParser parse(T item, final String reportName, Class<T> clazz) {
+    public <T> ReportDataParser parse(T item, final String reportName, Class<T> clazz) throws ReportEngineReflectionException {
         return parse(Collections.singletonList(item), reportName, clazz);
     }
 
-    public <T> ReportDataParser parse(Collection<T> collection, final String reportName, Class<T> clazz) {
+    public <T> ReportDataParser parse(Collection<T> collection, final String reportName, Class<T> clazz) throws ReportEngineReflectionException {
         return parse(collection, reportName, clazz, 0f);
     }
 
-    private <T> ReportDataParser parse(Collection<T> collection, final String reportName, Class<T> clazz, Float positionIncrement) {
+    private <T> ReportDataParser parse(Collection<T> collection, final String reportName, Class<T> clazz, Float positionIncrement) throws ReportEngineReflectionException {
         final Report reportAnnotation = AnnotationUtils.getReportAnnotation(clazz);
         configuration = AnnotationUtils.getReportConfiguration(reportAnnotation, reportName);
         reportData = new ReportData(reportName, configuration.sheetName());
