@@ -5,12 +5,14 @@ import annotations.Report;
 import annotations.Configuration;
 import annotations.Subreport;
 import content.cell.ReportHeaderCell;
+import exceptions.ReportEngineReflectionException;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -19,13 +21,13 @@ import java.util.function.Predicate;
 public class AnnotationUtils {
 
     private static final List<String> gettersPrefixes = new ArrayList<>(Arrays.asList("get", "is"));
-    private static final List<String> settersPrefixes = new ArrayList<>(Arrays.asList("set"));
+    private static final List<String> settersPrefixes = new ArrayList<>(Collections.singletonList("set"));
 
     public static Configuration getReportConfiguration(Report report, String reportName) {
         return Arrays.stream(report.reportConfigurations())
                 .filter(entry -> entry.reportName().equals(reportName))
                 .findFirst()
-                .orElseThrow(() -> new RuntimeException("@Report has no @ReportConfiguration annotation with name \"" + reportName + "\""));
+                .orElseThrow(() -> new ReportEngineReflectionException("@Report has no @ReportConfiguration annotation with name \"" + reportName + "\""));
     }
 
     public static Report getReportAnnotation(Class clazz) {
@@ -33,7 +35,7 @@ public class AnnotationUtils {
         if (annotation != null) {
             return (Report) annotation;
         }
-        throw new RuntimeException(clazz.toString() + " is not annotated as @Report");
+        throw new ReportEngineReflectionException(clazz.toString() + " is not annotated as @Report");
     }
 
     public static <T> void fieldsWithColumnAnnotations(Class<T> clazz, Function<Pair<Field, Column>, Void> columnFunction, String reportName) {
@@ -91,7 +93,7 @@ public class AnnotationUtils {
         return annotation -> ((Subreport) annotation).reportName().equals(reportName);
     }
 
-    public static <T> Method fetchFieldGetter(Field field, Class<T> clazz) throws NoSuchMethodException {
+    public static <T> Method fetchFieldGetter(Field field, Class<T> clazz) throws ReportEngineReflectionException {
         List<String> getterPossibleNames = new ArrayList<>();
         for (String gettersPrefix : gettersPrefixes) {
             getterPossibleNames.add(gettersPrefix + Utils.capitalizeString(field.getName()));
@@ -102,13 +104,12 @@ public class AnnotationUtils {
                 if (method != null) {
                     return method;
                 }
-            } catch (NoSuchMethodException ignored) {
-            }
+            } catch (NoSuchMethodException ignored) {}
         }
-        throw new NoSuchMethodException("No getter was found with any of these names \"" + String.join(", ", getterPossibleNames) + "\" for field " + field.getName() + " in class @" + clazz.getSimpleName());
+        throw new ReportEngineReflectionException("No getter was found with any of these names \"" + String.join(", ", getterPossibleNames) + "\" for field " + field.getName() + " in class @" + clazz.getSimpleName());
     }
 
-    public static <T> Method fetchFieldSetter(Field field, Class<T> clazz) throws NoSuchMethodException {
+    public static <T> Method fetchFieldSetter(Field field, Class<T> clazz) throws ReportEngineReflectionException {
         List<String> setterPossibleNames = new ArrayList<>();
         for (String settersPrefix : settersPrefixes) {
             setterPossibleNames.add(settersPrefix + Utils.capitalizeString(field.getName()));
@@ -122,7 +123,7 @@ public class AnnotationUtils {
             } catch (NoSuchMethodException ignored) {
             }
         }
-        throw new NoSuchMethodException("No setter was found with any of these names \"" + String.join(", ", setterPossibleNames) + "\" for field " + field.getName());
+        throw new ReportEngineReflectionException("No setter was found with any of these names \"" + String.join(", ", setterPossibleNames) + "\" for field " + field.getName());
     }
 
     public static Function<Pair<Field, Column>, Void> getFieldsAndColumnsFunction(Map<Field, Column> columnsMap){

@@ -14,6 +14,7 @@ import content.ReportData;
 import content.row.ReportDataRow;
 import content.ReportHeader;
 import content.row.ReportDataSpecialRow;
+import exceptions.ReportEngineReflectionException;
 import styles.interfaces.StripedRows;
 import styles.interfaces.StyledReport;
 import positioning.TranslationsParser;
@@ -46,15 +47,15 @@ final class ReportDataParser {
         this.reportLang = lang;
     }
 
-    public <T> ReportDataParser parse(T item, final String reportName, Class<T> clazz) throws Exception {
+    public <T> ReportDataParser parse(T item, final String reportName, Class<T> clazz) {
         return parse(Collections.singletonList(item), reportName, clazz);
     }
 
-    public <T> ReportDataParser parse(Collection<T> collection, final String reportName, Class<T> clazz) throws Exception {
+    public <T> ReportDataParser parse(Collection<T> collection, final String reportName, Class<T> clazz) {
         return parse(collection, reportName, clazz, 0f);
     }
 
-    private <T> ReportDataParser parse(Collection<T> collection, final String reportName, Class<T> clazz, Float positionIncrement) throws Exception {
+    private <T> ReportDataParser parse(Collection<T> collection, final String reportName, Class<T> clazz, Float positionIncrement) {
         final Report reportAnnotation = AnnotationUtils.getReportAnnotation(clazz);
         configuration = AnnotationUtils.getReportConfiguration(reportAnnotation, reportName);
         reportData = new ReportData(reportName, configuration.sheetName());
@@ -77,10 +78,12 @@ final class ReportDataParser {
         AnnotationUtils.fieldsWithColumnAnnotations(clazz, columnFunction, reportData.getName());
 
         for (SpecialColumn specialColumn : configuration.specialColumns()) {
-            cells.add(new ReportHeaderCell(specialColumn.position(), specialColumn.title(), "", specialColumn.autoSizeColumn()));
+            cells.add(new ReportHeaderCell(specialColumn.position(), specialColumn.title(), specialColumn.autoSizeColumn()));
         }
+
         loadAutosizeColumns(cells);
-        reportData.setHeader(new ReportHeader(configuration.sortableHeader()))
+        reportData
+                .setHeader(new ReportHeader(configuration.sortableHeader()))
                 .addCells(cells);
     }
 
@@ -92,7 +95,7 @@ final class ReportDataParser {
         }
     }
 
-    private <T> void loadRowsData(Collection<T> collection, Class<T> clazz, Float positionIncrement) throws Exception {
+    private <T> void loadRowsData(Collection<T> collection, Class<T> clazz, Float positionIncrement) {
         reportData.setDataStartRow(configuration.dataOffset());
 
         Map<Field, Column> columnsMap = new LinkedHashMap<>();
@@ -101,14 +104,13 @@ final class ReportDataParser {
 
         AnnotationUtils.fieldsWithColumnAnnotations(clazz, columnFunction, reportData.getName());
 
-        for (Map.Entry<Field, Column> entry : columnsMap.entrySet()) {
-            methodsMap.put(entry.getKey(), AnnotationUtils.fetchFieldGetter(entry.getKey(), clazz));
-        }
-
-        for (T dto : collection) {
-            ReportDataRow row = new ReportDataRow();
-            for(Map.Entry<Field, Method> entry : methodsMap.entrySet()){
-                try {
+        try {
+            for (Map.Entry<Field, Column> entry : columnsMap.entrySet()) {
+                methodsMap.put(entry.getKey(), AnnotationUtils.fetchFieldGetter(entry.getKey(), clazz));
+            }
+            for (T dto : collection) {
+                ReportDataRow row = new ReportDataRow();
+                for(Map.Entry<Field, Method> entry : methodsMap.entrySet()){
                     final Field field = entry.getKey();
                     final Method method = entry.getValue();
                     final Column column = columnsMap.get(field);
@@ -123,15 +125,15 @@ final class ReportDataParser {
                         false
                     );
                     row.addCell(reportDataCell);
-                } catch (IllegalAccessException | InvocationTargetException e) {
-                    throw new Exception("Error obtaining the value of column");
                 }
+                reportData.addRow(row);
             }
-            reportData.addRow(row);
+        } catch (IllegalAccessException | InvocationTargetException e) {
+            throw new ReportEngineReflectionException("Error obtaining the value of column");
         }
     }
 
-    private <T> void loadSubreports(Collection<T> collection, Class<T> clazz) throws Exception {
+    private <T> void loadSubreports(Collection<T> collection, Class<T> clazz) {
         final ReportDataParser reportDataParser = new ReportDataParser(reportLang);
         Map<Field, Subreport> subreportMap = new LinkedHashMap<>();
         Function<Pair<Field, Subreport>, Void> subreportFunction = AnnotationUtils.getSubreportsFunction(subreportMap);
@@ -150,17 +152,15 @@ final class ReportDataParser {
                     final Object invokeResult = method.invoke(collectionEntry);
                     subreportData.add(invokeResult);
                 } catch (IllegalAccessException | InvocationTargetException e) {
-                    throw new Exception("Error obtaining the value of column");
+                    throw new ReportEngineReflectionException("Error obtaining the value of column");
                 }
             }
-            if(!subreportData.isEmpty()){
-                final ReportData data = reportDataParser.parse(subreportData, reportData.getName(), returnType, subreport.positionIncrement()).getData();
-                subreportsData.add(data);
-            }
+            final ReportData data = reportDataParser.parse(subreportData, reportData.getName(), returnType, subreport.positionIncrement()).getData();
+            subreportsData.add(data);
         }
     }
 
-    private <T> void loadSpecialColumns(Collection<T> collection, Class<T> clazz) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+    private <T> void loadSpecialColumns(Collection<T> collection, Class<T> clazz) {
         List<T> list = new ArrayList<>(collection);
         for (SpecialColumn specialColumn : configuration.specialColumns()) {
             Method method = null;
@@ -169,18 +169,23 @@ final class ReportDataParser {
             }
             for (int i = 0; i < list.size(); i++) {
                 Object value = specialColumn.value();
-                if(method != null) {
-                    final T listElement = list.get(i);
-                    value = method.invoke(listElement);
+                try {
+                    if(method != null) {
+                        final T listElement = list.get(i);
+                        method.setAccessible(true);
+                        value = method.invoke(listElement);
+                    }
+                    reportData.getRows().get(i).addCell(new ReportDataCell(
+                            specialColumn.position(),
+                            specialColumn.format(),
+                            value,
+                            Arrays.asList(specialColumn.targetIds()),
+                            specialColumn.valueType(),
+                            specialColumn.isRangedFormula())
+                    );
+                } catch (InvocationTargetException | IllegalAccessException e) {
+                    throw new ReportEngineReflectionException(e.getMessage());
                 }
-                reportData.getRows().get(i).addCell(new ReportDataCell(
-                    specialColumn.position(),
-                    specialColumn.format(),
-                    value,
-                    Arrays.asList(specialColumn.targetIds()),
-                    specialColumn.valueType(),
-                    specialColumn.isRangedFormula())
-                );
             }
         }
     }
@@ -195,33 +200,37 @@ final class ReportDataParser {
         }
     }
 
-    private <T> void loadStyles(Class<T> clazz) throws IllegalAccessException, InstantiationException, NoSuchMethodException, InvocationTargetException {
-        final Constructor<T> constructor = clazz.getDeclaredConstructor();
-        constructor.setAccessible(true);
-        final T newInstance = constructor.newInstance();
-        final List<Class<?>> interfaces = Arrays.asList(clazz.getInterfaces());
-        if(interfaces.contains(StyledReport.class)){
-            StyledReport elem = (StyledReport) newInstance;
-            if(elem.getRangedRowStyles() != null){
-                reportData.getStyles().setRowStyles(elem.getRangedRowStyles().get(reportData.getName()));
+    private <T> void loadStyles(Class<T> clazz) {
+        try {
+            final Constructor<T> constructor = clazz.getDeclaredConstructor();
+            constructor.setAccessible(true);
+            final T newInstance = constructor.newInstance();
+            final List<Class<?>> interfaces = Arrays.asList(clazz.getInterfaces());
+            if(interfaces.contains(StyledReport.class)){
+                StyledReport elem = (StyledReport) newInstance;
+                if(elem.getRangedRowStyles() != null){
+                    reportData.getStyles().setRowStyles(elem.getRangedRowStyles().get(reportData.getName()));
+                }
+                if(elem.getRangedColumnStyles() != null){
+                    reportData.getStyles().setColumnStyles(elem.getRangedColumnStyles().get(reportData.getName()));
+                }
+                if(elem.getPositionedStyles() != null){
+                    reportData.getStyles().setPositionedStyles(elem.getPositionedStyles().get(reportData.getName()));
+                }
+                if(elem.getRectangleRangedStyles() != null){
+                    reportData.getStyles().setRangedStyleReportStyles(elem.getRectangleRangedStyles().get(reportData.getName()));
+                }
             }
-            if(elem.getRangedColumnStyles() != null){
-                reportData.getStyles().setColumnStyles(elem.getRangedColumnStyles().get(reportData.getName()));
+            if(interfaces.contains(StripedRows.class)){
+                StripedRows elem = (StripedRows) newInstance;
+                if(elem.getStripedRowsIndex() != null && elem.getStripedRowsColor() != null){
+                    reportData.getStyles()
+                            .setStripedRowsIndex(elem.getStripedRowsIndex().getOrDefault(reportData.getName(), null))
+                            .setStripedRowsColor(elem.getStripedRowsColor().getOrDefault(reportData.getName(), null));
+                }
             }
-            if(elem.getPositionedStyles() != null){
-                reportData.getStyles().setPositionedStyles(elem.getPositionedStyles().get(reportData.getName()));
-            }
-            if(elem.getRectangleRangedStyles() != null){
-                reportData.getStyles().setRangedStyleReportStyles(elem.getRectangleRangedStyles().get(reportData.getName()));
-            }
-        }
-        if(interfaces.contains(StripedRows.class)){
-            StripedRows elem = (StripedRows) newInstance;
-            if(elem.getStripedRowsIndex() != null && elem.getStripedRowsColor() != null){
-                reportData.getStyles()
-                        .setStripedRowsIndex(elem.getStripedRowsIndex().getOrDefault(reportData.getName(), null))
-                        .setStripedRowsColor(elem.getStripedRowsColor().getOrDefault(reportData.getName(), null));
-            }
+        } catch (IllegalAccessException | NoSuchMethodException | InvocationTargetException | InstantiationException e) {
+            throw new ReportEngineReflectionException(e.getMessage());
         }
     }
 

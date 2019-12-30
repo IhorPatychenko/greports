@@ -12,5 +12,4 @@ import java.lang.annotation.Target;
 public @interface Subreport {
     String reportName();
     float positionIncrement() default 0.0f;
-    String id();
 }
