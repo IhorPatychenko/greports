@@ -1,7 +1,7 @@
 package exceptions;
 
 public class ReportEngineReflectionException extends ReportEngineRuntimeException {
-    public ReportEngineReflectionException(String message) {
-        super(message);
+    public ReportEngineReflectionException(final String message, final Integer exceptionCode) {
+        super(message, exceptionCode);
     }
 }

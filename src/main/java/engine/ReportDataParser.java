@@ -35,6 +35,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
+import static exceptions.ReportEngineRuntimeExceptionCode.ILLEGAL_ACCESS;
+import static exceptions.ReportEngineRuntimeExceptionCode.INSTANTIATION_ERROR;
+import static exceptions.ReportEngineRuntimeExceptionCode.INVOCATION_ERROR;
+import static exceptions.ReportEngineRuntimeExceptionCode.NO_METHOD_ERROR;
+
 final class ReportDataParser {
 
     private String reportLang;
@@ -128,8 +133,10 @@ final class ReportDataParser {
                 }
                 reportData.addRow(row);
             }
-        } catch (IllegalAccessException | InvocationTargetException e) {
-            throw new ReportEngineReflectionException("Error obtaining the value of column");
+        } catch (IllegalAccessException e) {
+            throw new ReportEngineReflectionException("Error invoking the method with no access", ILLEGAL_ACCESS);
+        } catch (InvocationTargetException e) {
+            throw new ReportEngineReflectionException("Error invoking the method", INVOCATION_ERROR);
         }
     }
 
@@ -151,8 +158,10 @@ final class ReportDataParser {
                 try {
                     final Object invokeResult = method.invoke(collectionEntry);
                     subreportData.add(invokeResult);
-                } catch (IllegalAccessException | InvocationTargetException e) {
-                    throw new ReportEngineReflectionException("Error obtaining the value of column");
+                } catch (IllegalAccessException e) {
+                    throw new ReportEngineReflectionException("Error invoking the method with no access", ILLEGAL_ACCESS);
+                } catch (InvocationTargetException e) {
+                    throw new ReportEngineReflectionException("Error invoking the method", INVOCATION_ERROR);
                 }
             }
             final ReportData data = reportDataParser.parse(subreportData, reportData.getName(), returnType, subreport.positionIncrement()).getData();
@@ -183,8 +192,10 @@ final class ReportDataParser {
                             specialColumn.valueType(),
                             specialColumn.isRangedFormula())
                     );
-                } catch (InvocationTargetException | IllegalAccessException e) {
-                    throw new ReportEngineReflectionException(e.getMessage());
+                } catch (IllegalAccessException e) {
+                    throw new ReportEngineReflectionException("Error invoking the method with no access", ILLEGAL_ACCESS);
+                } catch (InvocationTargetException e) {
+                    throw new ReportEngineReflectionException("Error invoking the method", INVOCATION_ERROR);
                 }
             }
         }
@@ -229,8 +240,14 @@ final class ReportDataParser {
                             .setStripedRowsColor(elem.getStripedRowsColor().getOrDefault(reportData.getName(), null));
                 }
             }
-        } catch (IllegalAccessException | NoSuchMethodException | InvocationTargetException | InstantiationException e) {
-            throw new ReportEngineReflectionException(e.getMessage());
+        } catch (NoSuchMethodException e) {
+            throw new ReportEngineReflectionException("Error obtaining the method reference" , NO_METHOD_ERROR);
+        } catch (InstantiationException e) {
+            throw new ReportEngineReflectionException("Error instantiating an object", INSTANTIATION_ERROR);
+        } catch (IllegalAccessException e) {
+            throw new ReportEngineReflectionException("Error instantiating an object with no access to the constructor", ILLEGAL_ACCESS);
+        } catch (InvocationTargetException e) {
+            throw new ReportEngineReflectionException("Error instantiating an object with no parameter constructor", INVOCATION_ERROR);
         }
     }
 

@@ -30,10 +30,10 @@ public class AnnotationUtils {
                 .orElseThrow(() -> new ReportEngineReflectionException("@Report has no @ReportConfiguration annotation with name \"" + reportName + "\""));
     }
 
-    public static Report getReportAnnotation(Class clazz) {
-        final Annotation annotation = clazz.getAnnotation(Report.class);
+    public static Report getReportAnnotation(Class<?> clazz) {
+        final Report annotation = clazz.getAnnotation(Report.class);
         if (annotation != null) {
-            return (Report) annotation;
+            return annotation;
         }
         throw new ReportEngineReflectionException(clazz.toString() + " is not annotated as @Report");
     }
@@ -49,25 +49,25 @@ public class AnnotationUtils {
         }
     }
 
-    public static <T> void columnsWithMethodAnnotations(Class<T> clazz, Function<Pair<Column, Pair<Class, Method>>, Void> function, String reportName) throws NoSuchMethodException {
+    public static <T> void columnsWithMethodAnnotations(Class<T> clazz, Function<Pair<Column, Pair<Class<?>, Method>>, Void> function, String reportName) throws NoSuchMethodException {
         for (Field declaredField : clazz.getDeclaredFields()) {
             final Column[] annotationsByType = declaredField.getAnnotationsByType(Column.class);
             for (Column column : annotationsByType) {
                 if (getReportColumnPredicate(reportName).test(column)) {
-                    final Pair<Column, Pair<Class, Method>> columnPairPair = new Pair<>(column, new Pair<>(clazz, fetchFieldSetter(declaredField, clazz)));
+                    final Pair<Column, Pair<Class<?>, Method>> columnPairPair = new Pair<>(column, new Pair<>(clazz, fetchFieldSetter(declaredField, clazz)));
                     function.apply(columnPairPair);
                 }
             }
         }
     }
 
-    public static <T> void subreportsWithFieldsAndMethodAnnotations(Class<T> clazz, Function<Pair<Subreport, Pair<Class, Method>>, Void> function, String reportName) throws NoSuchMethodException {
+    public static <T> void subreportsWithFieldsAndMethodAnnotations(Class<T> clazz, Function<Pair<Subreport, Pair<Class<?>, Method>>, Void> function, String reportName) throws NoSuchMethodException {
         for (Field declaredField : clazz.getDeclaredFields()) {
             final Subreport[] annotationsByType = declaredField.getAnnotationsByType(Subreport.class);
             for (Subreport subreport : annotationsByType) {
                 if (getSubreportPredicate(reportName).test(subreport)) {
                     final Method method = fetchFieldSetter(declaredField, clazz);
-                    final Pair<Subreport, Pair<Class, Method>> columnPairPair = new Pair<>(subreport, new Pair<>(method.getParameterTypes()[0], method));
+                    final Pair<Subreport, Pair<Class<?>, Method>> columnPairPair = new Pair<>(subreport, new Pair<>(method.getParameterTypes()[0], method));
                     function.apply(columnPairPair);
                 }
             }
@@ -95,9 +95,8 @@ public class AnnotationUtils {
 
     public static <T> Method fetchFieldGetter(Field field, Class<T> clazz) throws ReportEngineReflectionException {
         List<String> getterPossibleNames = new ArrayList<>();
-        for (String gettersPrefix : gettersPrefixes) {
-            getterPossibleNames.add(gettersPrefix + Utils.capitalizeString(field.getName()));
-        }
+        gettersPrefixes.forEach(prefix -> getterPossibleNames.add(prefix + Utils.capitalizeString(field.getName())));
+
         for (String getterPossibleName : getterPossibleNames) {
             try {
                 final Method method = clazz.getMethod(getterPossibleName);
@@ -111,9 +110,8 @@ public class AnnotationUtils {
 
     public static <T> Method fetchFieldSetter(Field field, Class<T> clazz) throws ReportEngineReflectionException {
         List<String> setterPossibleNames = new ArrayList<>();
-        for (String settersPrefix : settersPrefixes) {
-            setterPossibleNames.add(settersPrefix + Utils.capitalizeString(field.getName()));
-        }
+        settersPrefixes.forEach(prefix -> setterPossibleNames.add(prefix + Utils.capitalizeString(field.getName())));
+
         for (String setterPossibleName : setterPossibleNames) {
             try {
                 final Method method = clazz.getMethod(setterPossibleName, field.getType());
@@ -133,24 +131,16 @@ public class AnnotationUtils {
         };
     }
 
-    public static Function<Pair<Column, Pair<Class, Method>>, Void> getColumnsWithFieldAndMethodsFunction(Map<Column, Pair<Class, Method>> columnPairMap){
+    public static Function<Pair<Column, Pair<Class<?>, Method>>, Void> getColumnsWithFieldAndMethodsFunction(Map<Column, Pair<Class<?>, Method>> columnPairMap){
         return pair -> {
-            final Column column = pair.getLeft();
-            final Pair<Class, Method> pairFieldMethod = pair.getRight();
-            final Class clazz = pairFieldMethod.getLeft();
-            final Method method = pairFieldMethod.getRight();
-            columnPairMap.put(column, new Pair<>(clazz, method));
+            columnPairMap.put(pair.getLeft(), pair.getRight());
             return null;
         };
     }
 
-    public static Function<Pair<Subreport, Pair<Class, Method>>, Void> getSubreportsWithFieldsAndMethodsFunction(Map<Subreport, Pair<Class, Method>> subreportsMap) {
+    public static Function<Pair<Subreport, Pair<Class<?>, Method>>, Void> getSubreportsWithFieldsAndMethodsFunction(Map<Subreport, Pair<Class<?>, Method>> subreportsMap) {
         return pair -> {
-            final Subreport subreport = pair.getLeft();
-            final Pair<Class, Method> pairFieldMethod = pair.getRight();
-            final Class clazz = pairFieldMethod.getLeft();
-            final Method method = pairFieldMethod.getRight();
-            subreportsMap.put(subreport, new Pair<>(clazz, method));
+            subreportsMap.put(pair.getLeft(), pair.getRight());
             return null;
         };
     }

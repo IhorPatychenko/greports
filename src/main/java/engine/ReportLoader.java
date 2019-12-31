@@ -59,12 +59,12 @@ public class ReportLoader {
 
     public <T> List<T> bindForClass(Class<T> clazz) throws NoSuchMethodException, IllegalAccessException, InstantiationException, InvocationTargetException {
         final Configuration configuration = getClassReportConfiguration(clazz);
-        final Map<Annotation, Pair<Class, Method>> annotations = loadColumns(clazz, configuration, false);
-        final Map<Annotation, Pair<Class, Method>> unwindedAnnotations = loadColumns(clazz, configuration, true);
+        final Map<Annotation, Pair<Class<?>, Method>> annotations = loadColumns(clazz, configuration, false);
+        final Map<Annotation, Pair<Class<?>, Method>> unwindedAnnotations = loadColumns(clazz, configuration, true);
         return bindForClass(clazz, configuration, annotations, unwindedAnnotations);
     }
 
-    public <T> List<T> bindForClass(Class<T> clazz, Configuration configuration, Map<Annotation, Pair<Class, Method>> annotations, Map<Annotation, Pair<Class, Method>> unwindedAnnotations) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
+    public <T> List<T> bindForClass(Class<T> clazz, Configuration configuration, Map<Annotation, Pair<Class<?>, Method>> annotations, Map<Annotation, Pair<Class<?>, Method>> unwindedAnnotations) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
         List<Pair<List<?>, Method>> subreportsData = new ArrayList<>();
         List<T> instances = new ArrayList<>();
         List<Annotation> keys = new ArrayList<>(unwindedAnnotations.keySet());
@@ -74,16 +74,16 @@ public class ReportLoader {
         for(int  i = configuration.dataOffset(); i <= sheet.getLastRowNum(); i++) {
             final Row row = sheet.getRow(i);
             final T instance = declaredConstructor.newInstance();
-            for (final Map.Entry<Annotation, Pair<Class, Method>> entry : annotations.entrySet()) {
+            for (final Map.Entry<Annotation, Pair<Class<?>, Method>> entry : annotations.entrySet()) {
                 final Annotation annotation = entry.getKey();
-                final Pair<Class, Method> pair = entry.getValue();
+                final Pair<Class<?>, Method> pair = entry.getValue();
                 if(annotation instanceof Column){
                     final Method method = pair.getRight();
                     instanceSetValueFromCell(method, instance, row.getCell(keys.indexOf(annotation)));
                 } else if(annotation instanceof Subreport){
-                    final Class subreportClass = pair.getLeft();
+                    final Class<?> subreportClass = pair.getLeft();
                     final Configuration subreportConfiguration = getClassReportConfiguration(subreportClass);
-                    final Map<Annotation, Pair<Class, Method>> subreportAnnotations = loadColumns(subreportClass, subreportConfiguration, false);
+                    final Map<Annotation, Pair<Class<?>, Method>> subreportAnnotations = loadColumns(subreportClass, subreportConfiguration, false);
                     final List<?> list = bindForClass(subreportClass, subreportConfiguration, subreportAnnotations, unwindedAnnotations);
                     subreportsData.add(new Pair<>(list, pair.getRight()));
                 }
@@ -104,28 +104,27 @@ public class ReportLoader {
         return instances;
     }
 
-    private Configuration getClassReportConfiguration(Class clazz) {
+    private Configuration getClassReportConfiguration(Class<?> clazz) {
         final Report reportAnnotation = AnnotationUtils.getReportAnnotation(clazz);
         return AnnotationUtils.getReportConfiguration(reportAnnotation, reportName);
     }
 
-    private <T> Map<Annotation, Pair<Class, Method>> loadColumns(Class<T> clazz, Configuration configuration, boolean recursive) throws NoSuchMethodException {
-        Map<Annotation, Pair<Class, Method>> annotations = new LinkedHashMap<>();
+    private <T> Map<Annotation, Pair<Class<?>, Method>> loadColumns(Class<T> clazz, Configuration configuration, boolean recursive) throws NoSuchMethodException {
 
-        Map<Column, Pair<Class, Method>> columnsMap = new LinkedHashMap<>();
-        final Function<Pair<Column, Pair<Class, Method>>, Void> columnsFunction = AnnotationUtils.getColumnsWithFieldAndMethodsFunction(columnsMap);
+        Map<Column, Pair<Class<?>, Method>> columnsMap = new LinkedHashMap<>();
+        final Function<Pair<Column, Pair<Class<?>, Method>>, Void> columnsFunction = AnnotationUtils.getColumnsWithFieldAndMethodsFunction(columnsMap);
         AnnotationUtils.columnsWithMethodAnnotations(clazz, columnsFunction, reportName);
-        annotations.putAll(columnsMap);
+        Map<Annotation, Pair<Class<?>, Method>> annotations = new LinkedHashMap<>(columnsMap);
 
-        Map<Subreport, Pair<Class, Method>> subreportsMap = new LinkedHashMap<>();
-        final Function<Pair<Subreport, Pair<Class, Method>>, Void> subreportsFunction = AnnotationUtils.getSubreportsWithFieldsAndMethodsFunction(subreportsMap);
+        Map<Subreport, Pair<Class<?>, Method>> subreportsMap = new LinkedHashMap<>();
+        final Function<Pair<Subreport, Pair<Class<?>, Method>>, Void> subreportsFunction = AnnotationUtils.getSubreportsWithFieldsAndMethodsFunction(subreportsMap);
         AnnotationUtils.subreportsWithFieldsAndMethodAnnotations(clazz, subreportsFunction, reportName);
 
         final SpecialColumn[] specialColumns = configuration.specialColumns();
 
         if(recursive) {
-            for (Map.Entry<Subreport, Pair<Class, Method>> entry : subreportsMap.entrySet()) {
-                final Map<Column, Pair<Class, Method>> map = loadColumns(entry.getValue().getLeft(), getClassReportConfiguration(entry.getValue().getLeft()), true);
+            for (Map.Entry<Subreport, Pair<Class<?>, Method>> entry : subreportsMap.entrySet()) {
+                final Map<Annotation, Pair<Class<?>, Method>> map = loadColumns(entry.getValue().getLeft(), getClassReportConfiguration(entry.getValue().getLeft()), true);
                 annotations.putAll(map);
             }
         } else {
@@ -142,8 +141,8 @@ public class ReportLoader {
         return annotations;
     }
 
-    private static Map<Annotation, Pair<Class, Method>> sortAnnotationsByPosition(Map<Annotation, Pair<Class, Method>> map) {
-        List<Map.Entry<Annotation, Pair<Class, Method>>> list = new LinkedList<>(map.entrySet());
+    private static Map<Annotation, Pair<Class<?>, Method>> sortAnnotationsByPosition(Map<Annotation, Pair<Class<?>, Method>> map) {
+        List<Map.Entry<Annotation, Pair<Class<?>, Method>>> list = new LinkedList<>(map.entrySet());
         list.sort((o1, o2) -> {
             final Annotation key1 = o1.getKey(), key2 = o2.getKey();
             Float value1, value2;
@@ -160,8 +159,8 @@ public class ReportLoader {
             return value1.compareTo(value2);
         });
 
-        Map<Annotation, Pair<Class, Method>> result = new LinkedHashMap<>();
-        for (Map.Entry<Annotation, Pair<Class, Method>> entry : list) {
+        Map<Annotation, Pair<Class<?>, Method>> result = new LinkedHashMap<>();
+        for (Map.Entry<Annotation, Pair<Class<?>, Method>> entry : list) {
             result.put(entry.getKey(), entry.getValue());
         }
 
