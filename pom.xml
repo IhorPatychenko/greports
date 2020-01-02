@@ -3,7 +3,7 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <groupId>libreriasNoMavenizadas</groupId>
+    <groupId>reports</groupId>
     <artifactId>reports-engine</artifactId>
     <version>1.6</version>
     <packaging>jar</packaging>
@@ -12,6 +12,14 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     </properties>
+
+    <distributionManagement>
+        <repository>
+            <id>github</id>
+            <name>GitHub IhorPatychenko Apache Maven Packages</name>
+            <url>https://maven.pkg.github.com/IhorPatychenko/report-engine</url>
+        </repository>
+    </distributionManagement>
 
     <dependencies>
         <dependency>
