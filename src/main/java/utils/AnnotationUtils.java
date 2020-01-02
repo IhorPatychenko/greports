@@ -6,6 +6,7 @@ import annotations.Configuration;
 import annotations.Subreport;
 import content.cell.ReportHeaderCell;
 import exceptions.ReportEngineReflectionException;
+import exceptions.ReportEngineRuntimeExceptionCode;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
@@ -27,7 +28,7 @@ public class AnnotationUtils {
         return Arrays.stream(report.reportConfigurations())
                 .filter(entry -> entry.reportName().equals(reportName))
                 .findFirst()
-                .orElseThrow(() -> new ReportEngineReflectionException("@Report has no @ReportConfiguration annotation with name \"" + reportName + "\""));
+                .orElseThrow(() -> new ReportEngineReflectionException("@Report has no @ReportConfiguration annotation with name \"" + reportName + "\"", ReportEngineRuntimeExceptionCode.CONFIGURATION_ANNOTATION_NOT_FOUND));
     }
 
     public static Report getReportAnnotation(Class<?> clazz) {
@@ -35,7 +36,7 @@ public class AnnotationUtils {
         if (annotation != null) {
             return annotation;
         }
-        throw new ReportEngineReflectionException(clazz.toString() + " is not annotated as @Report");
+        throw new ReportEngineReflectionException(clazz.toString() + " is not annotated as @Report", ReportEngineRuntimeExceptionCode.REPORT_ANNOTATION_NOT_FOUND);
     }
 
     public static <T> void fieldsWithColumnAnnotations(Class<T> clazz, Function<Pair<Field, Column>, Void> columnFunction, String reportName) {
@@ -49,7 +50,7 @@ public class AnnotationUtils {
         }
     }
 
-    public static <T> void columnsWithMethodAnnotations(Class<T> clazz, Function<Pair<Column, Pair<Class<?>, Method>>, Void> function, String reportName) throws NoSuchMethodException {
+    public static <T> void columnsWithMethodAnnotations(Class<T> clazz, Function<Pair<Column, Pair<Class<?>, Method>>, Void> function, String reportName) {
         for (Field declaredField : clazz.getDeclaredFields()) {
             final Column[] annotationsByType = declaredField.getAnnotationsByType(Column.class);
             for (Column column : annotationsByType) {
@@ -61,7 +62,7 @@ public class AnnotationUtils {
         }
     }
 
-    public static <T> void subreportsWithFieldsAndMethodAnnotations(Class<T> clazz, Function<Pair<Subreport, Pair<Class<?>, Method>>, Void> function, String reportName) throws NoSuchMethodException {
+    public static <T> void subreportsWithFieldsAndMethodAnnotations(Class<T> clazz, Function<Pair<Subreport, Pair<Class<?>, Method>>, Void> function, String reportName) {
         for (Field declaredField : clazz.getDeclaredFields()) {
             final Subreport[] annotationsByType = declaredField.getAnnotationsByType(Subreport.class);
             for (Subreport subreport : annotationsByType) {
@@ -99,13 +100,13 @@ public class AnnotationUtils {
 
         for (String getterPossibleName : getterPossibleNames) {
             try {
-                final Method method = clazz.getMethod(getterPossibleName);
+                final Method method = ReflectionUtils.getMethodWithName(clazz, getterPossibleName);
                 if (method != null) {
                     return method;
                 }
-            } catch (NoSuchMethodException ignored) {}
+            } catch (ReportEngineReflectionException ignored) {}
         }
-        throw new ReportEngineReflectionException("No getter was found with any of these names \"" + String.join(", ", getterPossibleNames) + "\" for field " + field.getName() + " in class @" + clazz.getSimpleName());
+        throw new ReportEngineReflectionException("No getter was found with any of these names \"" + String.join(", ", getterPossibleNames) + "\" for field " + field.getName() + " in class @" + clazz.getSimpleName(), ReportEngineRuntimeExceptionCode.NO_METHOD_ERROR);
     }
 
     public static <T> Method fetchFieldSetter(Field field, Class<T> clazz) throws ReportEngineReflectionException {
@@ -114,14 +115,13 @@ public class AnnotationUtils {
 
         for (String setterPossibleName : setterPossibleNames) {
             try {
-                final Method method = clazz.getMethod(setterPossibleName, field.getType());
+                final Method method = ReflectionUtils.getMethodWithName(clazz, setterPossibleName);
                 if (method != null) {
                     return method;
                 }
-            } catch (NoSuchMethodException ignored) {
-            }
+            } catch (ReportEngineReflectionException ignored) {}
         }
-        throw new ReportEngineReflectionException("No setter was found with any of these names \"" + String.join(", ", setterPossibleNames) + "\" for field " + field.getName());
+        throw new ReportEngineReflectionException("No setter was found with any of these names \"" + String.join(", ", setterPossibleNames) + "\" for field " + field.getName(), ReportEngineRuntimeExceptionCode.NO_METHOD_ERROR);
     }
 
     public static Function<Pair<Field, Column>, Void> getFieldsAndColumnsFunction(Map<Field, Column> columnsMap){

@@ -5,4 +5,7 @@ public class ReportEngineRuntimeExceptionCode {
     public static final Integer INVOCATION_ERROR = 2;
     public static final Integer INSTANTIATION_ERROR = 3;
     public static final Integer NO_METHOD_ERROR = 4;
+
+    public static final Integer REPORT_ANNOTATION_NOT_FOUND = 10;
+    public static final Integer CONFIGURATION_ANNOTATION_NOT_FOUND = 10;
 }
