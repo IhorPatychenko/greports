@@ -48,6 +48,7 @@ public class ReportStyle {
         this.borderColor = rs.getBorderColor();
         this.stripedRowsIndex = rs.getStripedRowsIndex();
         this.stripedRowsColor = rs.getStripedRowsColor();
+        this.clonePreviousStyle = rs.isClonePreviousStyle();
     }
 
     public boolean isClonePreviousStyle() {

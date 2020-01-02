@@ -187,7 +187,6 @@ class ReportDataInjector {
                 final ValueType valueType = specialCell.getValueType();
                 if(!ValueType.FORMULA.equals(valueType)){
                     setCellValue(cell, specialCell.getValue());
-                    setCellFormat(cell, specialCell.getFormat());
                 } else {
                     final String formula = new FormulaBuilder(specialCell.getValue().toString(), true, 1).build();
                     final int columnIndexForTarget = reportData.getColumnIndexForTarget(specialCell.getTargetId());
@@ -196,8 +195,8 @@ class ReportDataInjector {
                     final String replace = formula
                             .replace(FormulaBuilder.FORMULA_TOKENIZER, firstCellReference.formatAsString() + ":" + lastCellReference.formatAsString());
                     cell.setCellFormula(replace);
-                    setCellFormat(cell, specialCell.getFormat());
                 }
+                setCellFormat(cell, specialCell.getFormat());
             }
         }
         XSSFFormulaEvaluator.evaluateAllFormulaCells(currentWorkbook);
@@ -334,6 +333,7 @@ class ReportDataInjector {
         final Pair<ReportStyle, String> styleKey = new Pair<>(style, cell.getCellStyle().getDataFormatString());
         if(!_stylesCache.containsKey(styleKey)){
             cellStyle = currentWorkbook.createCellStyle();
+            cellStyle.setDataFormat(cell.getCellStyle().getDataFormat());
             if(style.isClonePreviousStyle()){
                 cellStyle.cloneStyleFrom(cell.getCellStyle());
             }
@@ -395,6 +395,12 @@ class ReportDataInjector {
             _stylesCache.put(styleKey, cellStyle);
         } else {
             cellStyle = _stylesCache.get(styleKey);
+            if(style.isClonePreviousStyle()){
+                final XSSFCellStyle cloned = currentWorkbook.createCellStyle();
+                cloned.cloneStyleFrom(cell.getCellStyle());
+                cloned.cloneStyleFrom(cellStyle);
+                cellStyle = cloned;
+            }
         }
         cell.setCellStyle(cellStyle);
     }
