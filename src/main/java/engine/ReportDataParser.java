@@ -220,16 +220,16 @@ final class ReportDataParser {
             if(interfaces.contains(StyledReport.class)){
                 StyledReport elem = (StyledReport) newInstance;
                 if(elem.getRangedRowStyles() != null){
-                    reportData.getStyles().setRowStyles(elem.getRangedRowStyles().get(reportData.getName()));
+                    reportData.getStyles().setRowStyles(elem.getRangedRowStyles().getOrDefault(reportData.getName(), null));
                 }
                 if(elem.getRangedColumnStyles() != null){
-                    reportData.getStyles().setColumnStyles(elem.getRangedColumnStyles().get(reportData.getName()));
+                    reportData.getStyles().setColumnStyles(elem.getRangedColumnStyles().getOrDefault(reportData.getName(), null));
                 }
                 if(elem.getPositionedStyles() != null){
-                    reportData.getStyles().setPositionedStyles(elem.getPositionedStyles().get(reportData.getName()));
+                    reportData.getStyles().setPositionedStyles(elem.getPositionedStyles().getOrDefault(reportData.getName(), null));
                 }
                 if(elem.getRectangleRangedStyles() != null){
-                    reportData.getStyles().setRangedStyleReportStyles(elem.getRectangleRangedStyles().get(reportData.getName()));
+                    reportData.getStyles().setRangedStyleReportStyles(elem.getRectangleRangedStyles().getOrDefault(reportData.getName(), null));
                 }
             }
             if(interfaces.contains(StripedRows.class)){

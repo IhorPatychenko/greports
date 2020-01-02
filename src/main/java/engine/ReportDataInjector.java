@@ -51,8 +51,8 @@ class ReportDataInjector {
     private final Collection<ReportData> reportData;
     private final XSSFWorkbook currentWorkbook = new XSSFWorkbook();
     private CreationHelper creationHelper = currentWorkbook.getCreationHelper();
-    private final Map<Pair, XSSFCellStyle> _stylesCache = new HashedMap<>();
-    private final Map<String, XSSFCellStyle> _formatsCache = new HashMap<>();
+    private Map<Pair<ReportStyle, String>, XSSFCellStyle> _stylesCache = new HashedMap<>();
+    private Map<String, XSSFCellStyle> _formatsCache = new HashMap<>();
 
     ReportDataInjector(Collection<ReportData> reportData){
         this.reportData = reportData;
@@ -70,6 +70,8 @@ class ReportDataInjector {
             } else {
                 sheet = currentWorkbook.createSheet(data.getSheetName());
             }
+            _stylesCache = new HashedMap<>();
+            _formatsCache = new HashMap<>();
             injectData(sheet, data);
         }
     }
@@ -223,14 +225,11 @@ class ReportDataInjector {
         for (ReportStylesBuilder.StylePriority priority : ReportStylesBuilder.StylePriority.values()) {
             if(reportData.getStyles().getRowStyles() != null && priority.equals(reportData.getStyles().getRowStyles().getPriority())){
                 applyRowStyles(sheet, reportData.getStyles().getRowStyles());
-            }
-            if(reportData.getStyles().getColumnStyles() != null && priority.equals(reportData.getStyles().getColumnStyles().getPriority())){
+            } else if(reportData.getStyles().getColumnStyles() != null && priority.equals(reportData.getStyles().getColumnStyles().getPriority())){
                 applyColumnStyles(sheet, reportData.getStyles().getColumnStyles(), reportData);
-            }
-            if(reportData.getStyles().getPositionedStyles() != null && priority.equals(reportData.getStyles().getPositionedStyles().getPriority())){
+            } else if(reportData.getStyles().getPositionedStyles() != null && priority.equals(reportData.getStyles().getPositionedStyles().getPriority())){
                 applyPositionedStyles(sheet, reportData.getStyles().getPositionedStyles(), reportData);
-            }
-            if(reportData.getStyles().getRangedStyleReportStyles() != null && priority.equals(reportData.getStyles().getRangedStyleReportStyles().getPriority())){
+            } else if(reportData.getStyles().getRangedStyleReportStyles() != null && priority.equals(reportData.getStyles().getRangedStyleReportStyles().getPriority())){
                 applyRangedStyles(sheet, reportData.getStyles().getRangedStyleReportStyles(), reportData);
             }
         }
@@ -272,8 +271,8 @@ class ReportDataInjector {
         }
     }
 
-    private void applyRangedStyles(Sheet sheet, ReportStylesBuilder<RectangleRangedStyle> positionedStyles, ReportData reportData) {
-        final Collection<RectangleRangedStyle> rangedStyles = positionedStyles.getStyles();
+    private void applyRangedStyles(Sheet sheet, ReportStylesBuilder<RectangleRangedStyle> rectangleRangedStyles, ReportData reportData) {
+        final Collection<RectangleRangedStyle> rangedStyles = rectangleRangedStyles.getStyles();
         for (RectangleRangedStyle rangedStyle : rangedStyles) {
             final RectangleRange range = rangedStyle.getRange();
             final VerticalRange verticalRange = range.getVerticalRange();
