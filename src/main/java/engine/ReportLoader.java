@@ -5,6 +5,7 @@ import annotations.Report;
 import annotations.Configuration;
 import annotations.SpecialColumn;
 import annotations.Subreport;
+import exceptions.ReportEngineReflectionException;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellType;
@@ -35,6 +36,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
+import static exceptions.ReportEngineRuntimeExceptionCode.*;
+import static exceptions.ReportEngineRuntimeExceptionCode.INSTANTIATION_ERROR;
+
 public class ReportLoader {
 
     private String reportName;
@@ -57,51 +61,61 @@ public class ReportLoader {
         this.currentWorkbook = workbook;
     }
 
-    public <T> List<T> bindForClass(Class<T> clazz) throws NoSuchMethodException, IllegalAccessException, InstantiationException, InvocationTargetException {
+    public <T> List<T> bindForClass(Class<T> clazz) throws ReportEngineReflectionException {
         final Configuration configuration = getClassReportConfiguration(clazz);
         final Map<Annotation, Pair<Class<?>, Method>> annotations = loadColumns(clazz, configuration, false);
         final Map<Annotation, Pair<Class<?>, Method>> unwindedAnnotations = loadColumns(clazz, configuration, true);
         return bindForClass(clazz, configuration, annotations, unwindedAnnotations);
     }
 
-    public <T> List<T> bindForClass(Class<T> clazz, Configuration configuration, Map<Annotation, Pair<Class<?>, Method>> annotations, Map<Annotation, Pair<Class<?>, Method>> unwindedAnnotations) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
+    private <T> List<T> bindForClass(Class<T> clazz, Configuration configuration, Map<Annotation, Pair<Class<?>, Method>> annotations, Map<Annotation, Pair<Class<?>, Method>> unwindedAnnotations) throws ReportEngineReflectionException {
         List<Pair<List<?>, Method>> subreportsData = new ArrayList<>();
         List<T> instances = new ArrayList<>();
         List<Annotation> keys = new ArrayList<>(unwindedAnnotations.keySet());
-        final Constructor<T> declaredConstructor = clazz.getDeclaredConstructor();
-        declaredConstructor.setAccessible(true);
-        final Sheet sheet = currentWorkbook.getSheet(configuration.sheetName());
-        for(int  i = configuration.dataOffset(); i <= sheet.getLastRowNum(); i++) {
-            final Row row = sheet.getRow(i);
-            final T instance = declaredConstructor.newInstance();
-            for (final Map.Entry<Annotation, Pair<Class<?>, Method>> entry : annotations.entrySet()) {
-                final Annotation annotation = entry.getKey();
-                final Pair<Class<?>, Method> pair = entry.getValue();
-                if(annotation instanceof Column){
-                    final Method method = pair.getRight();
-                    instanceSetValueFromCell(method, instance, row.getCell(keys.indexOf(annotation)));
-                } else if(annotation instanceof Subreport){
-                    final Class<?> subreportClass = pair.getLeft();
-                    final Configuration subreportConfiguration = getClassReportConfiguration(subreportClass);
-                    final Map<Annotation, Pair<Class<?>, Method>> subreportAnnotations = loadColumns(subreportClass, subreportConfiguration, false);
-                    final List<?> list = bindForClass(subreportClass, subreportConfiguration, subreportAnnotations, unwindedAnnotations);
-                    subreportsData.add(new Pair<>(list, pair.getRight()));
+        try {
+            final Constructor<T> declaredConstructor = clazz.getDeclaredConstructor();
+            declaredConstructor.setAccessible(true);
+            final Sheet sheet = currentWorkbook.getSheet(configuration.sheetName());
+            for(int  i = configuration.dataOffset(); i <= sheet.getLastRowNum(); i++) {
+                final Row row = sheet.getRow(i);
+                final T instance = declaredConstructor.newInstance();
+                for (final Map.Entry<Annotation, Pair<Class<?>, Method>> entry : annotations.entrySet()) {
+                    final Annotation annotation = entry.getKey();
+                    final Pair<Class<?>, Method> pair = entry.getValue();
+                    if(annotation instanceof Column){
+                        final Method method = pair.getRight();
+                        instanceSetValueFromCell(method, instance, row.getCell(keys.indexOf(annotation)));
+                    } else if(annotation instanceof Subreport){
+                        final Class<?> subreportClass = pair.getLeft();
+                        final Configuration subreportConfiguration = getClassReportConfiguration(subreportClass);
+                        final Map<Annotation, Pair<Class<?>, Method>> subreportAnnotations = loadColumns(subreportClass, subreportConfiguration, false);
+                        final List<?> list = bindForClass(subreportClass, subreportConfiguration, subreportAnnotations, unwindedAnnotations);
+                        subreportsData.add(new Pair<>(list, pair.getRight()));
+                    }
+                }
+                instances.add(instance);
+            }
+
+            for (final Pair<List<?>, Method> pair : subreportsData) {
+                final Method method = pair.getRight();
+                final List<?> results = pair.getLeft();
+                for (int i = 0; i < results.size(); i++) {
+                    final T t = instances.get(i);
+                    final Object o = results.get(i);
+                    method.invoke(t, o);
                 }
             }
-            instances.add(instance);
-        }
 
-        for (final Pair<List<?>, Method> pair : subreportsData) {
-            final Method method = pair.getRight();
-            final List<?> results = pair.getLeft();
-            for (int i = 0; i < results.size(); i++) {
-                final T t = instances.get(i);
-                final Object o = results.get(i);
-                method.invoke(t, o);
-            }
+            return instances;
+        } catch (NoSuchMethodException e) {
+            throw new ReportEngineReflectionException("Error obtaining the method reference" , NO_METHOD_ERROR);
+        } catch (InstantiationException e) {
+            throw new ReportEngineReflectionException("Error instantiating an object", INSTANTIATION_ERROR);
+        } catch (IllegalAccessException e) {
+            throw new ReportEngineReflectionException("Error executing method does not have access to the definition of the specified class", ILLEGAL_ACCESS);
+        } catch (InvocationTargetException e) {
+            throw new ReportEngineReflectionException("Error executing method does not have access to the definition of the specified class", INVOCATION_ERROR);
         }
-
-        return instances;
     }
 
     private Configuration getClassReportConfiguration(Class<?> clazz) {
@@ -109,7 +123,7 @@ public class ReportLoader {
         return AnnotationUtils.getReportConfiguration(reportAnnotation, reportName);
     }
 
-    private <T> Map<Annotation, Pair<Class<?>, Method>> loadColumns(Class<T> clazz, Configuration configuration, boolean recursive) throws NoSuchMethodException {
+    private <T> Map<Annotation, Pair<Class<?>, Method>> loadColumns(Class<T> clazz, Configuration configuration, boolean recursive) {
 
         Map<Column, Pair<Class<?>, Method>> columnsMap = new LinkedHashMap<>();
         final Function<Pair<Column, Pair<Class<?>, Method>>, Void> columnsFunction = AnnotationUtils.getColumnsWithFieldAndMethodsFunction(columnsMap);
@@ -167,33 +181,39 @@ public class ReportLoader {
         return result;
     }
 
-    private <T> void instanceSetValueFromCell(final Method method, final Object instance, final Cell cell) throws InvocationTargetException, IllegalAccessException {
+    private <T> void instanceSetValueFromCell(final Method method, final Object instance, final Cell cell) throws ReportEngineReflectionException {
         method.setAccessible(true);
-        if(CellType.BOOLEAN.equals(cell.getCellTypeEnum())){
-            method.invoke(instance, cell.getBooleanCellValue());
-        } else if(CellType.STRING.equals(cell.getCellTypeEnum())){
-            method.invoke(instance, cell.getRichStringCellValue().getString());
-        } else if(CellType.NUMERIC.equals(cell.getCellTypeEnum())){
-            if (DateUtil.isCellDateFormatted(cell)) {
-                method.invoke(instance, cell.getDateCellValue());
-            } else {
-                final Class<?> parameterType = method.getParameterTypes()[0];
-                if(parameterType.equals(Double.class) || parameterType.getName().equals("double")){
-                    method.invoke(instance, cell.getNumericCellValue());
-                } else if(parameterType.equals(Integer.class) || parameterType.getName().equals("int")) {
-                    method.invoke(instance, new Double(cell.getNumericCellValue()).intValue());
-                } else if(parameterType.equals(Long.class) || parameterType.getName().equals("long")){
-                    method.invoke(instance, new Double(cell.getNumericCellValue()).longValue());
-                } else if(parameterType.equals(Float.class) || parameterType.getName().equals("float")){
-                    method.invoke(instance, new Double(cell.getNumericCellValue()).floatValue());
-                } else if(parameterType.equals(Short.class) || parameterType.getName().equals("short")){
-                    method.invoke(instance, new Double(cell.getNumericCellValue()).shortValue());
+        try {
+            if(CellType.BOOLEAN.equals(cell.getCellTypeEnum())){
+                method.invoke(instance, cell.getBooleanCellValue());
+            } else if(CellType.STRING.equals(cell.getCellTypeEnum())){
+                method.invoke(instance, cell.getRichStringCellValue().getString());
+            } else if(CellType.NUMERIC.equals(cell.getCellTypeEnum())){
+                if (DateUtil.isCellDateFormatted(cell)) {
+                    method.invoke(instance, cell.getDateCellValue());
+                } else {
+                    final Class<?> parameterType = method.getParameterTypes()[0];
+                    if(parameterType.equals(Double.class) || parameterType.getName().equals("double")){
+                        method.invoke(instance, cell.getNumericCellValue());
+                    } else if(parameterType.equals(Integer.class) || parameterType.getName().equals("int")) {
+                        method.invoke(instance, new Double(cell.getNumericCellValue()).intValue());
+                    } else if(parameterType.equals(Long.class) || parameterType.getName().equals("long")){
+                        method.invoke(instance, new Double(cell.getNumericCellValue()).longValue());
+                    } else if(parameterType.equals(Float.class) || parameterType.getName().equals("float")){
+                        method.invoke(instance, new Double(cell.getNumericCellValue()).floatValue());
+                    } else if(parameterType.equals(Short.class) || parameterType.getName().equals("short")){
+                        method.invoke(instance, new Double(cell.getNumericCellValue()).shortValue());
+                    }
                 }
+            } else if(CellType.FORMULA.equals(cell.getCellTypeEnum())) {
+                method.invoke(instance, cell.getCellFormula());
+            } else {
+                method.invoke(instance, "");
             }
-        } else if(CellType.FORMULA.equals(cell.getCellTypeEnum())) {
-            method.invoke(instance, cell.getCellFormula());
-        } else {
-            method.invoke(instance, "");
+        } catch (IllegalAccessException e) {
+            throw new ReportEngineReflectionException("Error executing method does not have access to the definition of the specified class", ILLEGAL_ACCESS);
+        } catch (InvocationTargetException e) {
+            throw new ReportEngineReflectionException("Error executing method does not have access to the definition of the specified class", INVOCATION_ERROR);
         }
     }
 
