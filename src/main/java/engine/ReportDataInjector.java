@@ -334,7 +334,6 @@ class ReportDataInjector {
         final Pair<ReportStyle, String> styleKey = new Pair<>(style, cell.getCellStyle().getDataFormatString());
         if(!_stylesCache.containsKey(styleKey)){
             cellStyle = currentWorkbook.createCellStyle();
-            cellStyle.cloneStyleFrom(cell.getCellStyle());
 
             // Borders
             if(style.getBorderBottom() != null) {
