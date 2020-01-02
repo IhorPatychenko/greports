@@ -83,7 +83,7 @@ final class ReportDataParser {
         AnnotationUtils.fieldsWithColumnAnnotations(clazz, columnFunction, reportData.getName());
 
         for (SpecialColumn specialColumn : configuration.specialColumns()) {
-            cells.add(new ReportHeaderCell(specialColumn.position(), specialColumn.title(), specialColumn.autoSizeColumn()));
+            cells.add(new ReportHeaderCell(specialColumn.position(), specialColumn.title(), specialColumn.id(), specialColumn.autoSizeColumn()));
         }
 
         loadAutosizeColumns(cells);

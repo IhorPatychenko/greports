@@ -10,11 +10,11 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.ANNOTATION_TYPE)
 public @interface SpecialColumn {
-    String reportName();
     float position();
     String title() default "";
     String value();
     String format() default "";
+    String id() default "";
     String[] targetIds() default {};
     boolean isRangedFormula() default false;
     ValueType valueType() default ValueType.LITERAL;
