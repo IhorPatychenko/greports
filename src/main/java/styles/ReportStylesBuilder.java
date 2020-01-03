@@ -109,11 +109,7 @@ public class ReportStylesBuilder<T extends ReportStyle> {
     }
 
     public ReportStylesBuilder<T> newStyle(Tuple tuple) {
-        return newStyle(tuple, false);
-    }
-
-    public ReportStylesBuilder<T> newStyle(Tuple tuple, boolean clonePreviousStyle) {
-        styleBuilder = new ReportStyleBuilder<>(forClass, tuple, clonePreviousStyle);
+        styleBuilder = new ReportStyleBuilder<>(forClass, tuple);
         styleBuilders.add(styleBuilder);
         return this;
     }
@@ -157,12 +153,10 @@ public class ReportStylesBuilder<T extends ReportStyle> {
         private BorderStyle borderLeft;
         private Color borderColor;
         private Tuple tuple;
-        private boolean clonePreviousStyle;
 
-        ReportStyleBuilder(Class<T> forClass, Tuple tuple, boolean clonePreviousStyle){
+        ReportStyleBuilder(Class<T> forClass, Tuple tuple){
             this.forClass = forClass;
             this.tuple = tuple;
-            this.clonePreviousStyle = clonePreviousStyle;
         }
 
         void setForegroundColor(Color foregroundColor) {
@@ -223,7 +217,6 @@ public class ReportStylesBuilder<T extends ReportStyle> {
 
         T buildStyle() {
             ReportStyle reportStyle = new ReportStyle()
-                    .setClonePreviousStyle(clonePreviousStyle)
                     .setForegroundColor(foregroundColor)
                     .setFontColor(fontColor)
                     .setFillPattern(fillPattern)

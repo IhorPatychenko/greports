@@ -334,9 +334,6 @@ class ReportDataInjector {
         if(!_stylesCache.containsKey(styleKey)){
             cellStyle = currentWorkbook.createCellStyle();
             cellStyle.setDataFormat(cell.getCellStyle().getDataFormat());
-            if(style.isClonePreviousStyle()){
-                cellStyle.cloneStyleFrom(cell.getCellStyle());
-            }
             // Borders
             if(style.getBorderBottom() != null) {
                 cellStyle.setBorderBottom(style.getBorderBottom());
@@ -395,12 +392,6 @@ class ReportDataInjector {
             _stylesCache.put(styleKey, cellStyle);
         } else {
             cellStyle = _stylesCache.get(styleKey);
-            if(style.isClonePreviousStyle()){
-                final XSSFCellStyle cloned = currentWorkbook.createCellStyle();
-                cloned.cloneStyleFrom(cell.getCellStyle());
-                cloned.cloneStyleFrom(cellStyle);
-                cellStyle = cloned;
-            }
         }
         cell.setCellStyle(cellStyle);
     }

@@ -27,7 +27,6 @@ public class ReportStyle {
     private Color borderColor;
     private StripedRowsIndex stripedRowsIndex;
     private Color stripedRowsColor;
-    private boolean clonePreviousStyle;
 
     protected ReportStyle(){}
 
@@ -48,16 +47,6 @@ public class ReportStyle {
         this.borderColor = rs.getBorderColor();
         this.stripedRowsIndex = rs.getStripedRowsIndex();
         this.stripedRowsColor = rs.getStripedRowsColor();
-        this.clonePreviousStyle = rs.isClonePreviousStyle();
-    }
-
-    public boolean isClonePreviousStyle() {
-        return clonePreviousStyle;
-    }
-
-    public ReportStyle setClonePreviousStyle(final boolean clonePreviousStyle) {
-        this.clonePreviousStyle = clonePreviousStyle;
-        return this;
     }
 
     public Color getForegroundColor() {
