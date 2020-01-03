@@ -100,7 +100,7 @@ public class AnnotationUtils {
 
         for (String getterPossibleName : getterPossibleNames) {
             try {
-                final Method method = ReflectionUtils.getMethodWithName(clazz, getterPossibleName);
+                final Method method = ReflectionUtils.getMethodWithName(clazz, getterPossibleName, new Class<?>[]{});
                 if (method != null) {
                     return method;
                 }
@@ -115,7 +115,8 @@ public class AnnotationUtils {
 
         for (String setterPossibleName : setterPossibleNames) {
             try {
-                final Method method = ReflectionUtils.getMethodWithName(clazz, setterPossibleName);
+                Class<?>[] returnType = { field.getType() };
+                final Method method = ReflectionUtils.getMethodWithName(clazz, setterPossibleName, returnType);
                 if (method != null) {
                     return method;
                 }

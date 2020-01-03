@@ -174,7 +174,7 @@ final class ReportDataParser {
         for (SpecialColumn specialColumn : configuration.specialColumns()) {
             Method method = null;
             if(ValueType.METHOD.equals(specialColumn.valueType())){
-                method = ReflectionUtils.getMethodWithName(clazz, specialColumn.value());
+                method = ReflectionUtils.getMethodWithName(clazz, specialColumn.value(), new Class<?>[]{});
             }
             for (int i = 0; i < list.size(); i++) {
                 Object value = specialColumn.value();
