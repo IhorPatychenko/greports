@@ -108,7 +108,7 @@ public class ReportLoader {
 
             return instances;
         } catch (NoSuchMethodException e) {
-            throw new ReportEngineReflectionException("Error obtaining the method reference" , NO_METHOD_ERROR);
+            throw new ReportEngineReflectionException("Error obtaining constructor reference" , NO_METHOD_ERROR);
         } catch (InstantiationException e) {
             throw new ReportEngineReflectionException("Error instantiating an object", INSTANTIATION_ERROR);
         } catch (IllegalAccessException e) {
@@ -184,31 +184,33 @@ public class ReportLoader {
     private <T> void instanceSetValueFromCell(final Method method, final Object instance, final Cell cell) throws ReportEngineReflectionException {
         method.setAccessible(true);
         try {
-            if(CellType.BOOLEAN.equals(cell.getCellTypeEnum())){
-                method.invoke(instance, cell.getBooleanCellValue());
-            } else if(CellType.STRING.equals(cell.getCellTypeEnum())){
-                method.invoke(instance, cell.getRichStringCellValue().getString());
-            } else if(CellType.NUMERIC.equals(cell.getCellTypeEnum())){
-                if (DateUtil.isCellDateFormatted(cell)) {
-                    method.invoke(instance, cell.getDateCellValue());
-                } else {
-                    final Class<?> parameterType = method.getParameterTypes()[0];
-                    if(parameterType.equals(Double.class) || parameterType.getName().equals("double")){
-                        method.invoke(instance, cell.getNumericCellValue());
-                    } else if(parameterType.equals(Integer.class) || parameterType.getName().equals("int")) {
-                        method.invoke(instance, new Double(cell.getNumericCellValue()).intValue());
-                    } else if(parameterType.equals(Long.class) || parameterType.getName().equals("long")){
-                        method.invoke(instance, new Double(cell.getNumericCellValue()).longValue());
-                    } else if(parameterType.equals(Float.class) || parameterType.getName().equals("float")){
-                        method.invoke(instance, new Double(cell.getNumericCellValue()).floatValue());
-                    } else if(parameterType.equals(Short.class) || parameterType.getName().equals("short")){
-                        method.invoke(instance, new Double(cell.getNumericCellValue()).shortValue());
+            if(cell != null){
+                if(CellType.BOOLEAN.equals(cell.getCellTypeEnum())){
+                    method.invoke(instance, cell.getBooleanCellValue());
+                } else if(CellType.STRING.equals(cell.getCellTypeEnum())){
+                    method.invoke(instance, cell.getRichStringCellValue().getString());
+                } else if(CellType.NUMERIC.equals(cell.getCellTypeEnum())){
+                    if (DateUtil.isCellDateFormatted(cell)) {
+                        method.invoke(instance, cell.getDateCellValue());
+                    } else {
+                        final Class<?> parameterType = method.getParameterTypes()[0];
+                        if(parameterType.equals(Double.class) || parameterType.getName().equals("double")){
+                            method.invoke(instance, cell.getNumericCellValue());
+                        } else if(parameterType.equals(Integer.class) || parameterType.getName().equals("int")) {
+                            method.invoke(instance, new Double(cell.getNumericCellValue()).intValue());
+                        } else if(parameterType.equals(Long.class) || parameterType.getName().equals("long")){
+                            method.invoke(instance, new Double(cell.getNumericCellValue()).longValue());
+                        } else if(parameterType.equals(Float.class) || parameterType.getName().equals("float")){
+                            method.invoke(instance, new Double(cell.getNumericCellValue()).floatValue());
+                        } else if(parameterType.equals(Short.class) || parameterType.getName().equals("short")){
+                            method.invoke(instance, new Double(cell.getNumericCellValue()).shortValue());
+                        }
                     }
+                } else if(CellType.FORMULA.equals(cell.getCellTypeEnum())) {
+                    method.invoke(instance, cell.getCellFormula());
+                } else {
+                    method.invoke(instance, "");
                 }
-            } else if(CellType.FORMULA.equals(cell.getCellTypeEnum())) {
-                method.invoke(instance, cell.getCellFormula());
-            } else {
-                method.invoke(instance, "");
             }
         } catch (IllegalAccessException e) {
             throw new ReportEngineReflectionException("Error executing method does not have access to the definition of the specified class", ILLEGAL_ACCESS);
