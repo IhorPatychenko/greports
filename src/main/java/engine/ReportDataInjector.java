@@ -331,9 +331,12 @@ class ReportDataInjector {
     private void cellApplyStyles(Cell cell, ReportStyle style) {
         XSSFCellStyle cellStyle;
         final Pair<ReportStyle, String> styleKey = new Pair<>(style, cell.getCellStyle().getDataFormatString());
-        if(!_stylesCache.containsKey(styleKey)){
+        if(!_stylesCache.containsKey(styleKey) || style.isClonePreviousStyle()){
             cellStyle = currentWorkbook.createCellStyle();
             cellStyle.setDataFormat(cell.getCellStyle().getDataFormat());
+            if(style.isClonePreviousStyle()){
+                cellStyle.cloneStyleFrom(cell.getCellStyle());
+            }
             // Borders
             if(style.getBorderBottom() != null) {
                 cellStyle.setBorderBottom(style.getBorderBottom());
