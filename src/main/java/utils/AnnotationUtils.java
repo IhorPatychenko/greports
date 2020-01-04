@@ -1,9 +1,6 @@
 package utils;
 
-import annotations.Column;
-import annotations.Report;
-import annotations.Configuration;
-import annotations.Subreport;
+import annotations.*;
 import content.cell.ReportHeaderCell;
 import exceptions.ReportEngineReflectionException;
 import exceptions.ReportEngineRuntimeExceptionCode;
@@ -18,11 +15,20 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 public class AnnotationUtils {
 
     private static final List<String> gettersPrefixes = new ArrayList<>(Arrays.asList("get", "is"));
     private static final List<String> settersPrefixes = new ArrayList<>(Collections.singletonList("set"));
+
+    public static Report getReportAnnotation(Class<?> clazz) {
+        final Report annotation = clazz.getAnnotation(Report.class);
+        if (annotation != null) {
+            return annotation;
+        }
+        throw new ReportEngineReflectionException(clazz.toString() + " is not annotated as @Report", ReportEngineRuntimeExceptionCode.REPORT_ANNOTATION_NOT_FOUND);
+    }
 
     public static Configuration getReportConfiguration(Report report, String reportName) {
         return Arrays.stream(report.reportConfigurations())
@@ -31,12 +37,9 @@ public class AnnotationUtils {
                 .orElseThrow(() -> new ReportEngineReflectionException("@Report has no @ReportConfiguration annotation with name \"" + reportName + "\"", ReportEngineRuntimeExceptionCode.CONFIGURATION_ANNOTATION_NOT_FOUND));
     }
 
-    public static Report getReportAnnotation(Class<?> clazz) {
-        final Report annotation = clazz.getAnnotation(Report.class);
-        if (annotation != null) {
-            return annotation;
-        }
-        throw new ReportEngineReflectionException(clazz.toString() + " is not annotated as @Report", ReportEngineRuntimeExceptionCode.REPORT_ANNOTATION_NOT_FOUND);
+    public static int getLastSpecialRowsCount(Configuration configuration){
+        return (int) Arrays.stream(configuration.specialRows())
+                .filter(entry -> Integer.MAX_VALUE == entry.rowIndex()).count();
     }
 
     public static <T> void fieldsWithColumnAnnotations(Class<T> clazz, Function<Pair<Field, Column>, Void> columnFunction, String reportName) {

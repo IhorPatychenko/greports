@@ -14,11 +14,17 @@ public class ReportGeneratorResult {
         reportData.add(data);
     }
 
-    public OutputStream writeToFile(String path) throws IOException {
+    public void writeToFile(String filePath) throws IOException {
+        writeToFile(new File(filePath));
+    }
+
+    public void writeToFile(File file) throws IOException {
+        writeToFile(new FileOutputStream(file));
+    }
+
+    public void writeToFile(FileOutputStream fileOutputStream) throws IOException {
         ReportDataInjector dataInjector = new ReportDataInjector(reportData);
         dataInjector.inject();
-        OutputStream outputStream = new FileOutputStream(new File(path));
-        dataInjector.writeToFileOutputStream(outputStream);
-        return outputStream;
+        dataInjector.writeToFileOutputStream(fileOutputStream);
     }
 }
