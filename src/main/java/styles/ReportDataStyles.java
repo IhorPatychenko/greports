@@ -3,6 +3,8 @@ package styles;
 import org.apache.poi.ss.usermodel.IndexedColors;
 import styles.interfaces.StripedRows.StripedRowsIndex;
 
+import java.awt.*;
+
 public class ReportDataStyles {
 
     private ReportStylesBuilder<VerticalRangedStyle> rowStyles;
@@ -10,7 +12,7 @@ public class ReportDataStyles {
     private ReportStylesBuilder<PositionedStyle> positionedStyles;
     private ReportStylesBuilder<RectangleRangedStyle> rangedStyleReportStyles;
     private StripedRowsIndex stripedRowsIndex;
-    private IndexedColors stripedRowsColor;
+    private Color stripedRowsColor;
 
     public ReportStylesBuilder<VerticalRangedStyle> getRowStyles() {
         return rowStyles;
@@ -53,11 +55,11 @@ public class ReportDataStyles {
         return this;
     }
 
-    public IndexedColors getStripedRowsColor() {
+    public Color getStripedRowsColor() {
         return stripedRowsColor;
     }
 
-    public ReportDataStyles setStripedRowsColor(IndexedColors stripedRowsColor) {
+    public ReportDataStyles setStripedRowsColor(Color stripedRowsColor) {
         this.stripedRowsColor = stripedRowsColor;
         return this;
     }

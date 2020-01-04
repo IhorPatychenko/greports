@@ -37,6 +37,7 @@ import styles.interfaces.StripedRows;
 import utils.Pair;
 import utils.Utils;
 
+import java.awt.*;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Collection;
@@ -173,17 +174,13 @@ class ReportDataInjector {
 
     private void createSpecialRows(Sheet sheet, ReportData reportData) {
         final List<ReportDataSpecialRow> specialRows = reportData.getSpecialRows();
-        for (final ReportDataSpecialRow specialRow : specialRows) {
+        for (int i = 0; i < specialRows.size(); i++) {
+            ReportDataSpecialRow specialRow = specialRows.get(i);
             if(specialRow.getIndex() == Integer.MAX_VALUE) {
-                specialRow.setIndex(reportData.getDataStartRow() + reportData.getRowsCount());
-            }
-            final Row row = sheet.createRow(specialRow.getIndex());
-            for(int i = 0; i < reportData.getColumnsCount(); i++){
-                final Cell cell = row.createCell(i);
-                setCellValue(cell, "");
+                specialRow.setIndex(reportData.getDataStartRow() + reportData.getRowsCount() + i);
             }
             for (final ReportDataSpecialRowCell specialCell : specialRow.getSpecialCells()) {
-                final Cell cell = row.createCell(reportData.getColumnIndexForTarget(specialCell.getTargetId()));
+                final Cell cell = sheet.createRow(specialRow.getIndex()).createCell(reportData.getColumnIndexForTarget(specialCell.getTargetId()));
                 final ValueType valueType = specialCell.getValueType();
                 if(!ValueType.FORMULA.equals(valueType)){
                     setCellValue(cell, specialCell.getValue());
@@ -204,15 +201,15 @@ class ReportDataInjector {
 
     private void addStripedRows(Sheet sheet, ReportData reportData){
         final StripedRows.StripedRowsIndex stripedRowsIndex = reportData.getStyles().getStripedRowsIndex();
-        final IndexedColors stripedRowsColor = reportData.getStyles().getStripedRowsColor();
+        final Color stripedRowsColor = reportData.getStyles().getStripedRowsColor();
         if(stripedRowsIndex != null && stripedRowsColor != null){
             for(int i = stripedRowsIndex.getIndex(); i <= sheet.getLastRowNum(); i+=2){
                 final Row row = sheet.getRow(i);
                 for(int y = row.getFirstCellNum(); y < row.getLastCellNum(); y++) {
                     final Cell cell = row.getCell(y);
-                    final CellStyle cellStyle = currentWorkbook.createCellStyle();
+                    final XSSFCellStyle cellStyle = currentWorkbook.createCellStyle();
                     cellStyle.cloneStyleFrom(cell.getCellStyle());
-                    cellStyle.setFillForegroundColor(stripedRowsColor.getIndex());
+                    cellStyle.setFillForegroundColor(new XSSFColor(stripedRowsColor));
                     cellStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
                     cell.setCellStyle(cellStyle);
                 }
