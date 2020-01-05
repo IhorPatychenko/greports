@@ -63,7 +63,7 @@ final class ReportDataParser {
     private <T> ReportDataParser parse(Collection<T> collection, final String reportName, Class<T> clazz, Float positionIncrement) throws ReportEngineReflectionException {
         final Report reportAnnotation = AnnotationUtils.getReportAnnotation(clazz);
         configuration = AnnotationUtils.getReportConfiguration(reportAnnotation, reportName);
-        reportData = new ReportData(reportName, configuration.sheetName());
+        reportData = new ReportData(reportName, configuration.sheetName(), configuration.templatePath());
         translations = new TranslationsParser(reportAnnotation.translationsDir()).parse(reportLang);
         loadReportHeader(clazz, positionIncrement);
         loadRowsData(collection, clazz, positionIncrement);
