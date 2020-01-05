@@ -11,11 +11,15 @@ public class Pair<T, E> {
         this.right = right;
     }
 
+    public static <T, E> Pair<T, E> from(T left, E right) {
+        return new Pair<>(left, right);
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof Pair)) return false;
-        Pair key = (Pair) o;
+        Pair<T, E> key = (Pair<T, E>) o;
         return left.equals(key.left) && right.equals(key.right);
     }
 

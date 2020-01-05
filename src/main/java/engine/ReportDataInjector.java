@@ -27,6 +27,7 @@ public abstract class ReportDataInjector {
             XSSFCellStyle cellStyle;
             if(!_formatsCache.containsKey(format)){
                 cellStyle = currentWorkbook.createCellStyle();
+                cellStyle.cloneStyleFrom(cell.getCellStyle());
                 cellStyle.setDataFormat(creationHelper.createDataFormat().getFormat(format));
                 _formatsCache.put(format, cellStyle);
             } else {

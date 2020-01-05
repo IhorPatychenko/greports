@@ -213,31 +213,33 @@ final class ReportDataParser {
 
     private <T> void loadStyles(Class<T> clazz) {
         try {
-            final Constructor<T> constructor = clazz.getDeclaredConstructor();
-            constructor.setAccessible(true);
-            final T newInstance = constructor.newInstance();
             final List<Class<?>> interfaces = Arrays.asList(clazz.getInterfaces());
-            if(interfaces.contains(StyledReport.class)){
-                StyledReport elem = (StyledReport) newInstance;
-                if(elem.getRangedRowStyles() != null){
-                    reportData.getStyles().setRowStyles(elem.getRangedRowStyles().getOrDefault(reportData.getName(), null));
+            if(interfaces.contains(StyledReport.class) || interfaces.contains(StripedRows.class)){
+                final Constructor<T> constructor = clazz.getDeclaredConstructor();
+                constructor.setAccessible(true);
+                final T newInstance = constructor.newInstance();
+                if(interfaces.contains(StyledReport.class)){
+                    StyledReport elem = (StyledReport) newInstance;
+                    if(elem.getRangedRowStyles() != null){
+                        reportData.getStyles().setRowStyles(elem.getRangedRowStyles().getOrDefault(reportData.getName(), null));
+                    }
+                    if(elem.getRangedColumnStyles() != null){
+                        reportData.getStyles().setColumnStyles(elem.getRangedColumnStyles().getOrDefault(reportData.getName(), null));
+                    }
+                    if(elem.getPositionedStyles() != null){
+                        reportData.getStyles().setPositionedStyles(elem.getPositionedStyles().getOrDefault(reportData.getName(), null));
+                    }
+                    if(elem.getRectangleRangedStyles() != null){
+                        reportData.getStyles().setRangedStyleReportStyles(elem.getRectangleRangedStyles().getOrDefault(reportData.getName(), null));
+                    }
                 }
-                if(elem.getRangedColumnStyles() != null){
-                    reportData.getStyles().setColumnStyles(elem.getRangedColumnStyles().getOrDefault(reportData.getName(), null));
-                }
-                if(elem.getPositionedStyles() != null){
-                    reportData.getStyles().setPositionedStyles(elem.getPositionedStyles().getOrDefault(reportData.getName(), null));
-                }
-                if(elem.getRectangleRangedStyles() != null){
-                    reportData.getStyles().setRangedStyleReportStyles(elem.getRectangleRangedStyles().getOrDefault(reportData.getName(), null));
-                }
-            }
-            if(interfaces.contains(StripedRows.class)){
-                StripedRows elem = (StripedRows) newInstance;
-                if(elem.getStripedRowsIndex() != null && elem.getStripedRowsColor() != null){
-                    reportData.getStyles()
-                            .setStripedRowsIndex(elem.getStripedRowsIndex().getOrDefault(reportData.getName(), null))
-                            .setStripedRowsColor(elem.getStripedRowsColor().getOrDefault(reportData.getName(), null));
+                if(interfaces.contains(StripedRows.class)){
+                    StripedRows elem = (StripedRows) newInstance;
+                    if(elem.getStripedRowsIndex() != null && elem.getStripedRowsColor() != null){
+                        reportData.getStyles()
+                                .setStripedRowsIndex(elem.getStripedRowsIndex().getOrDefault(reportData.getName(), null))
+                                .setStripedRowsColor(elem.getStripedRowsColor().getOrDefault(reportData.getName(), null));
+                    }
                 }
             }
         } catch (NoSuchMethodException e) {
