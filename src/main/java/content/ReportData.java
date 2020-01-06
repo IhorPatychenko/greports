@@ -1,6 +1,7 @@
 package content;
 
 import content.cell.ReportCell;
+import content.cell.ReportHeaderCell;
 import content.row.ReportDataRow;
 import content.row.ReportDataSpecialRow;
 import styles.ReportDataStyles;
@@ -118,6 +119,10 @@ public class ReportData {
         return targetIndexes.get(target);
     }
 
+    public Map<String, Integer> getTargetIndexes() {
+        return targetIndexes;
+    }
+
     public void mergeReportData(List<ReportData> subreportsData) {
         for (ReportData other : subreportsData) {
             mergeHeaders(other);
@@ -129,7 +134,10 @@ public class ReportData {
         rows.forEach(row -> row.getCells().sort(Comparator.comparing(ReportCell::getPosition)));
 
         for (int i = 0; i < header.getCells().size(); i++) {
-            targetIndexes.put(header.getCell(i).getId(), i);
+            ReportHeaderCell headerCell = header.getCell(i);
+            if(!headerCell.getId().equals("")){
+                targetIndexes.put(headerCell.getId(), i);
+            }
         }
     }
 

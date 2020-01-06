@@ -19,13 +19,11 @@ public class ReportDataTemplateInjector extends ReportDataInjector {
     }
 
     private final XSSFWorkbook sourceWorkbook;
-    private final ReportData reportData;
     private final Map<Pair<Integer, CellType>, XSSFCellStyle> _stylesCache = new HashMap<>();
 
     public ReportDataTemplateInjector(XSSFWorkbook sourceWorkbook, XSSFWorkbook targetWorkbook, ReportData data) {
-        super(targetWorkbook);
+        super(targetWorkbook, data);
         this.sourceWorkbook = sourceWorkbook;
-        this.reportData = data;
     }
 
     @Override

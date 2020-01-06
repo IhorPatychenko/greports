@@ -6,7 +6,6 @@ import content.column.ReportDataCell;
 import content.cell.ReportDataSpecialRowCell;
 import content.cell.ReportHeaderCell;
 import content.row.ReportDataSpecialRow;
-import formula.FormulaBuilder;
 import org.apache.commons.collections4.map.HashedMap;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellRangeAddress;
@@ -31,12 +30,8 @@ import styles.interfaces.StripedRows;
 import utils.Pair;
 import utils.Utils;
 
-import java.awt.*;
 import java.awt.Color;
-import java.io.IOException;
-import java.io.OutputStream;
 import java.util.Collection;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -48,7 +43,7 @@ class ReportDataRawInjector extends ReportDataInjector {
     private Map<Pair<ReportStyle, String>, XSSFCellStyle> _stylesCache = new HashedMap<>();
 
     public ReportDataRawInjector(XSSFWorkbook currentWorkbook, ReportData reportData) {
-        super(currentWorkbook);
+        super(currentWorkbook, reportData);
         this.reportData = reportData;
     }
 
@@ -96,7 +91,9 @@ class ReportDataRawInjector extends ReportDataInjector {
             Row dataRow = sheet.createRow(reportData.getDataStartRow() + i);
             for (int y = 0; y < reportData.getRow(i).getCells().size(); y++) {
                 final ReportDataCell column = reportData.getRow(i).getColumn(y);
-                createDataCell(dataRow, column, y);
+                if(!column.getValueType().equals(ValueType.FORMULA)){
+                    createCell(dataRow, column, y);
+                }
             }
         }
         // After create cells with formulas to can evaluate
@@ -104,7 +101,9 @@ class ReportDataRawInjector extends ReportDataInjector {
             Row dataRow = sheet.getRow(reportData.getDataStartRow() + i);
             for (int y = 0; y < reportData.getRow(i).getCells().size(); y++) {
                 final ReportDataCell column = reportData.getRow(i).getColumn(y);
-                createFormulaCell(dataRow, column, y, reportData);
+                if(column.getValueType().equals(ValueType.FORMULA)){
+                    createCell(dataRow, column, y);
+                }
             }
         }
     }
@@ -114,23 +113,17 @@ class ReportDataRawInjector extends ReportDataInjector {
         setCellValue(cell, headerCell.getTitle());
     }
 
-    private void createDataCell(Row row, ReportDataCell reportDataCell, int cellIndex){
+    private void createCell(Row row, ReportDataCell reportDataCell, int cellIndex){
         final ValueType valueType = reportDataCell.getValueType();
         if(!ValueType.FORMULA.equals(valueType)){
             final Cell cell = row.createCell(cellIndex);
             setCellValue(cell, reportDataCell.getValue());
             setCellFormat(cell, reportDataCell.getFormat());
-        }
-    }
-
-    private void createFormulaCell(Row row, ReportDataCell reportDataCell, int cellIndex, ReportData reportData) {
-        if(reportDataCell.getValueType().equals(ValueType.FORMULA)){
+        } else {
             final Cell cell = row.createCell(cellIndex);
-            String formulaString = new FormulaBuilder(reportDataCell.getValue().toString(), reportDataCell.isRangedFormula(), reportDataCell.getTargetIds().size()).build();
-            for (String targetId : reportDataCell.getTargetIds()) {
-                final int columnIndexForTarget = reportData.getColumnIndexForTarget(targetId);
-                CellReference cellReference = new CellReference(row.getCell(columnIndexForTarget));
-                formulaString = formulaString.replaceFirst(FormulaBuilder.FORMULA_TOKENIZER, cellReference.formatAsString());
+            String formulaString = reportDataCell.getValue().toString();
+            for (Map.Entry<String, Integer> entry : reportData.getTargetIndexes().entrySet()) {
+                formulaString = formulaString.replaceAll(entry.getKey(), super.getCellReferenceForTargetId(row, entry.getKey()).formatAsString());
             }
             cell.setCellFormula(formulaString);
             setCellFormat(cell, reportDataCell.getFormat());
@@ -150,13 +143,11 @@ class ReportDataRawInjector extends ReportDataInjector {
                 if(!ValueType.FORMULA.equals(valueType)){
                     setCellValue(cell, specialCell.getValue());
                 } else {
-                    final String formula = new FormulaBuilder(specialCell.getValue().toString(), true, 1).build();
-                    final int columnIndexForTarget = reportData.getColumnIndexForTarget(specialCell.getTargetId());
-                    CellReference firstCellReference = new CellReference(sheet.getRow(reportData.getDataStartRow()).getCell(columnIndexForTarget));
-                    CellReference lastCellReference = new CellReference(sheet.getRow(reportData.getDataStartRow() + reportData.getRowsCount() - 1).getCell(columnIndexForTarget));
-                    final String replace = formula
-                            .replace(FormulaBuilder.FORMULA_TOKENIZER, firstCellReference.formatAsString() + ":" + lastCellReference.formatAsString());
-                    cell.setCellFormula(replace);
+                    String formula = specialCell.getValue().toString();
+                    CellReference firstCellReference = super.getCellReferenceForTargetId(sheet.getRow(reportData.getDataStartRow()), specialCell.getTargetId());
+                    CellReference lastCellReference = super.getCellReferenceForTargetId(sheet.getRow(reportData.getDataStartRow() + reportData.getRowsCount() - 1), specialCell.getTargetId());
+                    formula = formula.replace(specialCell.getTargetId(), firstCellReference.formatAsString() + ":" + lastCellReference.formatAsString());
+                    cell.setCellFormula(formula);
                 }
                 setCellFormat(cell, specialCell.getFormat());
             }

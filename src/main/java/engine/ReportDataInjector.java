@@ -1,8 +1,11 @@
 package engine;
 
+import content.ReportData;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CreationHelper;
+import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.util.CellReference;
 import org.apache.poi.xssf.usermodel.XSSFCellStyle;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
@@ -14,11 +17,13 @@ import java.util.Objects;
 public abstract class ReportDataInjector {
 
     protected final XSSFWorkbook currentWorkbook;
+    protected final ReportData reportData;
     protected Map<String, XSSFCellStyle> _formatsCache = new HashMap<>();
     protected CreationHelper creationHelper;
 
-    protected ReportDataInjector(XSSFWorkbook currentWorkbook) {
+    protected ReportDataInjector(XSSFWorkbook currentWorkbook, ReportData reportData) {
         this.currentWorkbook = currentWorkbook;
+        this.reportData = reportData;
         this.creationHelper = this.currentWorkbook.getCreationHelper();
     }
 
@@ -47,6 +52,10 @@ public abstract class ReportDataInjector {
         } else {
             cell.setCellValue(Objects.toString(value, ""));
         }
+    }
+
+    protected CellReference getCellReferenceForTargetId(Row row, String id) {
+        return new CellReference(row.getCell(reportData.getColumnIndexForTarget(id)));
     }
 
     protected abstract void inject();
