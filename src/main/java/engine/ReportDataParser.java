@@ -77,7 +77,7 @@ final class ReportDataParser {
 
     private <T> void loadReportHeader(Class<T> clazz, Float positionIncrement) {
         reportData.setShowHeader(configuration.showHeader());
-        reportData.setHeaderStartRow(configuration.headerOffset());
+        reportData.setHeaderStartRow(configuration.headerRowIndex());
         List<ReportHeaderCell> cells = new ArrayList<>();
         Function<Pair<Field, Column>, Void> columnFunction = AnnotationUtils.getHeadersFunction(cells, translations, positionIncrement);
         AnnotationUtils.fieldsWithColumnAnnotations(clazz, columnFunction, reportData.getName());
@@ -101,7 +101,7 @@ final class ReportDataParser {
     }
 
     private <T> void loadRowsData(Collection<T> collection, Class<T> clazz, Float positionIncrement) {
-        reportData.setDataStartRow(configuration.dataOffset());
+        reportData.setDataStartRow(AnnotationUtils.getSpecialRowsCountBeforeData(configuration) + (reportData.isShowHeader() ? 1 : 0));
 
         Map<Field, Column> columnsMap = new LinkedHashMap<>();
         Map<Field, Method> methodsMap = new LinkedHashMap<>();

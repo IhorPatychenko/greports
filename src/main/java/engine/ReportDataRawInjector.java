@@ -292,7 +292,7 @@ class ReportDataRawInjector extends ReportDataInjector {
 
     private void cellApplyStyles(Cell cell, ReportStyle style) {
         XSSFCellStyle cellStyle;
-        final Pair<ReportStyle, String> styleKey = new Pair<>(style, cell.getCellStyle().getDataFormatString());
+        final Pair<ReportStyle, String> styleKey = Pair.of(style, cell.getCellStyle().getDataFormatString());
         if(!_stylesCache.containsKey(styleKey) || style.isClonePreviousStyle()){
             cellStyle = currentWorkbook.createCellStyle();
             cellStyle.setDataFormat(cell.getCellStyle().getDataFormat());

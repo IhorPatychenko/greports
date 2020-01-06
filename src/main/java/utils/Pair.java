@@ -6,12 +6,12 @@ public class Pair<T, E> {
     private final T left;
     private final E right;
 
-    public Pair(T left, E right) {
+    private Pair(T left, E right) {
         this.left = left;
         this.right = right;
     }
 
-    public static <T, E> Pair<T, E> from(T left, E right) {
+    public static <T, E> Pair<T, E> of(T left, E right) {
         return new Pair<>(left, right);
     }
 

@@ -42,12 +42,16 @@ public class AnnotationUtils {
                 .filter(entry -> Integer.MAX_VALUE == entry.rowIndex()).count();
     }
 
+    public static int getSpecialRowsCountBeforeData(Configuration configuration) {
+        return configuration.specialRows().length - getLastSpecialRowsCount(configuration);
+    }
+
     public static <T> void fieldsWithColumnAnnotations(Class<T> clazz, Function<Pair<Field, Column>, Void> columnFunction, String reportName) {
         for (Field declaredField : clazz.getDeclaredFields()) {
             final Column[] annotationsByType = declaredField.getAnnotationsByType(Column.class);
             for (Column generatorColumn : annotationsByType) {
                 if (getReportColumnPredicate(reportName).test(generatorColumn)) {
-                    columnFunction.apply(new Pair<>(declaredField, generatorColumn));
+                    columnFunction.apply(Pair.of(declaredField, generatorColumn));
                 }
             }
         }
@@ -58,7 +62,7 @@ public class AnnotationUtils {
             final Column[] annotationsByType = declaredField.getAnnotationsByType(Column.class);
             for (Column column : annotationsByType) {
                 if (getReportColumnPredicate(reportName).test(column)) {
-                    final Pair<Column, Pair<Class<?>, Method>> columnPairPair = new Pair<>(column, new Pair<>(clazz, fetchFieldSetter(declaredField, clazz)));
+                    final Pair<Column, Pair<Class<?>, Method>> columnPairPair = Pair.of(column, Pair.of(clazz, fetchFieldSetter(declaredField, clazz)));
                     function.apply(columnPairPair);
                 }
             }
@@ -71,7 +75,7 @@ public class AnnotationUtils {
             for (Subreport subreport : annotationsByType) {
                 if (getSubreportPredicate(reportName).test(subreport)) {
                     final Method method = fetchFieldSetter(declaredField, clazz);
-                    final Pair<Subreport, Pair<Class<?>, Method>> columnPairPair = new Pair<>(subreport, new Pair<>(method.getParameterTypes()[0], method));
+                    final Pair<Subreport, Pair<Class<?>, Method>> columnPairPair = Pair.of(subreport, Pair.of(method.getParameterTypes()[0], method));
                     function.apply(columnPairPair);
                 }
             }
@@ -83,7 +87,7 @@ public class AnnotationUtils {
             final Subreport[] annotationsByType = field.getAnnotationsByType(Subreport.class);
             for (Subreport subreport : annotationsByType) {
                 if (getSubreportPredicate(reportName).test(subreport)) {
-                    columnFunction.apply(new Pair<>(field, subreport));
+                    columnFunction.apply(Pair.of(field, subreport));
                 }
             }
         }

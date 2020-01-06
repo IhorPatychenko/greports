@@ -55,7 +55,7 @@ public class ReportDataTemplateInjector extends ReportDataInjector {
     private void cloneCell(Row sourceRow, Row targetRow, Object value, int cellIndex, CellType cellType) {
         final Cell sourceRowCell = sourceRow.getCell(cellIndex);
         final Cell targetRowCell = targetRow.createCell(cellIndex);
-        Pair<Integer, CellType> cellTypePair = Pair.from(cellIndex, cellType);
+        Pair<Integer, CellType> cellTypePair = Pair.of(cellIndex, cellType);
         XSSFCellStyle cellStyle;
         if(_stylesCache.containsKey(cellTypePair)){
             cellStyle = _stylesCache.get(cellTypePair);

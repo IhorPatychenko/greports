@@ -86,7 +86,7 @@ public class ReportLoader {
             final Constructor<T> declaredConstructor = clazz.getDeclaredConstructor();
             declaredConstructor.setAccessible(true);
             final Sheet sheet = currentWorkbook.getSheet(configuration.sheetName());
-            for(int dataRowNum = configuration.dataOffset(); dataRowNum <= sheet.getLastRowNum() - AnnotationUtils.getLastSpecialRowsCount(configuration); dataRowNum++) {
+            for(int dataRowNum = AnnotationUtils.getSpecialRowsCountBeforeData(configuration) + (configuration.showHeader() ? 1 : 0); dataRowNum <= sheet.getLastRowNum() - AnnotationUtils.getLastSpecialRowsCount(configuration); dataRowNum++) {
                 final Row row = sheet.getRow(dataRowNum);
                 final T instance = declaredConstructor.newInstance();
                 for (final Map.Entry<Annotation, Pair<Class<?>, Method>> entry : annotations.entrySet()) {
@@ -113,7 +113,7 @@ public class ReportLoader {
                         final Configuration subreportConfiguration = getClassReportConfiguration(subreportClass);
                         final Map<Annotation, Pair<Class<?>, Method>> subreportAnnotations = loadColumns(subreportClass, subreportConfiguration, false);
                         final List<?> list = bindForClass(subreportClass, subreportConfiguration, subreportAnnotations, unwindedAnnotations, treatment);
-                        subreportsData.add(new Pair<>(list, pair.getRight()));
+                        subreportsData.add(Pair.of(list, pair.getRight()));
                     }
                 }
 
@@ -172,7 +172,7 @@ public class ReportLoader {
         }
 
         for (SpecialColumn specialColumn : specialColumns) {
-            annotations.put(specialColumn, new Pair<>(null, null));
+            annotations.put(specialColumn, Pair.of(null, null));
         }
 
         if(recursive){
