@@ -9,11 +9,11 @@ import java.lang.annotation.Target;
 @Target(ElementType.ANNOTATION_TYPE)
 public @interface Configuration {
     String reportName();
+    String templatePath() default "";
     String sheetName() default "";
     boolean showHeader() default true;
     boolean sortableHeader() default false;
-    short headerOffset() default 0;
-    short dataOffset() default 1;
+    short headerRowIndex() default 0;
     SpecialRow[] specialRows() default {};
     SpecialColumn[] specialColumns() default {};
 }

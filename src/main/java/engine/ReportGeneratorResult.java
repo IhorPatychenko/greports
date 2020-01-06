@@ -1,6 +1,7 @@
 package engine;
 
 import content.ReportData;
+import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -14,17 +15,17 @@ public class ReportGeneratorResult {
         reportData.add(data);
     }
 
-    public void writeToFile(String filePath) throws IOException {
+    public void writeToFile(String filePath) throws IOException, InvalidFormatException {
         writeToFile(new File(filePath));
     }
 
-    public void writeToFile(File file) throws IOException {
+    public void writeToFile(File file) throws IOException, InvalidFormatException {
         writeToFile(new FileOutputStream(file));
     }
 
-    public void writeToFile(FileOutputStream fileOutputStream) throws IOException {
-        ReportDataInjector dataInjector = new ReportDataInjector(reportData);
-        dataInjector.inject();
-        dataInjector.writeToFileOutputStream(fileOutputStream);
+    public void writeToFile(FileOutputStream fileOutputStream) throws IOException, InvalidFormatException {
+        ReportInjector reportInjector = new ReportInjector(reportData);
+        reportInjector.inject();
+        reportInjector.writeToFileOutputStream(fileOutputStream);
     }
 }
