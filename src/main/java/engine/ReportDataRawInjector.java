@@ -143,11 +143,15 @@ class ReportDataRawInjector extends ReportDataInjector {
                 if(!ValueType.FORMULA.equals(valueType)){
                     setCellValue(cell, specialCell.getValue());
                 } else {
-                    String formula = specialCell.getValue().toString();
+                    StringBuilder formula = new StringBuilder(specialCell.getValue().toString());
                     CellReference firstCellReference = super.getCellReferenceForTargetId(sheet.getRow(reportData.getDataStartRow()), specialCell.getTargetId());
                     CellReference lastCellReference = super.getCellReferenceForTargetId(sheet.getRow(reportData.getDataStartRow() + reportData.getRowsCount() - 1), specialCell.getTargetId());
-                    formula = formula.replace(specialCell.getTargetId(), firstCellReference.formatAsString() + ":" + lastCellReference.formatAsString());
-                    cell.setCellFormula(formula);
+                    formula.append("(")
+                            .append(firstCellReference.formatAsString())
+                            .append(":")
+                            .append(lastCellReference.formatAsString())
+                            .append(")");
+                    cell.setCellFormula(formula.toString());
                 }
                 setCellFormat(cell, specialCell.getFormat());
             }
