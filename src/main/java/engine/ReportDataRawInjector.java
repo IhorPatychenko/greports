@@ -138,7 +138,10 @@ class ReportDataRawInjector extends ReportDataInjector {
                 specialRow.setIndex(reportData.getDataStartRow() + reportData.getRowsCount() + i);
             }
             for (final ReportDataSpecialRowCell specialCell : specialRow.getSpecialCells()) {
-                final Cell cell = sheet.createRow(specialRow.getIndex()).createCell(reportData.getColumnIndexForTarget(specialCell.getTargetId()));
+                if(sheet.getRow(specialRow.getIndex()) == null){
+                    sheet.createRow(specialRow.getIndex());
+                }
+                final Cell cell = sheet.getRow(specialRow.getIndex()).createCell(reportData.getColumnIndexForTarget(specialCell.getTargetId()));
                 final ValueType valueType = specialCell.getValueType();
                 if(!ValueType.FORMULA.equals(valueType)){
                     setCellValue(cell, specialCell.getValue());
