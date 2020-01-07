@@ -289,74 +289,76 @@ class ReportDataRawInjector extends ReportDataInjector {
     }
 
     private void cellApplyStyles(Cell cell, ReportStyle style) {
-        XSSFCellStyle cellStyle;
-        final Pair<ReportStyle, String> styleKey = Pair.of(style, cell.getCellStyle().getDataFormatString());
-        if(!_stylesCache.containsKey(styleKey) || style.isClonePreviousStyle()){
-            cellStyle = currentWorkbook.createCellStyle();
-            cellStyle.setDataFormat(cell.getCellStyle().getDataFormat());
-            if(style.isClonePreviousStyle()){
-                cellStyle.cloneStyleFrom(cell.getCellStyle());
-            }
-            // Borders
-            if(style.getBorderBottom() != null) {
-                cellStyle.setBorderBottom(style.getBorderBottom());
-            }
-            if(style.getBorderTop() != null) {
-                cellStyle.setBorderTop(style.getBorderTop());
-            }
-            if(style.getBorderLeft() != null) {
-                cellStyle.setBorderLeft(style.getBorderLeft());
-            }
-            if(style.getBorderRight() != null) {
-                cellStyle.setBorderRight(style.getBorderRight());
-            }
+        if(cell != null){
+            XSSFCellStyle cellStyle;
+            final Pair<ReportStyle, String> styleKey = Pair.of(style, cell.getCellStyle().getDataFormatString());
+            if(!_stylesCache.containsKey(styleKey) || style.isClonePreviousStyle()){
+                cellStyle = currentWorkbook.createCellStyle();
+                cellStyle.setDataFormat(cell.getCellStyle().getDataFormat());
+                if(style.isClonePreviousStyle()){
+                    cellStyle.cloneStyleFrom(cell.getCellStyle());
+                }
+                // Borders
+                if(style.getBorderBottom() != null) {
+                    cellStyle.setBorderBottom(style.getBorderBottom());
+                }
+                if(style.getBorderTop() != null) {
+                    cellStyle.setBorderTop(style.getBorderTop());
+                }
+                if(style.getBorderLeft() != null) {
+                    cellStyle.setBorderLeft(style.getBorderLeft());
+                }
+                if(style.getBorderRight() != null) {
+                    cellStyle.setBorderRight(style.getBorderRight());
+                }
 
-            // Colors
-            if(style.getForegroundColor() != null) {
-                cellStyle.setFillForegroundColor(new XSSFColor(style.getForegroundColor()));
-                cellStyle.setFillPattern(style.getFillPattern());
-            }
-            if(style.getBorderColor() != null){
-                cellStyle.setBorderColor(XSSFCellBorder.BorderSide.TOP, new XSSFColor(style.getBorderColor()));
-                cellStyle.setBorderColor(XSSFCellBorder.BorderSide.RIGHT, new XSSFColor(style.getBorderColor()));
-                cellStyle.setBorderColor(XSSFCellBorder.BorderSide.BOTTOM, new XSSFColor(style.getBorderColor()));
-                cellStyle.setBorderColor(XSSFCellBorder.BorderSide.LEFT, new XSSFColor(style.getBorderColor()));
-            }
+                // Colors
+                if(style.getForegroundColor() != null) {
+                    cellStyle.setFillForegroundColor(new XSSFColor(style.getForegroundColor()));
+                    cellStyle.setFillPattern(style.getFillPattern());
+                }
+                if(style.getBorderColor() != null){
+                    cellStyle.setBorderColor(XSSFCellBorder.BorderSide.TOP, new XSSFColor(style.getBorderColor()));
+                    cellStyle.setBorderColor(XSSFCellBorder.BorderSide.RIGHT, new XSSFColor(style.getBorderColor()));
+                    cellStyle.setBorderColor(XSSFCellBorder.BorderSide.BOTTOM, new XSSFColor(style.getBorderColor()));
+                    cellStyle.setBorderColor(XSSFCellBorder.BorderSide.LEFT, new XSSFColor(style.getBorderColor()));
+                }
 
-            // Font
-            if(Utils.anyNotNull(style.getFontColor(), style.getBoldFont(), style.getItalicFont(), style.getUnderlineFont(), style.getStrikeoutFont())){
-                XSSFFont font = currentWorkbook.createFont();
-                if(style.getFontColor() != null) {
-                    font.setColor(new XSSFColor(style.getFontColor()));
+                // Font
+                if(Utils.anyNotNull(style.getFontColor(), style.getBoldFont(), style.getItalicFont(), style.getUnderlineFont(), style.getStrikeoutFont())){
+                    XSSFFont font = currentWorkbook.createFont();
+                    if(style.getFontColor() != null) {
+                        font.setColor(new XSSFColor(style.getFontColor()));
+                    }
+                    if(style.getBoldFont() != null) {
+                        font.setBold(style.getBoldFont());
+                    }
+                    if(style.getItalicFont() != null) {
+                        font.setItalic(style.getItalicFont());
+                    }
+                    if(style.getUnderlineFont() != null) {
+                        font.setUnderline(style.getUnderlineFont());
+                    }
+                    if(style.getStrikeoutFont() != null){
+                        font.setStrikeout(style.getStrikeoutFont());
+                    }
+                    cellStyle.setFont(font);
                 }
-                if(style.getBoldFont() != null) {
-                    font.setBold(style.getBoldFont());
-                }
-                if(style.getItalicFont() != null) {
-                    font.setItalic(style.getItalicFont());
-                }
-                if(style.getUnderlineFont() != null) {
-                    font.setUnderline(style.getUnderlineFont());
-                }
-                if(style.getStrikeoutFont() != null){
-                    font.setStrikeout(style.getStrikeoutFont());
-                }
-                cellStyle.setFont(font);
-            }
 
-            // Alignment
-            if(style.getHorizontalAlignment() != null) {
-                cellStyle.setAlignment(style.getHorizontalAlignment());
-            }
-            if(style.getVerticalAlignment() != null) {
-                cellStyle.setVerticalAlignment(style.getVerticalAlignment());
-            }
+                // Alignment
+                if(style.getHorizontalAlignment() != null) {
+                    cellStyle.setAlignment(style.getHorizontalAlignment());
+                }
+                if(style.getVerticalAlignment() != null) {
+                    cellStyle.setVerticalAlignment(style.getVerticalAlignment());
+                }
 
-            _stylesCache.put(styleKey, cellStyle);
-        } else {
-            cellStyle = _stylesCache.get(styleKey);
+                _stylesCache.put(styleKey, cellStyle);
+            } else {
+                cellStyle = _stylesCache.get(styleKey);
+            }
+            cell.setCellStyle(cellStyle);
         }
-        cell.setCellStyle(cellStyle);
     }
 
     private void adjustColumns(Sheet sheet) {

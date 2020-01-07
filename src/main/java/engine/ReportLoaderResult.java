@@ -15,7 +15,7 @@ public class ReportLoaderResult {
     }
 
     public <T> List<T> getResult(Class<T> clazz) {
-        return ((List<T>) results.get(clazz));
+        return ((List<T>) results.getOrDefault(clazz, new ArrayList<T>()));
     }
 
     protected <T> void addError(Class<T> clazz, ReportLoaderError error) {

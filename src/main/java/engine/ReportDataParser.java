@@ -15,6 +15,8 @@ import content.row.ReportDataRow;
 import content.ReportHeader;
 import content.row.ReportDataSpecialRow;
 import exceptions.ReportEngineReflectionException;
+import org.apache.commons.codec.binary.StringUtils;
+import org.apache.poi.util.StringUtil;
 import styles.interfaces.StripedRows;
 import styles.interfaces.StyledReport;
 import positioning.TranslationsParser;
@@ -33,6 +35,8 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Function;
 
 import static exceptions.ReportEngineRuntimeExceptionCode.ILLEGAL_ACCESS;
@@ -63,7 +67,11 @@ final class ReportDataParser {
     private <T> ReportDataParser parse(Collection<T> collection, final String reportName, Class<T> clazz, Float positionIncrement) throws ReportEngineReflectionException {
         final Report reportAnnotation = AnnotationUtils.getReportAnnotation(clazz);
         configuration = AnnotationUtils.getReportConfiguration(reportAnnotation, reportName);
-        reportData = new ReportData(reportName, configuration.sheetName(), configuration.templatePath());
+        String templatePath = configuration.templatePath();
+        if(!"".equals(templatePath)){
+            templatePath = Objects.requireNonNull(getClass().getClassLoader().getResource(templatePath)).getPath();
+        }
+        reportData = new ReportData(reportName, configuration.sheetName(), templatePath);
         translations = new TranslationsParser(reportAnnotation.translationsDir()).parse(reportLang);
         loadReportHeader(clazz, positionIncrement);
         loadRowsData(collection, clazz, positionIncrement);
