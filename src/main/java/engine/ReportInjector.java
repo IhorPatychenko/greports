@@ -22,7 +22,7 @@ public class ReportInjector {
     public void inject() throws IOException, InvalidFormatException {
         for (ReportData data : reportData) {
             if (data.isReportWithTemplate()) {
-                new ReportDataTemplateInjector((XSSFWorkbook) WorkbookFactory.create(new FileInputStream(data.getTemplatePath())), currentWorkbook, data).inject();
+                new ReportDataTemplateInjector((XSSFWorkbook) WorkbookFactory.create(data.getTemplateURL().openStream()), currentWorkbook, data).inject();
             } else {
                 new ReportDataRawInjector(currentWorkbook, data).inject();
             }

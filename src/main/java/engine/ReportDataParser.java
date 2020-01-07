@@ -67,11 +67,7 @@ final class ReportDataParser {
     private <T> ReportDataParser parse(Collection<T> collection, final String reportName, Class<T> clazz, Float positionIncrement) throws ReportEngineReflectionException {
         final Report reportAnnotation = AnnotationUtils.getReportAnnotation(clazz);
         configuration = AnnotationUtils.getReportConfiguration(reportAnnotation, reportName);
-        String templatePath = configuration.templatePath();
-        if(!"".equals(templatePath)){
-            templatePath = Objects.requireNonNull(getClass().getClassLoader().getResource(templatePath)).getPath();
-        }
-        reportData = new ReportData(reportName, configuration.sheetName(), templatePath);
+        reportData = new ReportData(reportName, configuration.sheetName(), getClass().getClassLoader().getResource(configuration.templatePath()));
         translations = new TranslationsParser(reportAnnotation.translationsDir()).parse(reportLang);
         loadReportHeader(clazz, positionIncrement);
         loadRowsData(collection, clazz, positionIncrement);

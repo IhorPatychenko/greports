@@ -6,14 +6,14 @@ import content.row.ReportDataRow;
 import content.row.ReportDataSpecialRow;
 import styles.ReportDataStyles;
 
-import java.io.InputStream;
+import java.net.URL;
 import java.util.*;
 
 public class ReportData {
 
     private final String name;
     private String sheetName;
-    private String templatePath;
+    private URL templateURL;
     private ReportHeader header;
     private boolean showHeader = true;
     private int headerStartRow;
@@ -24,10 +24,10 @@ public class ReportData {
     private ReportDataStyles reportDataStyles = new ReportDataStyles();
     private Map<String, Integer> targetIndexes = new HashMap<>();
 
-    public ReportData(String name, String sheetName, String templatePath) {
+    public ReportData(String name, String sheetName, URL templateURL) {
         this.name = name;
         this.sheetName = !sheetName.isEmpty() ? sheetName : null;
-        this.templatePath = templatePath;
+        this.templateURL = templateURL;
     }
 
     public String getName() {
@@ -38,12 +38,12 @@ public class ReportData {
         return sheetName;
     }
 
-    public String getTemplatePath() {
-        return templatePath;
+    public URL getTemplateURL() {
+        return templateURL;
     }
 
     public boolean isReportWithTemplate(){
-        return !Objects.equals(templatePath, "");
+        return !Objects.equals(templateURL, null);
     }
 
     public List<ReportDataRow> getRows() {
