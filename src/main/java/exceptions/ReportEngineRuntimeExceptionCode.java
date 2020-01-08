@@ -7,6 +7,9 @@ public class ReportEngineRuntimeExceptionCode {
     public static final Integer NO_METHOD_ERROR = 4;
     public static final Integer ILLEGAL_ARGUMENT = 5;
 
+
+    public static final Integer VALIDATION_ERROR = 7;
+
     public static final Integer REPORT_ANNOTATION_NOT_FOUND = 10;
     public static final Integer CONFIGURATION_ANNOTATION_NOT_FOUND = 10;
 }

@@ -1,6 +1,7 @@
 package annotations;
 
 import engine.ValueType;
+import validators.AbstractValidator;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Repeatable;
@@ -14,6 +15,7 @@ import java.lang.annotation.Target;
 public @interface Column {
     String reportName();
     float position();
+    Class<? extends AbstractValidator>[] validators() default {};
     String title() default "";
     String format() default "";
     String id() default "";
