@@ -4,7 +4,9 @@ import org.yaml.snakeyaml.Yaml;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -32,13 +34,14 @@ public class TranslationsParser {
         this.translationsDir = translationsDir;
     }
 
-    public Map<String, Object> parse(String reportLang) {
+    public Map<String, Object> parse(String reportLang) throws IOException {
         Yaml yaml = new Yaml();
         InputStream inputStream;
-        try {
-            inputStream = new FileInputStream(String.format("%smessages.%s.%s", translationsDir, reportLang, fileExtension.toString()));
+        final URL resource = getClass().getClassLoader().getResource(String.format("%smessages.%s.%s", translationsDir, reportLang, fileExtension.toString()));
+        if(resource != null){
+            inputStream = resource.openStream();
             return yaml.load(inputStream);
-        } catch (FileNotFoundException e) {
+        } else {
             return new HashMap<>();
         }
     }

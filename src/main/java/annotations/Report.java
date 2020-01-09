@@ -11,6 +11,5 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
 public @interface Report {
-    String translationsDir() default "src/main/java/resources/i18n/";
     Configuration[] reportConfigurations() default {};
 }

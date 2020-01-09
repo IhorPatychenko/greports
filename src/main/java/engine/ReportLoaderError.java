@@ -7,14 +7,16 @@ public class ReportLoaderError {
 
     private Cell cell;
     private CellReference cellReference;
-    private Class<?> valueClass;
-    private Class<?> methodParameterClass;
+    private String errorMsg;
 
-    public ReportLoaderError(Cell cell, Class<?> valueClass, Class<?> methodParameterClass) {
+    public ReportLoaderError(Cell cell, String errorMsg){
         this.cell = cell;
         this.cellReference = new CellReference(cell);
-        this.valueClass = valueClass;
-        this.methodParameterClass = methodParameterClass;
+        this.errorMsg = errorMsg;
+    }
+
+    public String getErrorMsg() {
+        return errorMsg;
     }
 
     public Integer getRowIndex(){
@@ -39,21 +41,5 @@ public class ReportLoaderError {
 
     public String getColumnReference(){
         return cellReference.getCellRefParts()[2];
-    }
-
-    public Class<?> getValueClass() {
-        return valueClass;
-    }
-
-    public String getValueClassName(){
-        return valueClass.getSimpleName();
-    }
-
-    public Class<?> getMethodParameterClass() {
-        return methodParameterClass;
-    }
-
-    public String getMethodParameterClassName(){
-        return methodParameterClass.getSimpleName();
     }
 }

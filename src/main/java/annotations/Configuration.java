@@ -9,6 +9,8 @@ import java.lang.annotation.Target;
 @Target(ElementType.ANNOTATION_TYPE)
 public @interface Configuration {
     String reportName();
+    String translationsDir() default "src/main/java/resources/i18n/";
+    String reportLang() default "en";
     String templatePath() default "";
     String sheetName() default "";
     boolean showHeader() default true;

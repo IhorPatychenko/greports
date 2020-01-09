@@ -15,7 +15,7 @@ import java.lang.annotation.Target;
 public @interface Column {
     String reportName();
     float position();
-    Class<? extends AbstractValidator>[] validators() default {};
+    Validator[] validators() default {};
     String title() default "";
     String format() default "";
     String id() default "";

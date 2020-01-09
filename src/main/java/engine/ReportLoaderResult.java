@@ -32,4 +32,7 @@ public class ReportLoaderResult {
         return errors.get(clazz);
     }
 
+    public <T> boolean hasErrors(Class<T> clazz) {
+        return errors.containsKey(clazz);
+    }
 }

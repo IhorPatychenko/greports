@@ -15,8 +15,6 @@ import content.row.ReportDataRow;
 import content.ReportHeader;
 import content.row.ReportDataSpecialRow;
 import exceptions.ReportEngineReflectionException;
-import org.apache.commons.codec.binary.StringUtils;
-import org.apache.poi.util.StringUtil;
 import styles.interfaces.StripedRows;
 import styles.interfaces.StyledReport;
 import positioning.TranslationsParser;
@@ -24,6 +22,7 @@ import utils.AnnotationUtils;
 import utils.Pair;
 import utils.ReflectionUtils;
 
+import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -35,8 +34,6 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
 import java.util.function.Function;
 
 import static exceptions.ReportEngineRuntimeExceptionCode.ILLEGAL_ACCESS;
@@ -46,29 +43,25 @@ import static exceptions.ReportEngineRuntimeExceptionCode.NO_METHOD_ERROR;
 
 final class ReportDataParser {
 
-    private String reportLang;
     private ReportData reportData;
     private Map<String, Object> translations;
     private Configuration configuration;
     private List<ReportData> subreportsData = new ArrayList<>();
 
-    public ReportDataParser(String lang) {
-        this.reportLang = lang;
-    }
 
-    public <T> ReportDataParser parse(T item, final String reportName, Class<T> clazz) throws ReportEngineReflectionException {
+    public <T> ReportDataParser parse(T item, final String reportName, Class<T> clazz) throws ReportEngineReflectionException, IOException {
         return parse(Collections.singletonList(item), reportName, clazz);
     }
 
-    public <T> ReportDataParser parse(Collection<T> collection, final String reportName, Class<T> clazz) throws ReportEngineReflectionException {
+    public <T> ReportDataParser parse(Collection<T> collection, final String reportName, Class<T> clazz) throws ReportEngineReflectionException, IOException {
         return parse(collection, reportName, clazz, 0f);
     }
 
-    private <T> ReportDataParser parse(Collection<T> collection, final String reportName, Class<T> clazz, Float positionIncrement) throws ReportEngineReflectionException {
+    private <T> ReportDataParser parse(Collection<T> collection, final String reportName, Class<T> clazz, Float positionIncrement) throws ReportEngineReflectionException, IOException {
         final Report reportAnnotation = AnnotationUtils.getReportAnnotation(clazz);
         configuration = AnnotationUtils.getReportConfiguration(reportAnnotation, reportName);
-        reportData = new ReportData(reportName, configuration.sheetName(), getClass().getClassLoader().getResource(configuration.templatePath()));
-        translations = new TranslationsParser(reportAnnotation.translationsDir()).parse(reportLang);
+        reportData = new ReportData(reportName, configuration.sheetName(), !configuration.templatePath().equals("") ? getClass().getClassLoader().getResource(configuration.templatePath()) : null);
+        translations = new TranslationsParser(configuration.translationsDir()).parse(configuration.reportLang());
         loadReportHeader(clazz, positionIncrement);
         loadRowsData(collection, clazz, positionIncrement);
         loadSpecialColumns(collection, clazz);
@@ -144,8 +137,8 @@ final class ReportDataParser {
         }
     }
 
-    private <T> void loadSubreports(Collection<T> collection, Class<T> clazz) {
-        final ReportDataParser reportDataParser = new ReportDataParser(reportLang);
+    private <T> void loadSubreports(Collection<T> collection, Class<T> clazz) throws IOException {
+        final ReportDataParser reportDataParser = new ReportDataParser();
         Map<Field, Subreport> subreportMap = new LinkedHashMap<>();
         Function<Pair<Field, Subreport>, Void> subreportFunction = AnnotationUtils.getSubreportsFunction(subreportMap);
         AnnotationUtils.fieldsWithSubreportAnnotations(clazz, subreportFunction, reportData.getName());
