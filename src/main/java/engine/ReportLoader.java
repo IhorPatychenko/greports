@@ -31,6 +31,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -222,28 +223,28 @@ public class ReportLoader {
             if(cell != null){
                 if(CellType.BOOLEAN.equals(cell.getCellTypeEnum())){
                     value = cell.getBooleanCellValue();
-                    parameterType = Class.forName("Boolean");
+                    parameterType = Boolean.class;
                 } else if(CellType.STRING.equals(cell.getCellTypeEnum())){
                     value = cell.getRichStringCellValue().getString();
                 } else if(CellType.NUMERIC.equals(cell.getCellTypeEnum())){
                     if (DateUtil.isCellDateFormatted(cell)) {
                         value = cell.getDateCellValue();
-                        parameterType = Class.forName("Date");
+                        parameterType = Date.class;
                     } else if(parameterType.equals(Double.class) || parameterType.getName().equals("double")){
                         value = cell.getNumericCellValue();
-                        parameterType = Class.forName("Double");
+                        parameterType = Double.class;
                     } else if(parameterType.equals(Integer.class) || parameterType.getName().equals("int")) {
                         value = new Double(cell.getNumericCellValue()).intValue();
-                        parameterType = Class.forName("Integer");
+                        parameterType = Integer.class;
                     } else if(parameterType.equals(Long.class) || parameterType.getName().equals("long")){
                         value = new Double(cell.getNumericCellValue()).longValue();
-                        parameterType = Class.forName("Long");
+                        parameterType = Long.class;
                     } else if(parameterType.equals(Float.class) || parameterType.getName().equals("float")){
                         value = new Double(cell.getNumericCellValue()).floatValue();
-                        parameterType = Class.forName("Float");
+                        parameterType = Float.class;
                     } else if(parameterType.equals(Short.class) || parameterType.getName().equals("short")){
                         value = new Double(cell.getNumericCellValue()).shortValue();
-                        parameterType = Class.forName("Short");
+                        parameterType = Short.class;
                     }
                 } else if(CellType.FORMULA.equals(cell.getCellTypeEnum())) {
                     value = cell.getCellFormula();
@@ -256,8 +257,6 @@ public class ReportLoader {
             throw new ReportEngineReflectionException("Error executing method witch does not have access to the definition of the specified class", ILLEGAL_ACCESS);
         } catch (InvocationTargetException e) {
             throw new ReportEngineReflectionException("Error executing method witch does not have access to the definition of the specified class", INVOCATION_ERROR);
-        } catch (ClassNotFoundException ignored) {
-            // Impossible to happen since all place where it can be thrown are working correctly
         }
     }
 
@@ -274,7 +273,7 @@ public class ReportLoader {
 
     private void validate(final AbstractValidator validatorInstance, final Object value) throws ReportEngineValidationException {
         if(!validatorInstance.isValid(value)){
-            throw new ReportEngineValidationException(translations.getOrDefault(validatorInstance.getErrorKey(), validatorInstance.getDefaultErrorMessage()).toString(), VALIDATION_ERROR);
+            throw new ReportEngineValidationException(translations.getOrDefault(validatorInstance.getErrorKey(), validatorInstance.getDefaultErrorMessage()).toString().replace("%value%", validatorInstance.getValue()), VALIDATION_ERROR);
         }
     }
 
