@@ -32,6 +32,15 @@ public class ReportLoaderResult {
         return errors.get(clazz);
     }
 
+    public boolean hasErrors(){
+        for (final Map.Entry<Class<?>, List<ReportLoaderError>> entry : errors.entrySet()) {
+            if(entry.getValue().size() > 0){
+                return true;
+            }
+        }
+        return false;
+    }
+
     public <T> boolean hasErrors(Class<T> clazz) {
         return errors.containsKey(clazz);
     }
