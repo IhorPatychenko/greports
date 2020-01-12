@@ -7,7 +7,7 @@ import org.apache.poi.ss.usermodel.HorizontalAlignment;
 import org.apache.poi.ss.usermodel.VerticalAlignment;
 import styles.interfaces.StripedRows.StripedRowsIndex;
 
-import java.awt.*;
+import java.awt.Color;
 
 public class ReportStyle {
 

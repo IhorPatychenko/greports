@@ -8,7 +8,7 @@ public class TypesValidator extends AbstractValidator {
 
     @Override
     public boolean isValid(final Object object) {
-        return value.equals(object.toString());
+        return object == null || value.equals(object.toString());
     }
 
     @Override

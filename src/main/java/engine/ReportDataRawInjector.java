@@ -75,7 +75,7 @@ class ReportDataRawInjector extends ReportDataInjector {
     private void createHeader(Sheet sheet) {
         if(reportData.isShowHeader()){
             final ReportHeader header = reportData.getHeader();
-            final Row headerRow = sheet.createRow(reportData.getHeaderStartRow());
+            final Row headerRow = sheet.createRow(reportData.getHeaderRowIndex());
             for (int i = 0; i < header.getCells().size(); i++) {
                 createHeaderCell(headerRow, header.getCells().get(i), i);
             }

@@ -11,8 +11,9 @@ import positioning.RectangleRange;
 import positioning.Tuple;
 import positioning.VerticalRange;
 
-import java.awt.*;
-import java.util.*;
+import java.awt.Color;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.stream.Collectors;
 
 public class ReportStylesBuilder<T extends ReportStyle> {

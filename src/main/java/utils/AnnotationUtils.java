@@ -1,6 +1,9 @@
 package utils;
 
-import annotations.*;
+import annotations.Column;
+import annotations.Configuration;
+import annotations.Report;
+import annotations.Subreport;
 import content.cell.ReportHeaderCell;
 import exceptions.ReportEngineReflectionException;
 import exceptions.ReportEngineRuntimeExceptionCode;
@@ -15,7 +18,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
 public class AnnotationUtils {
 

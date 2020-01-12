@@ -42,8 +42,8 @@ public class ReportDataTemplateInjector extends ReportDataInjector {
     private void createHeader(Sheet sourceSheet, Sheet targetSheet) {
         if(reportData.isShowHeader()){
             final ReportHeader header = reportData.getHeader();
-            final Row sourceHeaderRow = sourceSheet.getRow(reportData.getHeaderStartRow());
-            final Row targetHeaderRow = targetSheet.createRow(reportData.getHeaderStartRow());
+            final Row sourceHeaderRow = sourceSheet.getRow(reportData.getHeaderRowIndex());
+            final Row targetHeaderRow = targetSheet.createRow(reportData.getHeaderRowIndex());
             for (int i = 0; i < header.getCells().size(); i++) {
                 cloneCell(sourceHeaderRow, targetHeaderRow, header.getCells().get(i).getTitle(), i, CellType.HEADER);
             }

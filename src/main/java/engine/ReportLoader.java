@@ -36,6 +36,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Function;
 
 import static exceptions.ReportEngineRuntimeExceptionCode.*;
@@ -105,10 +106,10 @@ public class ReportLoader {
                         try {
                             instanceSetValueFromCell(method, instance, cell, (Column) annotation);
                         } catch (ReportEngineValidationException e) {
+                            ReportLoaderError error = new ReportLoaderError(cell, e.getMessage());
                             if(ReportLoaderErrorTreatment.THROW_ERROR.equals(treatment)){
-                                throw new ReportEngineReflectionException("Error setting the value to the instance attribute", ILLEGAL_ARGUMENT);
+                                throw new ReportEngineReflectionException(e.getMessage(), ILLEGAL_ARGUMENT);
                             } else {
-                                ReportLoaderError error = new ReportLoaderError(cell, e.getMessage());
                                 loaderResult.addError(clazz, error);
                                 entryError = true;
                                 if(!ReportLoaderErrorTreatment.SKIP_COLUMN_ON_ERROR.equals(treatment)){
@@ -248,8 +249,13 @@ public class ReportLoader {
                     }
                 } else if(CellType.FORMULA.equals(cell.getCellTypeEnum())) {
                     value = cell.getCellFormula();
+                } else if(CellType.BLANK.equals(cell.getCellTypeEnum())){
+                    parameterType = String.class;
+                    value = null;
                 }
-                validate(new TypesValidator(parameterType.getName()), value.getClass().getName());
+                if(!CellType.BLANK.equals(cell.getCellTypeEnum())){
+                    validate(new TypesValidator(parameterType.getName()), value.getClass().getName());
+                }
                 checkValidations(value, column);
                 method.invoke(instance, value);
             }
@@ -263,7 +269,10 @@ public class ReportLoader {
     private void checkValidations(final Object value, final Column column) throws ReportEngineValidationException, ReportEngineReflectionException {
         for (final Validator validator : column.validators()) {
             try {
-                final AbstractValidator validatorInstance = validator.validatorClass().getDeclaredConstructor(String.class).newInstance(validator.value());
+                Constructor<? extends AbstractValidator> constructor = validator.validatorClass().getDeclaredConstructor(String.class);
+                constructor.setAccessible(true);
+                AbstractValidator validatorInstance = Optional.ofNullable(AbstractValidator.getValidatorOrNull(validator.validatorClass(), validator.value()))
+                        .orElse(constructor.newInstance(validator.value()));
                 validate(validatorInstance, value);
             } catch (ReflectiveOperationException e) {
                 throw new ReportEngineValidationException("Error instantiating a validator @" + validator.validatorClass().getSimpleName(), INSTANTIATION_ERROR);

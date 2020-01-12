@@ -1,6 +1,5 @@
 package styles;
 
-import org.apache.poi.ss.usermodel.IndexedColors;
 import styles.interfaces.StripedRows.StripedRowsIndex;
 
 import java.awt.*;

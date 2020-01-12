@@ -1,11 +1,22 @@
 package validators;
 
+import utils.Pair;
+
+import java.util.HashMap;
+import java.util.Map;
+
 public abstract class AbstractValidator {
 
-    protected String value;
+    protected static Map<Pair<Class<? extends AbstractValidator>, String>, AbstractValidator> _validators = new HashMap<>();
 
-    public AbstractValidator(final String value) {
+    protected final String value;
+
+    protected AbstractValidator(final String value) {
         this.value = value;
+    }
+
+    public static AbstractValidator getValidatorOrNull(Class<? extends AbstractValidator> validatorClass, String value){
+        return _validators.getOrDefault(Pair.of(validatorClass, value), null);
     }
 
     public String getValue() {
