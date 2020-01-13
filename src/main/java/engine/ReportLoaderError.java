@@ -3,7 +3,11 @@ package engine;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.util.CellReference;
 
-public class ReportLoaderError {
+import java.io.Serializable;
+
+public class ReportLoaderError implements Serializable {
+
+    private static final long serialVersionUID = 2763041428905940945L;
 
     private Integer rowIndex;
     private Integer columnIndex;
@@ -18,7 +22,7 @@ public class ReportLoaderError {
         this.columnIndex = cell.getColumnIndex();
         final CellReference cellReference = new CellReference(cell);
         this.cellReference = cellReference.formatAsString();
-        this.sheetName = cellReference.getCellRefParts()[0];
+        this.sheetName = cell.getSheet().getSheetName();
         this.rowReference = cellReference.getCellRefParts()[1];
         this.columnReference = cellReference.getCellRefParts()[2];
         this.errorMsg = errorMsg;
