@@ -270,7 +270,11 @@ public class ReportLoader {
 
     private void validate(final AbstractValidator validatorInstance, final Object value) throws ReportEngineValidationException {
         if(!validatorInstance.isValid(value)){
-            throw new ReportEngineValidationException(translations.getOrDefault(validatorInstance.getErrorMessage(), validatorInstance.getErrorMessage()).toString().replace("%value%", validatorInstance.getValue()), VALIDATION_ERROR);
+            String errorMessage = translations.getOrDefault(validatorInstance.getErrorMessage(), validatorInstance.getErrorMessage()).toString();
+            if(validatorInstance.getValue() != null){
+                errorMessage = errorMessage.replace("%value%", validatorInstance.getValue());
+            }
+            throw new ReportEngineValidationException(errorMessage.replace("%value%", errorMessage), VALIDATION_ERROR);
         }
     }
 
