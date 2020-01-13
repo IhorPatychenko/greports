@@ -223,38 +223,27 @@ public class ReportLoader {
             if(cell != null){
                 if(CellType.BOOLEAN.equals(cell.getCellTypeEnum())){
                     value = cell.getBooleanCellValue();
-//                    parameterType = Boolean.class;
                 } else if(CellType.STRING.equals(cell.getCellTypeEnum())){
                     value = cell.getRichStringCellValue().getString();
                 } else if(CellType.NUMERIC.equals(cell.getCellTypeEnum())){
                     if (DateUtil.isCellDateFormatted(cell)) {
                         value = cell.getDateCellValue();
-//                        parameterType = Date.class;
                     } else if(parameterType.equals(Double.class) || parameterType.getName().equals("double")){
                         value = cell.getNumericCellValue();
-//                        parameterType = Double.class;
                     } else if(parameterType.equals(Integer.class) || parameterType.getName().equals("int")) {
                         value = new Double(cell.getNumericCellValue()).intValue();
-//                        parameterType = Integer.class;
                     } else if(parameterType.equals(Long.class) || parameterType.getName().equals("long")){
                         value = new Double(cell.getNumericCellValue()).longValue();
-//                        parameterType = Long.class;
                     } else if(parameterType.equals(Float.class) || parameterType.getName().equals("float")){
                         value = new Double(cell.getNumericCellValue()).floatValue();
-//                        parameterType = Float.class;
                     } else if(parameterType.equals(Short.class) || parameterType.getName().equals("short")){
                         value = new Double(cell.getNumericCellValue()).shortValue();
-//                        parameterType = Short.class;
                     }
                 } else if(CellType.FORMULA.equals(cell.getCellTypeEnum())) {
                     value = cell.getCellFormula();
                 } else if(CellType.BLANK.equals(cell.getCellTypeEnum())){
-//                    parameterType = String.class;
                     value = null;
                 }
-//                if(!CellType.BLANK.equals(cell.getCellTypeEnum())){
-//                    validate(new TypesValidator(parameterType), value.getClass());
-//                }
                 checkValidations(value, column);
                 method.invoke(instance, value);
             }
@@ -268,10 +257,10 @@ public class ReportLoader {
     private void checkValidations(final Object value, final Column column) throws ReportEngineValidationException, ReportEngineReflectionException {
         for (final Validator validator : column.validators()) {
             try {
-                Constructor<? extends AbstractValidator> constructor = validator.validatorClass().getDeclaredConstructor(String.class);
+                Constructor<? extends AbstractValidator> constructor = validator.validatorClass().getDeclaredConstructor(String.class, String.class);
                 constructor.setAccessible(true);
                 AbstractValidator validatorInstance = Optional.ofNullable(AbstractValidator.getValidatorOrNull(validator.validatorClass(), validator.value()))
-                        .orElse(constructor.newInstance(validator.value()));
+                        .orElse(constructor.newInstance(validator.value(), validator.errorMessage()));
                 validate(validatorInstance, value);
             } catch (ReflectiveOperationException e) {
                 throw new ReportEngineValidationException("Error instantiating a validator @" + validator.validatorClass().getSimpleName(), INSTANTIATION_ERROR);
@@ -281,7 +270,7 @@ public class ReportLoader {
 
     private void validate(final AbstractValidator validatorInstance, final Object value) throws ReportEngineValidationException {
         if(!validatorInstance.isValid(value)){
-            throw new ReportEngineValidationException(translations.getOrDefault(validatorInstance.getErrorKey(), validatorInstance.getDefaultErrorMessage()).toString().replace("%value%", validatorInstance.getValue()), VALIDATION_ERROR);
+            throw new ReportEngineValidationException(translations.getOrDefault(validatorInstance.getErrorMessage(), validatorInstance.getErrorMessage()).toString().replace("%value%", validatorInstance.getValue()), VALIDATION_ERROR);
         }
     }
 

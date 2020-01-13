@@ -10,9 +10,11 @@ public abstract class AbstractValidator {
     protected static Map<Pair<Class<? extends AbstractValidator>, String>, AbstractValidator> _validators = new HashMap<>();
 
     protected final String value;
+    protected final String errorMessage;
 
-    protected AbstractValidator(final String value) {
+    protected AbstractValidator(final String value, final String errorMessage) {
         this.value = value;
+        this.errorMessage = errorMessage;
     }
 
     public static AbstractValidator getValidatorOrNull(Class<? extends AbstractValidator> validatorClass, String value){
@@ -23,7 +25,9 @@ public abstract class AbstractValidator {
         return value;
     }
 
+    public String getErrorMessage() {
+        return errorMessage;
+    }
+
     public abstract boolean isValid(Object object);
-    public abstract String getDefaultErrorMessage();
-    public abstract String getErrorKey();
 }
