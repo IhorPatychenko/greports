@@ -2,13 +2,17 @@ package validators;
 
 public class TypesValidator extends AbstractValidator {
 
-    public TypesValidator(final String value) {
-        super(value);
+    private Class<?> clazz;
+
+    public TypesValidator(final Class<?> clazz) {
+        super(clazz.getName());
+        this.clazz = clazz;
     }
 
     @Override
     public boolean isValid(final Object object) {
-        return object == null || value.equals(object.toString());
+        final Class<?> aClass = (Class<?>) object;
+        return aClass.equals(this.clazz);
     }
 
     @Override
@@ -18,6 +22,6 @@ public class TypesValidator extends AbstractValidator {
 
     @Override
     public String getErrorKey() {
-        return "Validator.IncompatibleTypes";
+        return "Validator.IncompatibleTypes." + clazz.getSimpleName();
     }
 }

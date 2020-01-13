@@ -15,6 +15,7 @@ public class ReportLoaderError implements Serializable {
     private String sheetName;
     private String rowReference;
     private String columnReference;
+    private String columnTitle;
     private String errorMsg;
 
     public ReportLoaderError(Cell cell, String errorMsg){
@@ -54,5 +55,13 @@ public class ReportLoaderError implements Serializable {
 
     public String getColumnReference(){
         return columnReference;
+    }
+
+    public String getColumnTitle() {
+        return columnTitle;
+    }
+
+    public void setColumnTitle(final String columnTitle) {
+        this.columnTitle = columnTitle;
     }
 }

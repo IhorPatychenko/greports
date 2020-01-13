@@ -107,6 +107,7 @@ public class ReportLoader {
                             instanceSetValueFromCell(method, instance, cell, (Column) annotation);
                         } catch (ReportEngineValidationException e) {
                             ReportLoaderError error = new ReportLoaderError(cell, e.getMessage());
+                            error.setColumnTitle(((Column) annotation).title());
                             if(ReportLoaderErrorTreatment.THROW_ERROR.equals(treatment)){
                                 throw new ReportEngineReflectionException(e.getMessage(), ILLEGAL_ARGUMENT);
                             } else {
@@ -254,7 +255,7 @@ public class ReportLoader {
                     value = null;
                 }
                 if(!CellType.BLANK.equals(cell.getCellTypeEnum())){
-                    validate(new TypesValidator(parameterType.getName()), value.getClass().getName());
+                    validate(new TypesValidator(parameterType), value.getClass());
                 }
                 checkValidations(value, column);
                 method.invoke(instance, value);
