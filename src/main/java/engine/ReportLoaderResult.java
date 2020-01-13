@@ -1,6 +1,7 @@
 package engine;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -30,6 +31,10 @@ public class ReportLoaderResult {
             errors.put(clazz, new ArrayList<>());
         }
         return errors.get(clazz);
+    }
+
+    public <T> Map<Class<?>, List<ReportLoaderError>> getErrors(){
+        return Collections.unmodifiableMap(errors);
     }
 
     public boolean hasErrors(){
