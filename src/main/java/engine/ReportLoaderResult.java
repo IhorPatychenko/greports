@@ -1,12 +1,15 @@
 package engine;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class ReportLoaderResult {
+public class ReportLoaderResult implements Serializable {
+
+    private static final long serialVersionUID = 9015684910370931236L;
 
     private Map<Class<?>, List<?>> results = new HashMap<>();
     private Map<Class<?>, List<ReportLoaderError>> errors = new HashMap<>();
