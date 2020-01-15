@@ -13,9 +13,10 @@ public @interface Configuration {
     String reportLang() default "en";
     String templatePath() default "";
     String sheetName() default "";
-    boolean showHeader() default true;
+    boolean createHeader() default true;
     boolean sortableHeader() default false;
     short headerRowIndex() default 0;
+    short dataStartRowIndex() default 0;
     SpecialRow[] specialRows() default {};
     SpecialColumn[] specialColumns() default {};
 }

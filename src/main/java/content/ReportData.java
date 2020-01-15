@@ -20,7 +20,7 @@ public class ReportData {
     private String sheetName;
     private URL templateURL;
     private ReportHeader header;
-    private boolean showHeader = true;
+    private boolean createHeader = true;
     private int headerStartRow;
     private int dataStartRow;
     private List<Integer> autoSizedColumns = new ArrayList<>();
@@ -76,12 +76,12 @@ public class ReportData {
         this.rows.add(row);
     }
 
-    public void setShowHeader(boolean showHeader) {
-        this.showHeader = showHeader;
+    public void setCreateHeader(boolean createHeader) {
+        this.createHeader = createHeader;
     }
 
-    public boolean isShowHeader() {
-        return showHeader;
+    public boolean isCreateHeader() {
+        return createHeader;
     }
 
     public int getHeaderRowIndex() {

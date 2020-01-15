@@ -73,7 +73,7 @@ class ReportDataRawInjector extends ReportDataInjector {
     }
 
     private void createHeader(Sheet sheet) {
-        if(reportData.isShowHeader()){
+        if(reportData.isCreateHeader()){
             final ReportHeader header = reportData.getHeader();
             final Row headerRow = sheet.createRow(reportData.getHeaderRowIndex());
             for (int i = 0; i < header.getCells().size(); i++) {
@@ -110,14 +110,14 @@ class ReportDataRawInjector extends ReportDataInjector {
 
     private void createHeaderCell(Row row, ReportHeaderCell headerCell, int cellIndex){
         final Cell cell = row.createCell(cellIndex);
-        setCellValue(cell, headerCell.getTitle());
+        WorkbookUtils.setCellValue(cell, headerCell.getTitle());
     }
 
     private void createCell(Row row, ReportDataCell reportDataCell, int cellIndex){
         final ValueType valueType = reportDataCell.getValueType();
         if(!ValueType.FORMULA.equals(valueType)){
             final Cell cell = row.createCell(cellIndex);
-            setCellValue(cell, reportDataCell.getValue());
+            WorkbookUtils.setCellValue(cell, reportDataCell.getValue());
             setCellFormat(cell, reportDataCell.getFormat());
         } else {
             final Cell cell = row.createCell(cellIndex);
@@ -144,7 +144,7 @@ class ReportDataRawInjector extends ReportDataInjector {
                 final Cell cell = sheet.getRow(specialRow.getIndex()).createCell(reportData.getColumnIndexForTarget(specialCell.getTargetId()));
                 final ValueType valueType = specialCell.getValueType();
                 if(!ValueType.FORMULA.equals(valueType)){
-                    setCellValue(cell, specialCell.getValue());
+                    WorkbookUtils.setCellValue(cell, specialCell.getValue());
                 } else {
                     StringBuilder formula = new StringBuilder(specialCell.getValue().toString());
                     CellReference firstCellReference = super.getCellReferenceForTargetId(sheet.getRow(reportData.getDataStartRow()), specialCell.getTargetId());

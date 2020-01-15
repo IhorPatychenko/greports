@@ -92,7 +92,7 @@ public class ReportLoader {
             final Constructor<T> declaredConstructor = clazz.getDeclaredConstructor();
             declaredConstructor.setAccessible(true);
             final Sheet sheet = currentWorkbook.getSheet(configuration.sheetName());
-            for(int dataRowNum = AnnotationUtils.getSpecialRowsCountBeforeData(configuration) + (configuration.showHeader() ? 1 : 0); dataRowNum < sheet.getLastRowNum() - AnnotationUtils.getLastSpecialRowsCount(configuration); dataRowNum++) {
+            for(int dataRowNum = configuration.dataStartRowIndex(); dataRowNum <= sheet.getLastRowNum() - AnnotationUtils.getLastSpecialRowsCount(configuration); dataRowNum++) {
                 final Row row = sheet.getRow(dataRowNum);
                 final T instance = declaredConstructor.newInstance();
                 for (final Map.Entry<Annotation, Pair<Class<?>, Method>> entry : annotations.entrySet()) {
