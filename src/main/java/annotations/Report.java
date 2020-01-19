@@ -6,10 +6,15 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Annotation to be placed on the Data Transfer Object class to be passed to @ReportGenerator
+ * Annotation that is used to indicate that a class is part of a report.
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
 public @interface Report {
-    Configuration[] reportConfigurations() default {};
+    /**
+     * An array of {@link Configuration}
+     *
+     * @return an array of {@link Configuration}
+     */
+    Configuration[] reportConfigurations();
 }

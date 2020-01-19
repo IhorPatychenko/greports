@@ -11,21 +11,33 @@ import java.lang.annotation.Target;
 @Target(ElementType.ANNOTATION_TYPE)
 public @interface SpecialRowCell {
 
+    /**
+     * A column target id to place the SpecialRowCell above of below.
+     *
+     * @return {@link String}
+     */
     String targetId();
 
     /**
-     * @return one the possible values for value type of the cell containing special data
+     * The {@link ValueType} of the column.
+     *
+     * @return {@link ValueType}
      */
     ValueType valueType() default ValueType.LITERAL;
 
     /**
-     * @return java.lang.String value of the cell with special data
+     * value of the cell with data to show
+     *
+     * @return {@link String}
      */
     String value();
 
     /**
-     * @return java.lang.String representation format
+     * Visualisation format to be displayed.
+     * You can find information on how to create your own styles
+     * by going through this <a href="http://poi.apache.org/components/spreadsheet/quick-guide.html#DataFormats">link</a>
+     *
+     * @return {@link String}
      */
     String format() default "";
-
 }

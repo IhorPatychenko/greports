@@ -20,6 +20,7 @@ import positioning.TranslationsParser;
 import utils.AnnotationUtils;
 import utils.Pair;
 import validators.AbstractValidator;
+import validators.ValidatorFactory;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -34,7 +35,6 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.function.Function;
 
 import static exceptions.ReportEngineRuntimeExceptionCode.*;
@@ -218,7 +218,7 @@ public class ReportLoader {
     private void instanceSetValueFromCell(final Method method, final Object instance, final Cell cell, final Column column) throws ReportEngineReflectionException, ReportEngineValidationException {
         method.setAccessible(true);
         Class<?> parameterType = method.getParameterTypes()[0];
-        Object value = "";
+        Object value = null;
         try {
             if(cell != null){
                 if(CellType.BOOLEAN.equals(cell.getCellTypeEnum())){
@@ -241,8 +241,6 @@ public class ReportLoader {
                     }
                 } else if(CellType.FORMULA.equals(cell.getCellTypeEnum())) {
                     value = cell.getCellFormula();
-                } else if(CellType.BLANK.equals(cell.getCellTypeEnum())){
-                    value = null;
                 }
                 checkValidations(value, column);
                 method.invoke(instance, value);
@@ -257,22 +255,19 @@ public class ReportLoader {
     private void checkValidations(final Object value, final Column column) throws ReportEngineValidationException, ReportEngineReflectionException {
         for (final Validator validator : column.validators()) {
             try {
-                Constructor<? extends AbstractValidator> constructor = validator.validatorClass().getDeclaredConstructor(String.class, String.class);
-                constructor.setAccessible(true);
-                AbstractValidator validatorInstance = Optional.ofNullable(AbstractValidator.getValidatorOrNull(validator.validatorClass(), validator.value()))
-                        .orElse(constructor.newInstance(validator.value(), validator.errorMessage()));
-                validate(validatorInstance, value);
+                AbstractValidator validatorInstance = ValidatorFactory.get(validator.validatorClass(), validator.value());
+                validate(validatorInstance, value, validator.errorMessage());
             } catch (ReflectiveOperationException e) {
                 throw new ReportEngineValidationException("Error instantiating a validator @" + validator.validatorClass().getSimpleName(), INSTANTIATION_ERROR);
             }
         }
     }
 
-    private void validate(final AbstractValidator validatorInstance, final Object value) throws ReportEngineValidationException {
+    private void validate(final AbstractValidator validatorInstance, final Object value, final String errorMessageKey) throws ReportEngineValidationException {
         if(!validatorInstance.isValid(value)){
-            String errorMessage = translations.getOrDefault(validatorInstance.getErrorMessage(), validatorInstance.getErrorMessage()).toString();
-            if(validatorInstance.getValue() != null){
-                errorMessage = errorMessage.replace("%value%", validatorInstance.getValue());
+            String errorMessage = translations.getOrDefault(errorMessageKey, errorMessageKey).toString();
+            if(validatorInstance.getValidatorValue() != null){
+                errorMessage = errorMessage.replace("%value%", validatorInstance.getValidatorValue());
             }
             throw new ReportEngineValidationException(errorMessage.replace("%value%", errorMessage), VALIDATION_ERROR);
         }

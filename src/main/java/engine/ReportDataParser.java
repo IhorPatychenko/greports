@@ -122,9 +122,7 @@ final class ReportDataParser {
                         column.position() + positionIncrement,
                         column.format(),
                         invokedValue,
-                        Arrays.asList(column.targetIds()),
-                        column.valueType(),
-                        false
+                        column.valueType()
                     );
                     row.addCell(reportDataCell);
                 }
@@ -185,10 +183,8 @@ final class ReportDataParser {
                             specialColumn.position(),
                             specialColumn.format(),
                             value,
-                            Arrays.asList(specialColumn.targetIds()),
-                            specialColumn.valueType(),
-                            specialColumn.isRangedFormula())
-                    );
+                            specialColumn.valueType()
+                    ));
                 } catch (IllegalAccessException e) {
                     throw new ReportEngineReflectionException("Error invoking the method with no access", ILLEGAL_ACCESS);
                 } catch (InvocationTargetException e) {
