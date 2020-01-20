@@ -98,7 +98,7 @@ final class ReportDataParser {
     }
 
     private <T> void loadRowsData(Collection<T> collection, Class<T> clazz, Float positionIncrement) {
-        reportData.setDataStartRow(AnnotationUtils.getSpecialRowsCountBeforeData(configuration) + configuration.dataStartRowIndex());
+        reportData.setDataStartRow(configuration.dataStartRowIndex());
 
         Map<Field, Column> columnsMap = new LinkedHashMap<>();
         Map<Field, Method> methodsMap = new LinkedHashMap<>();

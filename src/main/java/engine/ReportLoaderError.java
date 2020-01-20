@@ -18,7 +18,7 @@ public class ReportLoaderError implements Serializable {
     private String columnTitle;
     private String errorMsg;
 
-    public ReportLoaderError(Cell cell, String errorMsg){
+    public ReportLoaderError(Cell cell, String errorMsg, String columnTitle){
         this.rowIndex = cell.getRowIndex();
         this.columnIndex = cell.getColumnIndex();
         final CellReference cellReference = new CellReference(cell);
@@ -27,6 +27,7 @@ public class ReportLoaderError implements Serializable {
         this.rowReference = cellReference.getCellRefParts()[1];
         this.columnReference = cellReference.getCellRefParts()[2];
         this.errorMsg = errorMsg;
+        this.columnTitle = columnTitle;
     }
 
     public String getErrorMsg() {
@@ -59,9 +60,5 @@ public class ReportLoaderError implements Serializable {
 
     public String getColumnTitle() {
         return columnTitle;
-    }
-
-    public void setColumnTitle(final String columnTitle) {
-        this.columnTitle = columnTitle;
     }
 }

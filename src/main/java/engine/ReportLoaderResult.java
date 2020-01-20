@@ -1,5 +1,7 @@
 package engine;
 
+import org.apache.poi.ss.usermodel.Cell;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -18,15 +20,22 @@ public class ReportLoaderResult implements Serializable {
         results.put(clazz, list);
     }
 
-    public <T> List<T> getResult(Class<T> clazz) {
-        return ((List<T>) results.getOrDefault(clazz, new ArrayList<T>()));
-    }
+//    protected <T> void addError(Class<T> clazz, ReportLoaderError error) {
+//        if(!errors.containsKey(clazz)){
+//            errors.put(clazz, new ArrayList<>());
+//        }
+//        errors.get(clazz).add(error);
+//    }
 
-    protected <T> void addError(Class<T> clazz, ReportLoaderError error) {
+    protected <T> void addError(Class<T> clazz, Cell cell, String errorMessage, String columnTitle){
         if(!errors.containsKey(clazz)){
             errors.put(clazz, new ArrayList<>());
         }
-        errors.get(clazz).add(error);
+        errors.get(clazz).add(new ReportLoaderError(cell, errorMessage, columnTitle));
+    }
+
+    public <T> List<T> getResult(Class<T> clazz) {
+        return ((List<T>) results.getOrDefault(clazz, new ArrayList<T>()));
     }
 
     public <T> List<ReportLoaderError> getErrors(Class<T> clazz) {

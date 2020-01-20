@@ -104,14 +104,12 @@ public class ReportLoader {
                         try {
                             instanceSetValueFromCell(method, instance, cell, (Column) annotation);
                         } catch (ReportEngineValidationException e) {
-                            ReportLoaderError error = new ReportLoaderError(cell, e.getMessage());
-                            error.setColumnTitle(((Column) annotation).title());
                             if(ReportLoaderErrorTreatment.THROW_ERROR.equals(treatment)){
                                 throw new ReportEngineReflectionException(e.getMessage(), ILLEGAL_ARGUMENT);
                             } else {
-                                loaderResult.addError(clazz, error);
+                                loaderResult.addError(clazz, cell, e.getMessage(), ((Column) annotation).title());
                                 entryError = true;
-                                if(!ReportLoaderErrorTreatment.SKIP_COLUMN_ON_ERROR.equals(treatment)){
+                                if(ReportLoaderErrorTreatment.SKIP_ROW_ON_ERROR.equals(treatment)){
                                     break;
                                 }
                             }

@@ -146,15 +146,13 @@ class ReportDataRawInjector extends ReportDataInjector {
                 if(!ValueType.FORMULA.equals(valueType)){
                     WorkbookUtils.setCellValue(cell, specialCell.getValue());
                 } else {
-                    StringBuilder formula = new StringBuilder(specialCell.getValue().toString());
-                    CellReference firstCellReference = super.getCellReferenceForTargetId(sheet.getRow(reportData.getDataStartRow()), specialCell.getTargetId());
-                    CellReference lastCellReference = super.getCellReferenceForTargetId(sheet.getRow(reportData.getDataStartRow() + reportData.getRowsCount() - 1), specialCell.getTargetId());
-                    formula.append("(")
-                            .append(firstCellReference.formatAsString())
-                            .append(":")
-                            .append(lastCellReference.formatAsString())
-                            .append(")");
-                    cell.setCellFormula(formula.toString());
+                    String formulaString = specialCell.getValue().toString();
+                    for (Map.Entry<String, Integer> entry : reportData.getTargetIndexes().entrySet()) {
+                        CellReference firstCellReference = super.getCellReferenceForTargetId(sheet.getRow(reportData.getDataStartRow()), specialCell.getTargetId());
+                        CellReference lastCellReference = super.getCellReferenceForTargetId(sheet.getRow(reportData.getDataStartRow() + reportData.getRowsCount() - 1), specialCell.getTargetId());
+                        formulaString = formulaString.replaceAll(entry.getKey(), firstCellReference.formatAsString() + ":" + lastCellReference.formatAsString());
+                    }
+                    cell.setCellFormula(formulaString);
                 }
                 setCellFormat(cell, specialCell.getFormat());
             }
