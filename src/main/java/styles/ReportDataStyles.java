@@ -1,6 +1,7 @@
 package styles;
 
 import styles.interfaces.StripedRows.StripedRowsIndex;
+import styles.stylebuilders.ReportStylesBuilder;
 
 import java.awt.*;
 

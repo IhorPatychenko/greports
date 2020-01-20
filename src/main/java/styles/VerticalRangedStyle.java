@@ -6,7 +6,7 @@ public class VerticalRangedStyle extends ReportStyle {
 
     private VerticalRange range;
 
-    protected VerticalRangedStyle(ReportStyle rs) {
+    public VerticalRangedStyle(ReportStyle rs) {
         super(rs);
     }
 

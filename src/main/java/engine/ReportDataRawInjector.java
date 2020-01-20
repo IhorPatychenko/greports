@@ -24,7 +24,7 @@ import styles.HorizontalRangedStyle;
 import styles.PositionedStyle;
 import styles.RectangleRangedStyle;
 import styles.ReportStyle;
-import styles.ReportStylesBuilder;
+import styles.stylebuilders.ReportStylesBuilder;
 import styles.VerticalRangedStyle;
 import styles.interfaces.StripedRows;
 import utils.Pair;
@@ -193,7 +193,7 @@ class ReportDataRawInjector extends ReportDataInjector {
     }
 
     private void applyRowStyles(Sheet sheet, ReportStylesBuilder<VerticalRangedStyle> rowStyles) {
-        final Collection<VerticalRangedStyle> styles = rowStyles.getStyles();
+        final Collection<VerticalRangedStyle> styles = rowStyles.getStylesBuilders();
         for (VerticalRangedStyle style : styles) {
             final VerticalRange range = style.getRange();
             checkRange(range, sheet);
@@ -207,7 +207,7 @@ class ReportDataRawInjector extends ReportDataInjector {
     }
 
     private void applyColumnStyles(Sheet sheet, ReportStylesBuilder<HorizontalRangedStyle> columnStyles, ReportData reportData) {
-        final Collection<HorizontalRangedStyle> styles = columnStyles.getStyles();
+        final Collection<HorizontalRangedStyle> styles = columnStyles.getStylesBuilders();
         for (HorizontalRangedStyle style : styles) {
             for(int i = 0; i <= sheet.getLastRowNum(); i++) {
                 final Row row = sheet.getRow(i);
@@ -221,7 +221,7 @@ class ReportDataRawInjector extends ReportDataInjector {
     }
 
     private void applyPositionedStyles(Sheet sheet, ReportStylesBuilder<PositionedStyle> positionedStyles, ReportData reportData) {
-        final Collection<PositionedStyle> styles = positionedStyles.getStyles();
+        final Collection<PositionedStyle> styles = positionedStyles.getStylesBuilders();
         for (PositionedStyle style : styles) {
             checkPosition(style.getPosition(), sheet, reportData);
             cellApplyStyles(sheet.getRow(style.getPosition().getRow()).getCell(style.getPosition().getColumn()), style);
@@ -229,7 +229,7 @@ class ReportDataRawInjector extends ReportDataInjector {
     }
 
     private void applyRangedStyles(Sheet sheet, ReportStylesBuilder<RectangleRangedStyle> rectangleRangedStyles, ReportData reportData) {
-        final Collection<RectangleRangedStyle> rangedStyles = rectangleRangedStyles.getStyles();
+        final Collection<RectangleRangedStyle> rangedStyles = rectangleRangedStyles.getStylesBuilders();
         for (RectangleRangedStyle rangedStyle : rangedStyles) {
             final RectangleRange range = rangedStyle.getRange();
             final VerticalRange verticalRange = range.getVerticalRange();
