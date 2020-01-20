@@ -27,6 +27,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.ParameterizedType;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -145,22 +146,53 @@ final class ReportDataParser {
             final Field field = entry.getKey();
             final Method method = AnnotationUtils.fetchFieldGetter(field, clazz);
             final Subreport subreport = entry.getValue();
-            final Class<?> returnType = method.getReturnType();
+            Class<?> returnType = method.getReturnType();
             method.setAccessible(true);
 
-            final Collection subreportData = new ArrayList<>();
-            for (T collectionEntry : collection) {
-                try {
-                    final Object invokeResult = method.invoke(collectionEntry);
-                    subreportData.add(invokeResult);
-                } catch (IllegalAccessException e) {
-                    throw new ReportEngineReflectionException("Error invoking the method with no access", ILLEGAL_ACCESS);
-                } catch (InvocationTargetException e) {
-                    throw new ReportEngineReflectionException("Error invoking the method", INVOCATION_ERROR);
+            if(returnType.equals(List.class)){
+                List<List<?>> subreportsList = new ArrayList<>();
+                ParameterizedType parameterizedType = (ParameterizedType) field.getGenericType();
+                returnType = (Class<?>) parameterizedType.getActualTypeArguments()[0];
+                for (T collectionEntry : collection) {
+                    final Object invokeResult = subreportInvokeMethod(method, collectionEntry);
+                    subreportsList.add((List<?>) invokeResult);
                 }
+
+                if(subreportsList.size() > 0){
+                    float positionalIncrement = 0;
+                    final int subreportsInEveryList = subreportsList.get(0).size();
+                    for (int i = 0; i < subreportsInEveryList; i++) {
+                        final Collection subreportData = new ArrayList<>();
+                        for (final List list : subreportsList) {
+                            subreportData.add(list.get(i));
+                        }
+                        parseSubreportData(reportDataParser, returnType, subreportData, positionalIncrement);
+                        positionalIncrement += subreport.positionIncrement();
+                    }
+                }
+            } else {
+                final Collection subreportData = new ArrayList<>();
+                for (T collectionEntry : collection) {
+                    final Object invokeResult = subreportInvokeMethod(method, collectionEntry);
+                    subreportData.add(invokeResult);
+                }
+                parseSubreportData(reportDataParser, returnType, subreportData, subreport.positionIncrement());
             }
-            final ReportData data = reportDataParser.parse(subreportData, reportData.getName(), returnType, subreport.positionIncrement()).getData();
-            subreportsData.add(data);
+        }
+    }
+
+    private void parseSubreportData(final ReportDataParser reportDataParser, final Class<?> returnType, final Collection subreportData, float positionalIncrement) throws IOException {
+        final ReportData data = reportDataParser.parse(subreportData, reportData.getName(), returnType,positionalIncrement).getData();
+        subreportsData.add(data);
+    }
+
+    private <T> Object subreportInvokeMethod(Method method, T collectionEntry){
+        try {
+            return method.invoke(collectionEntry);
+        } catch (IllegalAccessException e) {
+            throw new ReportEngineReflectionException("Error invoking the method with no access", ILLEGAL_ACCESS);
+        } catch (InvocationTargetException e) {
+            throw new ReportEngineReflectionException("Error invoking the method", INVOCATION_ERROR);
         }
     }
 
