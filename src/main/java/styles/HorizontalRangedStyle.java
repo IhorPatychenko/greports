@@ -2,20 +2,19 @@ package styles;
 
 import positioning.HorizontalRange;
 
-public class HorizontalRangedStyle extends ReportStyle {
+public class HorizontalRangedStyle extends ReportStyle<HorizontalRange> {
 
-    private HorizontalRange range;
+    private Integer columnWidth;
 
-    protected HorizontalRangedStyle(ReportStyle rs) {
-        super(rs);
+    public HorizontalRangedStyle(final HorizontalRange tuple) {
+        super(tuple);
     }
 
-    public HorizontalRangedStyle setRange(HorizontalRange range) {
-        this.range = range;
-        return this;
+    public void setColumnWidth(final Integer columnWidth) {
+        this.columnWidth = columnWidth;
     }
 
-    public HorizontalRange getRange() {
-        return range;
+    public Integer getColumnWidth() {
+        return columnWidth;
     }
 }

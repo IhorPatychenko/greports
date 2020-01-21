@@ -1,17 +1,19 @@
 package styles;
 
 import styles.interfaces.StripedRows.StripedRowsIndex;
-import styles.stylebuilders.ReportStylesBuilder;
-import styles.stylebuilders.VerticalRangedStylesBuilder;
+import styles.stylesbuilders.HorizontalRangedStylesBuilder;
+import styles.stylesbuilders.PositionedStylesBuilder;
+import styles.stylesbuilders.RectangleRangedStylesBuilder;
+import styles.stylesbuilders.VerticalRangedStylesBuilder;
 
 import java.awt.*;
 
 public class ReportDataStyles {
 
     private VerticalRangedStylesBuilder rowStyles;
-    private ReportStylesBuilder<HorizontalRangedStyle> columnStyles;
-    private ReportStylesBuilder<PositionedStyle> positionedStyles;
-    private ReportStylesBuilder<RectangleRangedStyle> rangedStyleReportStyles;
+    private HorizontalRangedStylesBuilder columnStyles;
+    private PositionedStylesBuilder positionedStyles;
+    private RectangleRangedStylesBuilder rangedStyleReportStyles;
     private StripedRowsIndex stripedRowsIndex;
     private Color stripedRowsColor;
 
@@ -23,27 +25,27 @@ public class ReportDataStyles {
         this.rowStyles = rowStyles;
     }
 
-    public ReportStylesBuilder<HorizontalRangedStyle> getColumnStyles() {
+    public HorizontalRangedStylesBuilder getColumnStyles() {
         return columnStyles;
     }
 
-    public void setColumnStyles(ReportStylesBuilder<HorizontalRangedStyle> columnStyles) {
+    public void setColumnStyles(HorizontalRangedStylesBuilder columnStyles) {
         this.columnStyles = columnStyles;
     }
 
-    public ReportStylesBuilder<PositionedStyle> getPositionedStyles() {
+    public PositionedStylesBuilder getPositionedStyles() {
         return positionedStyles;
     }
 
-    public void setPositionedStyles(ReportStylesBuilder<PositionedStyle> positionedStyles) {
+    public void setPositionedStyles(PositionedStylesBuilder positionedStyles) {
         this.positionedStyles = positionedStyles;
     }
 
-    public ReportStylesBuilder<RectangleRangedStyle> getRangedStyleReportStyles() {
+    public RectangleRangedStylesBuilder getRangedStyleReportStyles() {
         return rangedStyleReportStyles;
     }
 
-    public void setRangedStyleReportStyles(ReportStylesBuilder<RectangleRangedStyle> rangedStyleReportStyles) {
+    public void setRangedStyleReportStyles(RectangleRangedStylesBuilder rangedStyleReportStyles) {
         this.rangedStyleReportStyles = rangedStyleReportStyles;
     }
 

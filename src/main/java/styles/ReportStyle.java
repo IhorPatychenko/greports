@@ -9,8 +9,9 @@ import styles.interfaces.StripedRows.StripedRowsIndex;
 
 import java.awt.Color;
 
-public class ReportStyle {
+public class ReportStyle<T> {
 
+    private T range;
     private Color foregroundColor;
     private Color fontColor;
     private FillPatternType fillPattern;
@@ -29,33 +30,15 @@ public class ReportStyle {
     private Color stripedRowsColor;
     private boolean clonePreviousStyle;
 
-    protected ReportStyle(){}
-
-    protected ReportStyle(ReportStyle rs) {
-        this.foregroundColor = rs.getForegroundColor();
-        this.fontColor = rs.getFontColor();
-        this.fillPattern = rs.getFillPattern();
-        this.boldFont = rs.getBoldFont();
-        this.italicFont = rs.getItalicFont();
-        this.underlineFont = rs.getUnderlineFont();
-        this.strikeoutFont = rs.getStrikeoutFont();
-        this.horizontalAlignment = rs.getHorizontalAlignment();
-        this.verticalAlignment = rs.getVerticalAlignment();
-        this.borderTop = rs.getBorderTop();
-        this.borderBottom = rs.getBorderBottom();
-        this.borderLeft = rs.getBorderLeft();
-        this.borderRight = rs.getBorderRight();
-        this.borderColor = rs.getBorderColor();
-        this.stripedRowsIndex = rs.getStripedRowsIndex();
-        this.stripedRowsColor = rs.getStripedRowsColor();
-        this.clonePreviousStyle = rs.isClonePreviousStyle();
+    protected ReportStyle(T tuple){
+        this.range = tuple;
     }
 
     public boolean isClonePreviousStyle() {
         return clonePreviousStyle;
     }
 
-    public ReportStyle setClonePreviousStyle(final boolean clonePreviousStyle) {
+    public ReportStyle<T> setClonePreviousStyle(final boolean clonePreviousStyle) {
         this.clonePreviousStyle = clonePreviousStyle;
         return this;
     }
@@ -64,7 +47,7 @@ public class ReportStyle {
         return foregroundColor;
     }
 
-    public ReportStyle setForegroundColor(Color foregroundColor) {
+    public ReportStyle<T> setForegroundColor(Color foregroundColor) {
         this.foregroundColor = foregroundColor;
         return this;
     }
@@ -73,7 +56,7 @@ public class ReportStyle {
         return fontColor;
     }
 
-    public ReportStyle setFontColor(Color fontColor) {
+    public ReportStyle<T> setFontColor(Color fontColor) {
         this.fontColor = fontColor;
         return this;
     }
@@ -82,7 +65,7 @@ public class ReportStyle {
         return fillPattern;
     }
 
-    public ReportStyle setFillPattern(FillPatternType fillPattern) {
+    public ReportStyle<T> setFillPattern(FillPatternType fillPattern) {
         this.fillPattern = fillPattern;
         return this;
     }
@@ -91,7 +74,7 @@ public class ReportStyle {
         return boldFont;
     }
 
-    public ReportStyle setBoldFont(Boolean boldFont) {
+    public ReportStyle<T> setBoldFont(Boolean boldFont) {
         this.boldFont = boldFont;
         return this;
     }
@@ -100,7 +83,7 @@ public class ReportStyle {
         return italicFont;
     }
 
-    public ReportStyle setItalicFont(Boolean italicFont) {
+    public ReportStyle<T> setItalicFont(Boolean italicFont) {
         this.italicFont = italicFont;
         return this;
     }
@@ -109,7 +92,7 @@ public class ReportStyle {
         return underlineFont;
     }
 
-    public ReportStyle setUnderlineFont(FontUnderline underlineFont) {
+    public ReportStyle<T> setUnderlineFont(FontUnderline underlineFont) {
         this.underlineFont = underlineFont;
         return this;
     }
@@ -118,7 +101,7 @@ public class ReportStyle {
         return strikeoutFont;
     }
 
-    public ReportStyle setStrikeoutFont(Boolean strikeoutFont) {
+    public ReportStyle<T> setStrikeoutFont(Boolean strikeoutFont) {
         this.strikeoutFont = strikeoutFont;
         return this;
     }
@@ -127,7 +110,7 @@ public class ReportStyle {
         return horizontalAlignment;
     }
 
-    public ReportStyle setHorizontalAlignment(HorizontalAlignment horizontalAlignment) {
+    public ReportStyle<T> setHorizontalAlignment(HorizontalAlignment horizontalAlignment) {
         this.horizontalAlignment = horizontalAlignment;
         return this;
     }
@@ -136,7 +119,7 @@ public class ReportStyle {
         return verticalAlignment;
     }
 
-    public ReportStyle setVerticalAlignment(VerticalAlignment verticalAlignment) {
+    public ReportStyle<T> setVerticalAlignment(VerticalAlignment verticalAlignment) {
         this.verticalAlignment = verticalAlignment;
         return this;
     }
@@ -145,7 +128,7 @@ public class ReportStyle {
         return borderTop;
     }
 
-    public ReportStyle setBorderTop(BorderStyle borderTop) {
+    public ReportStyle<T> setBorderTop(BorderStyle borderTop) {
         this.borderTop = borderTop;
         return this;
     }
@@ -154,7 +137,7 @@ public class ReportStyle {
         return borderRight;
     }
 
-    public ReportStyle setBorderRight(BorderStyle borderRight) {
+    public ReportStyle<T> setBorderRight(BorderStyle borderRight) {
         this.borderRight = borderRight;
         return this;
     }
@@ -163,7 +146,7 @@ public class ReportStyle {
         return borderBottom;
     }
 
-    public ReportStyle setBorderBottom(BorderStyle borderBottom) {
+    public ReportStyle<T> setBorderBottom(BorderStyle borderBottom) {
         this.borderBottom = borderBottom;
         return this;
     }
@@ -172,7 +155,7 @@ public class ReportStyle {
         return borderLeft;
     }
 
-    public ReportStyle setBorderLeft(BorderStyle borderLeft) {
+    public ReportStyle<T> setBorderLeft(BorderStyle borderLeft) {
         this.borderLeft = borderLeft;
         return this;
     }
@@ -181,7 +164,7 @@ public class ReportStyle {
         return stripedRowsIndex;
     }
 
-    public ReportStyle setStripedRowsIndex(StripedRowsIndex stripedRowsIndex) {
+    public ReportStyle<T> setStripedRowsIndex(StripedRowsIndex stripedRowsIndex) {
         this.stripedRowsIndex = stripedRowsIndex;
         return this;
     }
@@ -190,7 +173,7 @@ public class ReportStyle {
         return stripedRowsColor;
     }
 
-    public ReportStyle setStripedRowsColor(Color stripedRowsColor) {
+    public ReportStyle<T> setStripedRowsColor(Color stripedRowsColor) {
         this.stripedRowsColor = stripedRowsColor;
         return this;
     }
@@ -199,8 +182,12 @@ public class ReportStyle {
         return borderColor;
     }
 
-    public ReportStyle setBorderColor(Color borderColor) {
+    public ReportStyle<T> setBorderColor(Color borderColor) {
         this.borderColor = borderColor;
         return this;
+    }
+
+    public T getRange() {
+        return range;
     }
 }

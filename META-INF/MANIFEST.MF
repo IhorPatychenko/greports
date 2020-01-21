@@ -1,2 +1,2 @@
-Manifest-Version: 1.9.13
+Manifest-Version: 1.10
 Class-Path: snakeyaml-1.25.jar poi-3.17.jar

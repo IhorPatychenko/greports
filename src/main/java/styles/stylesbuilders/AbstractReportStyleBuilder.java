@@ -1,14 +1,15 @@
-package styles.stylebuilders;
+package styles.stylesbuilders;
 
 import org.apache.poi.ss.usermodel.BorderStyle;
 import org.apache.poi.ss.usermodel.FillPatternType;
 import org.apache.poi.ss.usermodel.FontUnderline;
 import org.apache.poi.ss.usermodel.HorizontalAlignment;
 import org.apache.poi.ss.usermodel.VerticalAlignment;
+import styles.ReportStyle;
 
 import java.awt.Color;
 
-abstract class ReportStyleBuilder<T, E> {
+abstract class AbstractReportStyleBuilder<T extends ReportStyle<E>, E> {
 
     protected Color foregroundColor;
     protected Color fontColor;
@@ -24,10 +25,10 @@ abstract class ReportStyleBuilder<T, E> {
     protected BorderStyle borderBottom;
     protected BorderStyle borderLeft;
     protected Color borderColor;
-    protected T tuple;
+    protected E tuple;
     protected boolean clonePreviousStyle;
 
-    ReportStyleBuilder(T tuple, boolean clonePreviousStyle) {
+    AbstractReportStyleBuilder(E tuple, boolean clonePreviousStyle) {
         this.tuple = tuple;
         this.clonePreviousStyle = clonePreviousStyle;
     }
@@ -68,6 +69,13 @@ abstract class ReportStyleBuilder<T, E> {
         this.verticalAlignment = verticalAlignment;
     }
 
+    protected void setBorder(BorderStyle border) {
+        setBorderTop(border);
+        setBorderBottom(border);
+        setBorderLeft(border);
+        setBorderRight(border);
+    }
+
     protected void setBorderTop(BorderStyle borderTop) {
         this.borderTop = borderTop;
     }
@@ -88,42 +96,26 @@ abstract class ReportStyleBuilder<T, E> {
         this.borderColor = color;
     }
 
-    protected abstract E buildStyle();
+    protected T buildStyle() {
+        ReportStyle<E> reportStyle = newStyleInstance()
+            .setClonePreviousStyle(clonePreviousStyle)
+            .setForegroundColor(foregroundColor)
+            .setFontColor(fontColor)
+            .setFillPattern(fillPattern)
+            .setBoldFont(boldFont)
+            .setItalicFont(italicFont)
+            .setUnderlineFont(underlineFont)
+            .setStrikeoutFont(strikeoutFont)
+            .setHorizontalAlignment(horizontalAlignment)
+            .setVerticalAlignment(verticalAlignment)
+            .setBorderTop(borderTop)
+            .setBorderBottom(borderBottom)
+            .setBorderLeft(borderLeft)
+            .setBorderRight(borderRight)
+            .setBorderColor(borderColor);
+        return setCustomStyles(reportStyle);
+    }
 
-//    E buildStyle() {
-//            ReportStyle reportStyle = new ReportStyle()
-//                    .setClonePreviousStyle(clonePreviousStyle)
-//                    .setForegroundColor(foregroundColor)
-//                    .setFontColor(fontColor)
-//                    .setFillPattern(fillPattern)
-//                    .setBoldFont(boldFont)
-//                    .setItalicFont(italicFont)
-//                    .setUnderlineFont(underlineFont)
-//                    .setStrikeoutFont(strikeoutFont)
-//                    .setHorizontalAlignment(horizontalAlignment)
-//                    .setVerticalAlignment(verticalAlignment)
-//                    .setBorderTop(borderTop)
-//                    .setBorderBottom(borderBottom)
-//                    .setBorderLeft(borderLeft)
-//                    .setBorderRight(borderRight)
-//                    .setBorderColor(borderColor);
-//            if (forClass.equals(HorizontalRangedStyle.class)) {
-//                HorizontalRangedStyle hrs = new HorizontalRangedStyle(reportStyle);
-//                hrs.setRange((HorizontalRange) tuple);
-//                return forClass.cast(hrs);
-//            } else if (forClass.equals(VerticalRangedStyle.class)) {
-//                VerticalRangedStyle vrs = new VerticalRangedStyle(reportStyle);
-//                vrs.setRange((VerticalRange) tuple);
-//                return forClass.cast(vrs);
-//            } else if (forClass.equals(PositionedStyle.class)) {
-//                PositionedStyle ps = new PositionedStyle(reportStyle);
-//                ps.setPosition((Position) tuple);
-//                return forClass.cast(ps);
-//            } else if(forClass.equals(RectangleRangedStyle.class)){
-//                RectangleRangedStyle rrs = new RectangleRangedStyle(reportStyle);
-//                rrs.setRange((RectangleRange) tuple);
-//                return forClass.cast(rrs);
-//            }
-//        return null;
-//    }
+    protected abstract T newStyleInstance();
+    protected abstract T setCustomStyles(ReportStyle<E> style);
 }

@@ -2,20 +2,9 @@ package styles;
 
 import positioning.Position;
 
-public class PositionedStyle extends ReportStyle {
+public class PositionedStyle extends ReportStyle<Position> {
 
-    private Position position;
-
-    protected PositionedStyle(ReportStyle rs) {
-        super(rs);
-    }
-
-    public PositionedStyle setPosition(Position position) {
-        this.position = position;
-        return this;
-    }
-
-    public Position getPosition() {
-        return position;
+    public PositionedStyle(final Position tuple) {
+        super(tuple);
     }
 }

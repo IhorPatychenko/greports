@@ -24,11 +24,14 @@ import styles.HorizontalRangedStyle;
 import styles.PositionedStyle;
 import styles.RectangleRangedStyle;
 import styles.ReportStyle;
-import styles.stylebuilders.ReportStylesBuilder;
+import styles.stylesbuilders.AbstractReportStylesBuilder;
 import styles.VerticalRangedStyle;
 import styles.interfaces.StripedRows;
-import styles.stylebuilders.VerticalRangedStyleBuilder;
-import styles.stylebuilders.VerticalRangedStylesBuilder;
+import styles.stylesbuilders.HorizontalRangedStylesBuilder;
+import styles.stylesbuilders.PositionedStylesBuilder;
+import styles.stylesbuilders.RectangleRangedStylesBuilder;
+import styles.stylesbuilders.VerticalRangedStyleBuilder;
+import styles.stylesbuilders.VerticalRangedStylesBuilder;
 import utils.Pair;
 import utils.Utils;
 
@@ -42,7 +45,7 @@ import java.util.Objects;
 class ReportDataRawInjector extends ReportDataInjector {
 
     private final ReportData reportData;
-    private Map<Pair<ReportStyle, String>, XSSFCellStyle> _stylesCache = new HashedMap<>();
+    private Map<Pair<ReportStyle<?>, String>, XSSFCellStyle> _stylesCache = new HashedMap<>();
 
     public ReportDataRawInjector(XSSFWorkbook currentWorkbook, ReportData reportData) {
         super(currentWorkbook, reportData);
@@ -181,7 +184,7 @@ class ReportDataRawInjector extends ReportDataInjector {
     }
 
     private void addStyles(Sheet sheet) {
-        for (ReportStylesBuilder.StylePriority priority : ReportStylesBuilder.StylePriority.values()) {
+        for (AbstractReportStylesBuilder.StylePriority priority : AbstractReportStylesBuilder.StylePriority.values()) {
             if(reportData.getStyles().getRowStyles() != null && priority.equals(reportData.getStyles().getRowStyles().getPriority())){
                 applyRowStyles(sheet, reportData.getStyles().getRowStyles());
             } else if(reportData.getStyles().getColumnStyles() != null && priority.equals(reportData.getStyles().getColumnStyles().getPriority())){
@@ -195,8 +198,7 @@ class ReportDataRawInjector extends ReportDataInjector {
     }
 
     private void applyRowStyles(Sheet sheet, VerticalRangedStylesBuilder rowStyles) {
-//        final Collection<VerticalRangedStyle> styles = rowStyles.getStylesBuilders();
-        Collection<VerticalRangedStyleBuilder> stylesBuilders = rowStyles.getStylesBuilders();
+        final Collection<VerticalRangedStyle> styles = rowStyles.getStyles();
         for (VerticalRangedStyle style : styles) {
             final VerticalRange range = style.getRange();
             checkRange(range, sheet);
@@ -205,12 +207,15 @@ class ReportDataRawInjector extends ReportDataInjector {
                 for(int y = 0; y < row.getLastCellNum(); y++){
                     cellApplyStyles(row.getCell(y), style);
                 }
+                if(style.getRowHeight() != null) {
+                    row.setHeightInPoints(style.getRowHeight());
+                }
             }
         }
     }
 
-    private void applyColumnStyles(Sheet sheet, ReportStylesBuilder<HorizontalRangedStyle> columnStyles, ReportData reportData) {
-        final Collection<HorizontalRangedStyle> styles = columnStyles.getStylesBuilders();
+    private void applyColumnStyles(Sheet sheet, HorizontalRangedStylesBuilder columnStyles, ReportData reportData) {
+        final Collection<HorizontalRangedStyle> styles = columnStyles.getStyles();
         for (HorizontalRangedStyle style : styles) {
             for(int i = 0; i <= sheet.getLastRowNum(); i++) {
                 final Row row = sheet.getRow(i);
@@ -220,19 +225,24 @@ class ReportDataRawInjector extends ReportDataInjector {
                     cellApplyStyles(row.getCell(y), style);
                 }
             }
+            if(style.getColumnWidth() != null){
+                for (int i = style.getRange().getStart(); i <= style.getRange().getEnd(); i++) {
+                    sheet.setColumnWidth(i, style.getColumnWidth() * 256);
+                }
+            }
         }
     }
 
-    private void applyPositionedStyles(Sheet sheet, ReportStylesBuilder<PositionedStyle> positionedStyles, ReportData reportData) {
-        final Collection<PositionedStyle> styles = positionedStyles.getStylesBuilders();
+    private void applyPositionedStyles(Sheet sheet, PositionedStylesBuilder positionedStyles, ReportData reportData) {
+        final Collection<PositionedStyle> styles = positionedStyles.getStyles();
         for (PositionedStyle style : styles) {
-            checkPosition(style.getPosition(), sheet, reportData);
-            cellApplyStyles(sheet.getRow(style.getPosition().getRow()).getCell(style.getPosition().getColumn()), style);
+            checkPosition(style.getRange(), sheet, reportData);
+            cellApplyStyles(sheet.getRow(style.getRange().getRow()).getCell(style.getRange().getColumn()), style);
         }
     }
 
-    private void applyRangedStyles(Sheet sheet, ReportStylesBuilder<RectangleRangedStyle> rectangleRangedStyles, ReportData reportData) {
-        final Collection<RectangleRangedStyle> rangedStyles = rectangleRangedStyles.getStylesBuilders();
+    private void applyRangedStyles(Sheet sheet, RectangleRangedStylesBuilder rectangleRangedStyles, ReportData reportData) {
+        final Collection<RectangleRangedStyle> rangedStyles = rectangleRangedStyles.getStyles();
         for (RectangleRangedStyle rangedStyle : rangedStyles) {
             final RectangleRange range = rangedStyle.getRange();
             final VerticalRange verticalRange = range.getVerticalRange();
@@ -289,10 +299,10 @@ class ReportDataRawInjector extends ReportDataInjector {
         }
     }
 
-    private void cellApplyStyles(Cell cell, ReportStyle style) {
+    private void cellApplyStyles(Cell cell, ReportStyle<?> style) {
         if(cell != null){
             XSSFCellStyle cellStyle;
-            final Pair<ReportStyle, String> styleKey = Pair.of(style, cell.getCellStyle().getDataFormatString());
+            final Pair<ReportStyle<?>, String> styleKey = Pair.of(style, cell.getCellStyle().getDataFormatString());
             if(!_stylesCache.containsKey(styleKey) || style.isClonePreviousStyle()){
                 cellStyle = currentWorkbook.createCellStyle();
                 cellStyle.setDataFormat(cell.getCellStyle().getDataFormat());

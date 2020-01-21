@@ -2,20 +2,19 @@ package styles;
 
 import positioning.VerticalRange;
 
-public class VerticalRangedStyle extends ReportStyle {
+public class VerticalRangedStyle extends ReportStyle<VerticalRange> {
 
-    private VerticalRange range;
+    private Float rowHeight;
 
-    public VerticalRangedStyle(ReportStyle rs) {
-        super(rs);
+    public VerticalRangedStyle(final VerticalRange tuple) {
+        super(tuple);
     }
 
-    public VerticalRangedStyle setRange(VerticalRange range) {
-        this.range = range;
-        return this;
+    public void setRowHeight(final Float rowHeight) {
+        this.rowHeight = rowHeight;
     }
 
-    public VerticalRange getRange() {
-        return range;
+    public Float getRowHeight() {
+        return rowHeight;
     }
 }
