@@ -31,7 +31,7 @@ import java.lang.reflect.ParameterizedType;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -49,13 +49,10 @@ final class ReportDataParser {
     private Configuration configuration;
     private List<ReportData> subreportsData = new ArrayList<>();
 
-
-    public <T> ReportDataParser parse(T item, final String reportName, Class<T> clazz) throws ReportEngineReflectionException, IOException {
-        return parse(Collections.singletonList(item), reportName, clazz);
-    }
-
-    public <T> ReportDataParser parse(Collection<T> collection, final String reportName, Class<T> clazz) throws ReportEngineReflectionException, IOException {
-        return parse(collection, reportName, clazz, 0f);
+    public <T> ReportDataParser parse(Collection<T> collection, final String reportName, Class<T> clazz, Map<Integer, String> overriddenTitles) throws ReportEngineReflectionException, IOException {
+        final ReportDataParser parser = parse(collection, reportName, clazz, 0f);
+        overrideSubreportsTitles(overriddenTitles);
+        return parser;
     }
 
     private <T> ReportDataParser parse(Collection<T> collection, final String reportName, Class<T> clazz, Float positionIncrement) throws ReportEngineReflectionException, IOException {
@@ -84,18 +81,9 @@ final class ReportDataParser {
             cells.add(new ReportHeaderCell(specialColumn.position(), specialColumn.title(), specialColumn.id(), specialColumn.autoSizeColumn()));
         }
 
-        loadAutosizeColumns(cells);
         reportData
                 .setHeader(new ReportHeader(configuration.sortableHeader()))
                 .addCells(cells);
-    }
-
-    private void loadAutosizeColumns(List<ReportHeaderCell> cells){
-        for (int i = 0; i < cells.size(); i++) {
-            if(cells.get(i).isAutoSizeColumn()){
-                reportData.getAutoSizedColumns().add(i);
-            }
-        }
     }
 
     private <T> void loadRowsData(Collection<T> collection, Class<T> clazz, Float positionIncrement) {
@@ -275,6 +263,12 @@ final class ReportDataParser {
             throw new ReportEngineReflectionException("Error instantiating an object with no access to the constructor", ILLEGAL_ACCESS);
         } catch (InvocationTargetException e) {
             throw new ReportEngineReflectionException("Error instantiating an object with no parameter constructor", INVOCATION_ERROR);
+        }
+    }
+
+    private void overrideSubreportsTitles(final Map<Integer, String> overriddenTitles) {
+        for (final Map.Entry<Integer, String> entry : overriddenTitles.entrySet()) {
+            this.reportData.getHeader().getCell(entry.getKey()).setTitle(entry.getValue());
         }
     }
 

@@ -23,7 +23,6 @@ public class ReportData {
     private boolean createHeader = true;
     private int headerStartRow;
     private int dataStartRow;
-    private List<Integer> autoSizedColumns = new ArrayList<>();
     private List<ReportDataSpecialRow> specialRows = new ArrayList<>();
     private List<ReportDataRow> rows = new ArrayList<>();
     private ReportDataStyles reportDataStyles = new ReportDataStyles();
@@ -105,7 +104,13 @@ public class ReportData {
     }
 
     public List<Integer> getAutoSizedColumns() {
-        return autoSizedColumns;
+        List<Integer> autosizedColumns = new ArrayList<>();
+        for (int i = 0; i < header.getCells().size(); i++) {
+            if(header.getCells().get(i).isAutoSizeColumn()){
+                autosizedColumns.add(i);
+            }
+        }
+        return autosizedColumns;
     }
 
     public ReportDataStyles getStyles() {

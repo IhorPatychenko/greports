@@ -17,7 +17,11 @@ public abstract class ReportCell {
         return position;
     }
 
-    protected String getTitle() {
+    public String getTitle() {
         return title;
+    }
+
+    protected void setTitle(String newTitle) {
+        this.title = newTitle;
     }
 }
