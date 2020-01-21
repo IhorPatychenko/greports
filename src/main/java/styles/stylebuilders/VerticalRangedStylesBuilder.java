@@ -9,6 +9,7 @@ import positioning.VerticalRange;
 import styles.VerticalRangedStyle;
 
 import java.awt.*;
+import java.util.Collection;
 
 public class VerticalRangedStylesBuilder extends ReportStylesBuilder<VerticalRangedStyle, VerticalRange> {
 
@@ -120,6 +121,11 @@ public class VerticalRangedStylesBuilder extends ReportStylesBuilder<VerticalRan
 
     @Override
     protected VerticalRangedStyleBuilder newStyleBuilder(VerticalRange tuple, boolean clonePreviousStyle) {
+        return null;
+    }
+
+    @Override
+    public Collection<VerticalRangedStyleBuilder> getStylesBuilders() {
         return null;
     }
 }

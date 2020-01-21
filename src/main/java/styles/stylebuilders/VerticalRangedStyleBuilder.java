@@ -9,7 +9,7 @@ public class VerticalRangedStyleBuilder extends ReportStyleBuilder<VerticalRange
     }
 
     @Override
-    VerticalRange buildStyle() {
+    protected VerticalRange buildStyle() {
         return null;
     }
 }

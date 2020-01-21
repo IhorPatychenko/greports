@@ -2,23 +2,24 @@ package styles;
 
 import styles.interfaces.StripedRows.StripedRowsIndex;
 import styles.stylebuilders.ReportStylesBuilder;
+import styles.stylebuilders.VerticalRangedStylesBuilder;
 
 import java.awt.*;
 
 public class ReportDataStyles {
 
-    private ReportStylesBuilder<VerticalRangedStyle> rowStyles;
+    private VerticalRangedStylesBuilder rowStyles;
     private ReportStylesBuilder<HorizontalRangedStyle> columnStyles;
     private ReportStylesBuilder<PositionedStyle> positionedStyles;
     private ReportStylesBuilder<RectangleRangedStyle> rangedStyleReportStyles;
     private StripedRowsIndex stripedRowsIndex;
     private Color stripedRowsColor;
 
-    public ReportStylesBuilder<VerticalRangedStyle> getRowStyles() {
+    public VerticalRangedStylesBuilder getRowStyles() {
         return rowStyles;
     }
 
-    public void setRowStyles(ReportStylesBuilder<VerticalRangedStyle> rowStyles) {
+    public void setRowStyles(VerticalRangedStylesBuilder rowStyles) {
         this.rowStyles = rowStyles;
     }
 

@@ -111,20 +111,18 @@ public abstract class ReportStylesBuilder<T, E> {
         return this;
     }
 
-    protected abstract ReportStyleBuilder<T, E> newStyleBuilder(E tuple, boolean clonePreviousStyle);
-
-    public Collection<ReportStyleBuilder<T, E>> getStylesBuilders() {
-        return styleBuilders;
-    }
-
     public StylePriority getPriority() {
         return priority;
     }
 
-    public void mergeStyles(ReportStylesBuilder<T, E> other) {
-        if (other != null) {
-            styleBuilders.addAll(other.getStylesBuilders());
-        }
-    }
+    protected abstract ReportStyleBuilder<T, E> newStyleBuilder(E tuple, boolean clonePreviousStyle);
+    public abstract Collection<VerticalRangedStyleBuilder> getStylesBuilders();
+    public abstract void mergeStyles(ReportStylesBuilder<T, E> other);
+
+//    public void mergeStyles(ReportStylesBuilder<T, E> other) {
+//        if (other != null) {
+//            styleBuilders.addAll(other.getStylesBuilders());
+//        }
+//    }
 
 }

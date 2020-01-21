@@ -27,6 +27,8 @@ import styles.ReportStyle;
 import styles.stylebuilders.ReportStylesBuilder;
 import styles.VerticalRangedStyle;
 import styles.interfaces.StripedRows;
+import styles.stylebuilders.VerticalRangedStyleBuilder;
+import styles.stylebuilders.VerticalRangedStylesBuilder;
 import utils.Pair;
 import utils.Utils;
 
@@ -192,8 +194,9 @@ class ReportDataRawInjector extends ReportDataInjector {
         }
     }
 
-    private void applyRowStyles(Sheet sheet, ReportStylesBuilder<VerticalRangedStyle> rowStyles) {
-        final Collection<VerticalRangedStyle> styles = rowStyles.getStylesBuilders();
+    private void applyRowStyles(Sheet sheet, VerticalRangedStylesBuilder rowStyles) {
+//        final Collection<VerticalRangedStyle> styles = rowStyles.getStylesBuilders();
+        Collection<VerticalRangedStyleBuilder> stylesBuilders = rowStyles.getStylesBuilders();
         for (VerticalRangedStyle style : styles) {
             final VerticalRange range = style.getRange();
             checkRange(range, sheet);

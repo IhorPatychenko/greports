@@ -10,85 +10,85 @@ import java.awt.Color;
 
 abstract class ReportStyleBuilder<T, E> {
 
-    private Color foregroundColor;
-    private Color fontColor;
-    private FillPatternType fillPattern = FillPatternType.SOLID_FOREGROUND;
-    private Boolean boldFont;
-    private Boolean italicFont;
-    private FontUnderline underlineFont;
-    private Boolean strikeoutFont;
-    private HorizontalAlignment horizontalAlignment;
-    private VerticalAlignment verticalAlignment;
-    private BorderStyle borderTop;
-    private BorderStyle borderRight;
-    private BorderStyle borderBottom;
-    private BorderStyle borderLeft;
-    private Color borderColor;
-    private T tuple;
-    private boolean clonePreviousStyle;
+    protected Color foregroundColor;
+    protected Color fontColor;
+    protected FillPatternType fillPattern = FillPatternType.SOLID_FOREGROUND;
+    protected Boolean boldFont;
+    protected Boolean italicFont;
+    protected FontUnderline underlineFont;
+    protected Boolean strikeoutFont;
+    protected HorizontalAlignment horizontalAlignment;
+    protected VerticalAlignment verticalAlignment;
+    protected BorderStyle borderTop;
+    protected BorderStyle borderRight;
+    protected BorderStyle borderBottom;
+    protected BorderStyle borderLeft;
+    protected Color borderColor;
+    protected T tuple;
+    protected boolean clonePreviousStyle;
 
     ReportStyleBuilder(T tuple, boolean clonePreviousStyle) {
         this.tuple = tuple;
         this.clonePreviousStyle = clonePreviousStyle;
     }
 
-    void setForegroundColor(Color foregroundColor) {
+    protected void setForegroundColor(Color foregroundColor) {
         this.foregroundColor = foregroundColor;
     }
 
-    void setFontColor(Color fontColor) {
+    protected void setFontColor(Color fontColor) {
         this.fontColor = fontColor;
     }
 
-    void setFillPattern(FillPatternType fillPattern) {
+    protected void setFillPattern(FillPatternType fillPattern) {
         this.fillPattern = fillPattern;
     }
 
-    void setBoldFont(Boolean boldFont) {
+    protected void setBoldFont(Boolean boldFont) {
         this.boldFont = boldFont;
     }
 
-    void setItalicFont(Boolean italicFont) {
+    protected void setItalicFont(Boolean italicFont) {
         this.italicFont = italicFont;
     }
 
-    void setUnderlineFont(FontUnderline underlineFont) {
+    protected void setUnderlineFont(FontUnderline underlineFont) {
         this.underlineFont = underlineFont;
     }
 
-    void setStrikeoutFont(Boolean strikeoutFont) {
+    protected void setStrikeoutFont(Boolean strikeoutFont) {
         this.strikeoutFont = strikeoutFont;
     }
 
-    void setHorizontalAlignment(HorizontalAlignment horizontalAlignment) {
+    protected void setHorizontalAlignment(HorizontalAlignment horizontalAlignment) {
         this.horizontalAlignment = horizontalAlignment;
     }
 
-    void setVerticalAlignment(VerticalAlignment verticalAlignment) {
+    protected void setVerticalAlignment(VerticalAlignment verticalAlignment) {
         this.verticalAlignment = verticalAlignment;
     }
 
-    void setBorderTop(BorderStyle borderTop) {
+    protected void setBorderTop(BorderStyle borderTop) {
         this.borderTop = borderTop;
     }
 
-    void setBorderRight(BorderStyle borderRight) {
+    protected void setBorderRight(BorderStyle borderRight) {
         this.borderRight = borderRight;
     }
 
-    void setBorderBottom(BorderStyle borderBottom) {
+    protected void setBorderBottom(BorderStyle borderBottom) {
         this.borderBottom = borderBottom;
     }
 
-    void setBorderLeft(BorderStyle borderLeft) {
+    protected void setBorderLeft(BorderStyle borderLeft) {
         this.borderLeft = borderLeft;
     }
 
-    void setBorderColor(Color color) {
+    protected void setBorderColor(Color color) {
         this.borderColor = color;
     }
 
-    abstract E buildStyle();
+    protected abstract E buildStyle();
 
 //    E buildStyle() {
 //            ReportStyle reportStyle = new ReportStyle()
