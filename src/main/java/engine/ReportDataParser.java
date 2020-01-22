@@ -49,9 +49,9 @@ final class ReportDataParser {
     private Configuration configuration;
     private List<ReportData> subreportsData = new ArrayList<>();
 
-    public <T> ReportDataParser parse(Collection<T> collection, final String reportName, Class<T> clazz, Map<Integer, String> overriddenTitles) throws ReportEngineReflectionException, IOException {
+    public <T> ReportDataParser parse(Collection<T> collection, final String reportName, Class<T> clazz, ReportConfigurator configurator) throws ReportEngineReflectionException, IOException {
         final ReportDataParser parser = parse(collection, reportName, clazz, 0f);
-        overrideSubreportsTitles(overriddenTitles);
+        overrideSubreportsTitles(configurator.getOverriddenTitles());
         return parser;
     }
 
