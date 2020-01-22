@@ -4,7 +4,6 @@ import content.ReportData;
 import content.ReportHeader;
 import content.column.ReportDataCell;
 import content.row.ReportDataRow;
-import org.apache.poi.ss.SpreadsheetVersion;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.AreaReference;
 import org.apache.poi.ss.util.CellReference;
@@ -12,6 +11,7 @@ import org.apache.poi.xssf.usermodel.XSSFCellStyle;
 import org.apache.poi.xssf.usermodel.XSSFFormulaEvaluator;
 import org.apache.poi.xssf.usermodel.XSSFTable;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.openxmlformats.schemas.spreadsheetml.x2006.main.CTTable;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -33,7 +33,7 @@ public class ReportDataTemplateInjector extends ReportDataInjector {
     protected void injectData(Sheet sheet) {
         createHeader(sheet);
         createDataRows(sheet);
-        reindexRow(sheet);
+        reindexTablesRows(sheet);
 //        evaluateFormulas();
     }
 
@@ -75,14 +75,26 @@ public class ReportDataTemplateInjector extends ReportDataInjector {
         sheet.shiftRows(reportData.getDataStartRow() + 1, reportData.getDataStartRow() + reportData.getRowsCount() + 1, -1);
     }
 
-    private void reindexRow(final Sheet sheet) {
+//    private void reindexRow(final Sheet sheet) {
+//        for (final XSSFTable table : currentWorkbook.getSheet(reportData.getSheetName()).getTables()) {
+//            final Row lastDataRow = sheet.getRow(reportData.getDataStartRow() + reportData.getRowsCount() - 1);
+//            table.setCellReferences(new AreaReference(
+//                table.getCellReferences().getFirstCell(),
+//                new CellReference(lastDataRow.getCell(lastDataRow.getLastCellNum() - 1)),
+//                SpreadsheetVersion.EXCEL2007
+//            ));
+//        }
+//    }
+
+    private void reindexTablesRows(final Sheet sheet) {
         for (final XSSFTable table : currentWorkbook.getSheet(reportData.getSheetName()).getTables()) {
             final Row lastDataRow = sheet.getRow(reportData.getDataStartRow() + reportData.getRowsCount() - 1);
-            table.setCellReferences(new AreaReference(
-                table.getCellReferences().getFirstCell(),
-                new CellReference(lastDataRow.getCell(lastDataRow.getLastCellNum() - 1)),
-                SpreadsheetVersion.EXCEL2007
-            ));
+            final CTTable ctTable = table.getCTTable();
+            final AreaReference reference = new AreaReference(
+                table.getStartCellReference(),
+                new CellReference(lastDataRow.getCell(lastDataRow.getLastCellNum() - 1))
+            );
+            ctTable.setRef(reference.formatAsString());
         }
     }
 
