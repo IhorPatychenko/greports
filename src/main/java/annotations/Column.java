@@ -31,11 +31,11 @@ public @interface Column {
     float position();
 
     /**
-     * An array of {@link Validator} to be applied to the column.
+     * An array of {@link CellValidator} to be applied to the column.
      *
-     * @return {@link Validator}
+     * @return {@link CellValidator}
      */
-    Validator[] validators() default {};
+    CellValidator[] cellValidators() default {};
 
     /**
      * Column title. This text string will be used to search for

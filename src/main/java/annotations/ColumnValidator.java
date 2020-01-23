@@ -1,12 +1,16 @@
 package annotations;
 
+import validators.AbstractColumnValidator;
 import validators.AbstractValidator;
 
-/**
- * Annotation indicating the validation that
- * the report attribute has to pass when loading an .xlsx file.
- */
-public @interface Validator {
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.ANNOTATION_TYPE)
+public @interface ColumnValidator {
 
     /**
      * The class to obtain in order to pass the validation.
@@ -16,18 +20,24 @@ public @interface Validator {
      *
      * @return {@link Class}
      */
-    Class<? extends AbstractValidator> validatorClass();
+    Class<? extends AbstractColumnValidator> validatorClass();
 
     /**
      * The constant value that is passed to the validator builder.
      * Because of the Java annotation restrictions,
      * the value of this cannot be of the {@link Object} type,
-     * you must make the necessary conserving of the value
-     * of the {@link String} type to the type of data you need.
+     * you must make the necessary value conversion
+     * of the {@link String} type to the data type you need.
      *
      * @return {@link String}
      */
-    String value() default "";
+    String param();
+
+    /**
+     * ID of column to be evaluated against the validator.
+     * @return {@link String}
+     */
+    String targetId();
 
     /**
      * Error message. This text string will be used to search for

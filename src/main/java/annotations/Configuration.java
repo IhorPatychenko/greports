@@ -97,4 +97,11 @@ public @interface Configuration {
      * @return an array of {@link SpecialColumn}
      */
     SpecialColumn[] specialColumns() default {};
+
+    /**
+     * An array of {@link ColumnValidator} to be applied to the column.
+     *
+     * @return {@link ColumnValidator}
+     */
+    ColumnValidator[] columnValidators() default {};
 }

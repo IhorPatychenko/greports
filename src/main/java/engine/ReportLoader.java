@@ -5,7 +5,7 @@ import annotations.Report;
 import annotations.Configuration;
 import annotations.SpecialColumn;
 import annotations.Subreport;
-import annotations.Validator;
+import annotations.CellValidator;
 import exceptions.ReportEngineReflectionException;
 import exceptions.ReportEngineValidationException;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
@@ -19,6 +19,7 @@ import org.apache.poi.ss.usermodel.WorkbookFactory;
 import positioning.TranslationsParser;
 import utils.AnnotationUtils;
 import utils.Pair;
+import utils.Translator;
 import validators.AbstractValidator;
 import validators.ValidatorFactory;
 
@@ -49,7 +50,7 @@ public class ReportLoader {
     private String reportName;
     private Workbook currentWorkbook;
     private ReportLoaderResult loaderResult;
-    private Map<String, Object> translations;
+    private Translator translator;
 
     public ReportLoader(String reportName, String filePath) throws IOException, InvalidFormatException {
         this(reportName, new File(filePath));
@@ -75,7 +76,7 @@ public class ReportLoader {
 
     public <T> ReportLoader bindForClass(Class<T> clazz, ReportLoaderErrorTreatment treatment) throws ReportEngineReflectionException, IOException {
         final Configuration configuration = getClassReportConfiguration(clazz);
-        this.translations = new TranslationsParser(configuration.translationsDir()).parse(configuration.reportLang());
+        this.translator = new Translator(new TranslationsParser(configuration.translationsDir()).parse(configuration.reportLang()));
         final Map<Annotation, Pair<Class<?>, Method>> annotations = loadColumns(clazz, configuration, false);
         final Map<Annotation, Pair<Class<?>, Method>> unwindedAnnotations = loadColumns(clazz, configuration, true);
         List<T> bindForClass = bindForClass(clazz, configuration, annotations, unwindedAnnotations, treatment);
@@ -99,15 +100,16 @@ public class ReportLoader {
                     final Annotation annotation = entry.getKey();
                     final Pair<Class<?>, Method> pair = entry.getValue();
                     if(annotation instanceof Column){
+                        final Column column = (Column) annotation;
                         final Method method = pair.getRight();
                         final Cell cell = row.getCell(keys.indexOf(annotation));
                         try {
-                            instanceSetValueFromCell(method, instance, cell, (Column) annotation);
+                            instanceSetValueFromCell(method, instance, cell, column.cellValidators());
                         } catch (ReportEngineValidationException e) {
                             if(ReportLoaderErrorTreatment.THROW_ERROR.equals(treatment)){
                                 throw new ReportEngineReflectionException(e.getMessage(), ILLEGAL_ARGUMENT);
                             } else {
-                                loaderResult.addError(clazz, cell, e.getMessage(), ((Column) annotation).title());
+                                loaderResult.addError(clazz, cell, e.getMessage(), column.title());
                                 entryError = true;
                                 if(ReportLoaderErrorTreatment.SKIP_ROW_ON_ERROR.equals(treatment)){
                                     break;
@@ -213,7 +215,7 @@ public class ReportLoader {
         return result;
     }
 
-    private void instanceSetValueFromCell(final Method method, final Object instance, final Cell cell, final Column column) throws ReportEngineReflectionException, ReportEngineValidationException {
+    private void instanceSetValueFromCell(final Method method, final Object instance, final Cell cell, final CellValidator[] cellValidators) throws ReportEngineReflectionException, ReportEngineValidationException {
         method.setAccessible(true);
         Class<?> parameterType = method.getParameterTypes()[0];
         Object value = null;
@@ -240,7 +242,7 @@ public class ReportLoader {
                 } else if(CellType.FORMULA.equals(cell.getCellTypeEnum())) {
                     value = cell.getCellFormula();
                 }
-                checkValidations(value, column);
+                checkValidations(value, cellValidators);
                 method.invoke(instance, value);
             }
         } catch (IllegalAccessException e) {
@@ -250,23 +252,24 @@ public class ReportLoader {
         }
     }
 
-    private void checkValidations(final Object value, final Column column) throws ReportEngineValidationException, ReportEngineReflectionException {
-        for (final Validator validator : column.validators()) {
+    private void checkValidations(final Object value, final CellValidator[] cellValidators) throws ReportEngineValidationException, ReportEngineReflectionException {
+        for (final CellValidator cellValidator : cellValidators) {
             try {
-                AbstractValidator validatorInstance = ValidatorFactory.get(validator.validatorClass(), validator.value());
-                validate(validatorInstance, value, validator.errorMessage());
+                AbstractValidator validatorInstance = ValidatorFactory.get(cellValidator.validatorClass(), cellValidator.value());
+                validate(validatorInstance, value, cellValidator.errorMessage());
             } catch (ReflectiveOperationException e) {
-                throw new ReportEngineValidationException("Error instantiating a validator @" + validator.validatorClass().getSimpleName(), INSTANTIATION_ERROR);
+                throw new ReportEngineValidationException("Error instantiating a validator @" + cellValidator.validatorClass().getSimpleName(), INSTANTIATION_ERROR);
             }
         }
     }
 
     private void validate(final AbstractValidator validatorInstance, final Object value, final String errorMessageKey) throws ReportEngineValidationException {
         if(!validatorInstance.isValid(value)){
-            String errorMessage = translations.getOrDefault(errorMessageKey, errorMessageKey).toString();
-            if(validatorInstance.getValidatorValue() != null){
-                errorMessage = errorMessage.replace("%value%", validatorInstance.getValidatorValue());
-            }
+            String errorMessage = translator.translate(errorMessageKey, validatorInstance.getValidatorValue());
+//            String errorMessage = translations.getOrDefault(errorMessageKey, errorMessageKey).toString();
+//            if(validatorInstance.getValidatorValue() != null){
+//                errorMessage = errorMessage.replace("%value%", validatorInstance.getValidatorValue());
+//            }
             throw new ReportEngineValidationException(errorMessage.replace("%value%", errorMessage), VALIDATION_ERROR);
         }
     }
