@@ -5,12 +5,14 @@ import annotations.Configuration;
 import annotations.Report;
 import annotations.Subreport;
 import content.cell.ReportHeaderCell;
+import engine.ReportColumn;
 import exceptions.ReportEngineReflectionException;
 import exceptions.ReportEngineRuntimeExceptionCode;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.lang.reflect.ParameterizedType;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -23,6 +25,11 @@ public class AnnotationUtils {
 
     private static final List<String> gettersPrefixes = new ArrayList<>(Arrays.asList("get", "is"));
     private static final List<String> settersPrefixes = new ArrayList<>(Collections.singletonList("set"));
+
+    public static Configuration getClassReportConfiguration(Class<?> clazz, String reportName) {
+        final Report reportAnnotation = AnnotationUtils.getReportAnnotation(clazz);
+        return AnnotationUtils.getReportConfiguration(reportAnnotation, reportName);
+    }
 
     public static Report getReportAnnotation(Class<?> clazz) {
         final Report annotation = clazz.getAnnotation(Report.class);
@@ -82,6 +89,39 @@ public class AnnotationUtils {
                 }
             }
         }
+    }
+
+
+    public static <T> List<ReportColumn> loadAnnotations(final Class<T> clazz, String reportName, final boolean recursive) {
+        List<ReportColumn> list = new ArrayList<>();
+        final Field[] fields = clazz.getDeclaredFields();
+        for (final Field field : fields) {
+            final Subreport[] subreportsAnnotations = field.getAnnotationsByType(Subreport.class);
+            for (final Subreport subreportsAnnotation : subreportsAnnotations) {
+                Class<?> aClass;
+                if(field.getType().equals(List.class)){
+                    ParameterizedType parameterizedType = (ParameterizedType) field.getGenericType();
+                    aClass = (Class<?>) parameterizedType.getActualTypeArguments()[0];
+                } else {
+                    aClass = field.getType();
+                }
+                if(recursive){
+                    final List<ReportColumn> blockDtos = loadAnnotations(aClass, reportName, true);
+                    list.addAll(blockDtos);
+                } else {
+                    if (getSubreportPredicate(reportName).test(subreportsAnnotation)) {
+                        list.add(new ReportColumn(reportName, subreportsAnnotation, clazz, field));
+                    }
+                }
+            }
+            final Column[] columns = field.getAnnotationsByType(Column.class);
+            for (final Column columnAnnotation : columns) {
+                if (getReportColumnPredicate(reportName).test(columnAnnotation)) {
+                    list.add(new ReportColumn(reportName, columnAnnotation, clazz, field));
+                }
+            }
+        }
+        return list;
     }
 
     public static <T> void fieldsWithSubreportAnnotations(Class<T> clazz, Function<Pair<Field, Subreport>, Void> columnFunction, String reportName) {
@@ -147,6 +187,8 @@ public class AnnotationUtils {
             return null;
         };
     }
+
+//    public static Function<Pair<Column, >>
 
     public static Function<Pair<Subreport, Pair<Class<?>, Method>>, Void> getSubreportsWithFieldsAndMethodsFunction(Map<Subreport, Pair<Class<?>, Method>> subreportsMap) {
         return pair -> {

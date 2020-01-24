@@ -75,7 +75,7 @@ public class ReportLoader {
     }
 
     public <T> ReportLoader bindForClass(Class<T> clazz, ReportLoaderErrorTreatment treatment) throws ReportEngineReflectionException, IOException {
-        final Configuration configuration = getClassReportConfiguration(clazz);
+        final Configuration configuration = AnnotationUtils.getClassReportConfiguration(clazz, reportName);
         this.translator = new Translator(new TranslationsParser(configuration.translationsDir()).parse(configuration.reportLang()));
         final Map<Annotation, Pair<Class<?>, Method>> annotations = loadColumns(clazz, configuration, false);
         final Map<Annotation, Pair<Class<?>, Method>> unwindedAnnotations = loadColumns(clazz, configuration, true);
@@ -118,7 +118,7 @@ public class ReportLoader {
                         }
                     } else if(annotation instanceof Subreport){
                         final Class<?> subreportClass = pair.getLeft();
-                        final Configuration subreportConfiguration = getClassReportConfiguration(subreportClass);
+                        final Configuration subreportConfiguration = AnnotationUtils.getClassReportConfiguration(subreportClass, reportName);
                         final Map<Annotation, Pair<Class<?>, Method>> subreportAnnotations = loadColumns(subreportClass, subreportConfiguration, false);
                         final List<?> list = bindForClass(subreportClass, subreportConfiguration, subreportAnnotations, unwindedAnnotations, treatment);
                         subreportsData.add(Pair.of(list, pair.getRight()));
@@ -152,11 +152,6 @@ public class ReportLoader {
         return instances;
     }
 
-    private Configuration getClassReportConfiguration(Class<?> clazz) {
-        final Report reportAnnotation = AnnotationUtils.getReportAnnotation(clazz);
-        return AnnotationUtils.getReportConfiguration(reportAnnotation, reportName);
-    }
-
     private <T> Map<Annotation, Pair<Class<?>, Method>> loadColumns(Class<T> clazz, Configuration configuration, boolean recursive) {
 
         Map<Column, Pair<Class<?>, Method>> columnsMap = new LinkedHashMap<>();
@@ -172,7 +167,7 @@ public class ReportLoader {
 
         if(recursive) {
             for (Map.Entry<Subreport, Pair<Class<?>, Method>> entry : subreportsMap.entrySet()) {
-                final Map<Annotation, Pair<Class<?>, Method>> map = loadColumns(entry.getValue().getLeft(), getClassReportConfiguration(entry.getValue().getLeft()), true);
+                final Map<Annotation, Pair<Class<?>, Method>> map = loadColumns(entry.getValue().getLeft(), AnnotationUtils.getClassReportConfiguration(entry.getValue().getLeft(), reportName), true);
                 annotations.putAll(map);
             }
         } else {
