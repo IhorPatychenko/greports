@@ -3,6 +3,7 @@ package utils;
 import annotations.Column;
 import annotations.Configuration;
 import annotations.Report;
+import annotations.SpecialColumn;
 import annotations.Subreport;
 import content.cell.ReportHeaderCell;
 import engine.ReportColumn;
@@ -16,6 +17,7 @@ import java.lang.reflect.ParameterizedType;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -91,6 +93,19 @@ public class AnnotationUtils {
         }
     }
 
+    public static <T> Column getSubreportLastColumn(Class<T> clazz, String reportName){
+        List<Column> list = new ArrayList<>();
+        final Field[] fields = clazz.getDeclaredFields();
+        for (final Field field : fields) {
+            final Column[] columns = field.getAnnotationsByType(Column.class);
+            for (final Column columnAnnotation : columns) {
+                if (getReportColumnPredicate(reportName).test(columnAnnotation)) {
+                    list.add(columnAnnotation);
+                }
+            }
+        }
+        return list.stream().max(Comparator.comparing(Column::position)).orElse(null);
+    }
 
     public static <T> List<ReportColumn> loadAnnotations(final Class<T> clazz, String reportName, final boolean recursive) {
         List<ReportColumn> list = new ArrayList<>();
@@ -120,6 +135,10 @@ public class AnnotationUtils {
                     list.add(new ReportColumn(reportName, columnAnnotation, clazz, field));
                 }
             }
+        }
+        Configuration configuration = getClassReportConfiguration(clazz, reportName);
+        for (SpecialColumn specialColumn : configuration.specialColumns()) {
+            list.add(new ReportColumn(reportName, specialColumn, clazz, null));
         }
         return list;
     }
@@ -187,8 +206,6 @@ public class AnnotationUtils {
             return null;
         };
     }
-
-//    public static Function<Pair<Column, >>
 
     public static Function<Pair<Subreport, Pair<Class<?>, Method>>, Void> getSubreportsWithFieldsAndMethodsFunction(Map<Subreport, Pair<Class<?>, Method>> subreportsMap) {
         return pair -> {

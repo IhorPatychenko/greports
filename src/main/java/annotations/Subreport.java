@@ -22,16 +22,5 @@ public @interface Subreport {
      */
     String reportName();
 
-    /**
-     * The positional increment indicates what increment should have
-     * every next subreport if the parent report contains more than one
-     * subreport of the same class and the column of the same subreport needs
-     * to be grouped. This increment will added to every column of the subreport.
-     * To have the sub-column columns grouped, the positional value
-     * must be assigned the value that exceeds the subtraction between
-     * the highest and lowest positions of the subreport's columns.
-     *
-     * @return float
-     */
-    float positionIncrement() default 0.0f;
+    float position();
 }

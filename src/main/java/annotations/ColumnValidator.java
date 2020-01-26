@@ -31,7 +31,7 @@ public @interface ColumnValidator {
      *
      * @return {@link String}
      */
-    String param();
+    String param() default "";
 
     /**
      * ID of column to be evaluated against the validator.
