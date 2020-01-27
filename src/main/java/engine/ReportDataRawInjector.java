@@ -119,13 +119,22 @@ class ReportDataRawInjector extends ReportDataInjector {
     }
 
     private void createCell(Row row, ReportDataCell reportDataCell, int cellIndex){
+        CellType cellType = CellType.BLANK;
         final ValueType valueType = reportDataCell.getValueType();
         if(!ValueType.FORMULA.equals(valueType)){
-            final Cell cell = row.createCell(cellIndex);
+            if(reportDataCell.getValue() instanceof Number){
+                cellType = CellType.NUMERIC;
+            } else if(reportDataCell.getValue() instanceof String){
+                cellType = CellType.STRING;
+            } else if(reportDataCell.getValue() instanceof Boolean) {
+                cellType = CellType.BOOLEAN;
+            }
+            final Cell cell = row.createCell(cellIndex, cellType);
             WorkbookUtils.setCellValue(cell, reportDataCell.getValue());
             setCellFormat(cell, reportDataCell.getFormat());
         } else {
-            final Cell cell = row.createCell(cellIndex);
+            cellType = CellType.FORMULA;
+            final Cell cell = row.createCell(cellIndex, cellType);
             String formulaString = reportDataCell.getValue().toString();
             for (Map.Entry<String, Integer> entry : reportData.getTargetIndexes().entrySet()) {
                 formulaString = formulaString.replaceAll(entry.getKey(), super.getCellReferenceForTargetId(row, entry.getKey()).formatAsString());

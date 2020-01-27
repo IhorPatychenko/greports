@@ -191,13 +191,17 @@ public class ReportLoader {
             Float value1, value2;
             if(key1 instanceof Column){
                 value1 = ((Column) key1).position();
-            } else {
+            } else if(key1 instanceof SpecialColumn) {
                 value1 = ((SpecialColumn) key1).position();
+            } else {
+                value1 = ((Subreport) key1).position();
             }
             if(key2 instanceof Column){
                 value2 = ((Column) key2).position();
-            } else {
+            } else if(key2 instanceof SpecialColumn)  {
                 value2 = ((SpecialColumn) key2).position();
+            } else {
+                value2 = ((Subreport) key2).position();
             }
             return value1.compareTo(value2);
         });

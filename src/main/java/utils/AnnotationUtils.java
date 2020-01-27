@@ -16,7 +16,6 @@ import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -24,9 +23,6 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 
 public class AnnotationUtils {
-
-    private static final List<String> gettersPrefixes = new ArrayList<>(Arrays.asList("get", "is"));
-    private static final List<String> settersPrefixes = new ArrayList<>(Collections.singletonList("set"));
 
     public static Configuration getClassReportConfiguration(Class<?> clazz, String reportName) {
         final Report reportAnnotation = AnnotationUtils.getReportAnnotation(clazz);
@@ -73,7 +69,7 @@ public class AnnotationUtils {
             final Column[] annotationsByType = declaredField.getAnnotationsByType(Column.class);
             for (Column column : annotationsByType) {
                 if (getReportColumnPredicate(reportName).test(column)) {
-                    final Pair<Column, Pair<Class<?>, Method>> columnPairPair = Pair.of(column, Pair.of(clazz, fetchFieldSetter(declaredField, clazz)));
+                    final Pair<Column, Pair<Class<?>, Method>> columnPairPair = Pair.of(column, Pair.of(clazz, ReflectionUtils.fetchFieldSetter(declaredField, clazz)));
                     function.apply(columnPairPair);
                 }
             }
@@ -85,7 +81,7 @@ public class AnnotationUtils {
             final Subreport[] annotationsByType = declaredField.getAnnotationsByType(Subreport.class);
             for (Subreport subreport : annotationsByType) {
                 if (getSubreportPredicate(reportName).test(subreport)) {
-                    final Method method = fetchFieldSetter(declaredField, clazz);
+                    final Method method = ReflectionUtils.fetchFieldSetter(declaredField, clazz);
                     final Pair<Subreport, Pair<Class<?>, Method>> columnPairPair = Pair.of(subreport, Pair.of(method.getParameterTypes()[0], method));
                     function.apply(columnPairPair);
                 }
@@ -108,6 +104,10 @@ public class AnnotationUtils {
     }
 
     public static <T> List<ReportColumn> loadAnnotations(final Class<T> clazz, String reportName, final boolean recursive) {
+        return loadAnnotations(clazz, reportName, recursive, 0.0f);
+    }
+
+    private static <T> List<ReportColumn> loadAnnotations(final Class<T> clazz, String reportName, final boolean recursive, final float subreportIcrement) {
         List<ReportColumn> list = new ArrayList<>();
         final Field[] fields = clazz.getDeclaredFields();
         for (final Field field : fields) {
@@ -121,25 +121,26 @@ public class AnnotationUtils {
                     aClass = field.getType();
                 }
                 if(recursive){
-                    final List<ReportColumn> blockDtos = loadAnnotations(aClass, reportName, true);
+                    final List<ReportColumn> blockDtos = loadAnnotations(aClass, reportName, true, subreportsAnnotation.position());
                     list.addAll(blockDtos);
                 } else {
                     if (getSubreportPredicate(reportName).test(subreportsAnnotation)) {
-                        list.add(new ReportColumn(reportName, subreportsAnnotation, clazz, field));
+                        list.add(new ReportColumn(reportName, subreportsAnnotation, clazz, field, ReflectionUtils.fetchFieldSetter(field, clazz), subreportsAnnotation.position()));
                     }
                 }
             }
             final Column[] columns = field.getAnnotationsByType(Column.class);
             for (final Column columnAnnotation : columns) {
                 if (getReportColumnPredicate(reportName).test(columnAnnotation)) {
-                    list.add(new ReportColumn(reportName, columnAnnotation, clazz, field));
+                    list.add(new ReportColumn(reportName, columnAnnotation, clazz, field, ReflectionUtils.fetchFieldSetter(field, clazz), columnAnnotation.position() + subreportIcrement));
                 }
             }
         }
         Configuration configuration = getClassReportConfiguration(clazz, reportName);
         for (SpecialColumn specialColumn : configuration.specialColumns()) {
-            list.add(new ReportColumn(reportName, specialColumn, clazz, null));
+            list.add(new ReportColumn(reportName, specialColumn, clazz, null, null, specialColumn.position()));
         }
+        list.sort(Comparator.comparing(ReportColumn::getAnnotationPosition));
         return list;
     }
 
@@ -162,36 +163,7 @@ public class AnnotationUtils {
         return annotation -> ((Subreport) annotation).reportName().equals(reportName);
     }
 
-    public static <T> Method fetchFieldGetter(Field field, Class<T> clazz) throws ReportEngineReflectionException {
-        List<String> getterPossibleNames = new ArrayList<>();
-        gettersPrefixes.forEach(prefix -> getterPossibleNames.add(prefix + Utils.capitalizeString(field.getName())));
 
-        for (String getterPossibleName : getterPossibleNames) {
-            try {
-                final Method method = ReflectionUtils.getMethodWithName(clazz, getterPossibleName, new Class<?>[]{});
-                if (method != null) {
-                    return method;
-                }
-            } catch (ReportEngineReflectionException ignored) {}
-        }
-        throw new ReportEngineReflectionException("No getter was found with any of these names \"" + String.join(", ", getterPossibleNames) + "\" for field " + field.getName() + " in class @" + clazz.getSimpleName(), ReportEngineRuntimeExceptionCode.NO_METHOD_ERROR);
-    }
-
-    public static <T> Method fetchFieldSetter(Field field, Class<T> clazz) throws ReportEngineReflectionException {
-        List<String> setterPossibleNames = new ArrayList<>();
-        settersPrefixes.forEach(prefix -> setterPossibleNames.add(prefix + Utils.capitalizeString(field.getName())));
-
-        for (String setterPossibleName : setterPossibleNames) {
-            try {
-                Class<?>[] returnType = { field.getType() };
-                final Method method = ReflectionUtils.getMethodWithName(clazz, setterPossibleName, returnType);
-                if (method != null) {
-                    return method;
-                }
-            } catch (ReportEngineReflectionException ignored) {}
-        }
-        throw new ReportEngineReflectionException("No setter was found with any of these names \"" + String.join(", ", setterPossibleNames) + "\" for field " + field.getName(), ReportEngineRuntimeExceptionCode.NO_METHOD_ERROR);
-    }
 
     public static Function<Pair<Field, Column>, Void> getFieldsAndColumnsFunction(Map<Field, Column> columnsMap){
         return pair -> {

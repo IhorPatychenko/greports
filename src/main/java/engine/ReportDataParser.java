@@ -47,7 +47,7 @@ final class ReportDataParser {
     private Map<String, Object> translations;
     private Configuration configuration;
     private List<ReportData> subreportsData = new ArrayList<>();
-    private static final float SUBREPORT_POSITIONAL_INCREMENT = 0.000000001f;
+    private static final float SUBREPORT_POSITIONAL_INCREMENT = 0.00000000000001f;
 
     public <T> ReportDataParser parse(Collection<T> collection, final String reportName, Class<T> clazz, ReportConfigurator configurator) throws ReportEngineReflectionException, IOException {
         final ReportDataParser parser = parse(collection, reportName, clazz, 0f);
@@ -97,7 +97,7 @@ final class ReportDataParser {
 
         try {
             for (Map.Entry<Field, Column> entry : columnsMap.entrySet()) {
-                methodsMap.put(entry.getKey(), AnnotationUtils.fetchFieldGetter(entry.getKey(), clazz));
+                methodsMap.put(entry.getKey(), ReflectionUtils.fetchFieldGetter(entry.getKey(), clazz));
             }
             for (T dto : collection) {
                 ReportDataRow row = new ReportDataRow();
@@ -132,17 +132,16 @@ final class ReportDataParser {
 
         for (Map.Entry<Field, Subreport> entry : subreportMap.entrySet()) {
             final Field field = entry.getKey();
-            final Method method = AnnotationUtils.fetchFieldGetter(field, clazz);
-//            final Subreport subreport = entry.getValue();
+            final Method method = ReflectionUtils.fetchFieldGetter(field, clazz);
+            final Subreport subreport = entry.getValue();
             Class<?> returnType = method.getReturnType();
             method.setAccessible(true);
-            float subreportPositionalIncrement = AnnotationUtils.getSubreportLastColumn(returnType, reportData.getName()).position() + SUBREPORT_POSITIONAL_INCREMENT;
 
             if(returnType.equals(List.class)){
                 List<List<?>> subreportsList = new ArrayList<>();
                 ParameterizedType parameterizedType = (ParameterizedType) field.getGenericType();
                 returnType = (Class<?>) parameterizedType.getActualTypeArguments()[0];
-                subreportPositionalIncrement = AnnotationUtils.getSubreportLastColumn(returnType, reportData.getName()).position() + SUBREPORT_POSITIONAL_INCREMENT;
+                float subreportPositionalIncrement = AnnotationUtils.getSubreportLastColumn(returnType, reportData.getName()).position() + SUBREPORT_POSITIONAL_INCREMENT;
 
                 for (T collectionEntry : collection) {
                     final Object invokeResult = subreportInvokeMethod(method, collectionEntry);
@@ -150,30 +149,31 @@ final class ReportDataParser {
                 }
 
                 if(subreportsList.size() > 0){
-                    float positionalIncrement = 0;
+                    float positionalIncrement = subreportPositionalIncrement;
                     final int subreportsInEveryList = subreportsList.get(0).size();
                     for (int i = 0; i < subreportsInEveryList; i++) {
                         final Collection subreportData = new ArrayList<>();
                         for (final List list : subreportsList) {
                             subreportData.add(list.get(i));
                         }
-                        parseSubreportData(reportDataParser, returnType, subreportData, positionalIncrement);
+                        parseSubreportData(reportDataParser, returnType, subreportData, positionalIncrement + subreport.position());
                         positionalIncrement += subreportPositionalIncrement;
                     }
                 }
             } else {
+                float subreportPositionalIncrement = AnnotationUtils.getSubreportLastColumn(returnType, reportData.getName()).position() + SUBREPORT_POSITIONAL_INCREMENT;
                 final Collection subreportData = new ArrayList<>();
                 for (T collectionEntry : collection) {
                     final Object invokeResult = subreportInvokeMethod(method, collectionEntry);
                     subreportData.add(invokeResult);
                 }
-                parseSubreportData(reportDataParser, returnType, subreportData, subreportPositionalIncrement);
+                parseSubreportData(reportDataParser, returnType, subreportData, subreportPositionalIncrement + subreport.position());
             }
         }
     }
 
     private void parseSubreportData(final ReportDataParser reportDataParser, final Class<?> returnType, final Collection subreportData, float positionalIncrement) throws IOException {
-        final ReportData data = reportDataParser.parse(subreportData, reportData.getName(), returnType,positionalIncrement).getData();
+        final ReportData data = reportDataParser.parse(subreportData, reportData.getName(), returnType, positionalIncrement).getData();
         subreportsData.add(data);
     }
 
