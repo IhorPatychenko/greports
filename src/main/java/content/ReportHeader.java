@@ -8,8 +8,8 @@ import java.util.List;
 
 public class ReportHeader {
 
-    private List<ReportHeaderCell> cells = new ArrayList<>();
-    private boolean columnFilter;
+    private final List<ReportHeaderCell> cells = new ArrayList<>();
+    private final boolean columnFilter;
 
     public ReportHeader(){
         this(false);

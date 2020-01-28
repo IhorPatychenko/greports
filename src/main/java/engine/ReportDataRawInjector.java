@@ -30,7 +30,6 @@ import styles.interfaces.StripedRows;
 import styles.stylesbuilders.HorizontalRangedStylesBuilder;
 import styles.stylesbuilders.PositionedStylesBuilder;
 import styles.stylesbuilders.RectangleRangedStylesBuilder;
-import styles.stylesbuilders.VerticalRangedStyleBuilder;
 import styles.stylesbuilders.VerticalRangedStylesBuilder;
 import utils.Pair;
 import utils.Utils;

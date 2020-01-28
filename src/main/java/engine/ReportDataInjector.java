@@ -9,17 +9,15 @@ import org.apache.poi.ss.util.CellReference;
 import org.apache.poi.xssf.usermodel.XSSFCellStyle;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 
 public abstract class ReportDataInjector {
 
     protected final XSSFWorkbook currentWorkbook;
     protected final ReportData reportData;
     protected Map<String, XSSFCellStyle> _formatsCache = new HashMap<>();
-    protected CreationHelper creationHelper;
+    protected final CreationHelper creationHelper;
 
     protected ReportDataInjector(XSSFWorkbook currentWorkbook, ReportData reportData) {
         this.currentWorkbook = currentWorkbook;

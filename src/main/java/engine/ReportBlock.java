@@ -1,68 +1,147 @@
 package engine;
 
+import annotations.CellValidator;
+import annotations.Column;
+import annotations.ColumnValidator;
+import annotations.SpecialColumn;
+import annotations.Subreport;
+
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 
 public class ReportBlock {
 
-    private Integer startColumn;
-    private Integer endColumn;
-    private List<ReportColumn> reportColumns = new ArrayList<>();
-    private boolean isRepeatable;
-    private Class<?> blockClass;
+    private final Class<?> blockClass;
+    private final String reportName;
+    private Annotation annotation;
+    private final List<ReportBlock> blocks = new ArrayList<>();
+    private final List<Object> values = new ArrayList<>();
+    private final ReportBlock parentBlock;
     private Field parentField;
+    private int startColumn;
 
-    public ReportBlock(final Integer startColumn) {
-        this.startColumn = startColumn;
+    public ReportBlock(final Class<?> blockClass, String reportName, final ReportBlock parentBlock) {
+        this.blockClass = blockClass;
+        this.reportName = reportName;
+        this.parentBlock = parentBlock;
     }
 
-    public ReportBlock(final Integer startColumn, final Field parentField) {
-        this(startColumn);
+    public ReportBlock(final Class<?> blockClass, String reportName, final ReportBlock parentBlock, final Annotation annotation, final Field parentField) {
+        this.blockClass = blockClass;
+        this.reportName = reportName;
+        this.parentBlock = parentBlock;
+        this.annotation = annotation;
         this.parentField = parentField;
-    }
-
-    public Integer getStartColumn() {
-        return startColumn;
-    }
-
-    public Integer getEndColumn() {
-        return endColumn;
     }
 
     public Class<?> getBlockClass() {
         return blockClass;
     }
 
-    public ReportBlock setBlockClass(final Class<?> blockClass) {
-        this.blockClass = blockClass;
-        return this;
-    }
-
-    public ReportBlock setEndColumn(final Integer endColumn) {
-        this.endColumn = endColumn;
-        return this;
-    }
-
-    public ReportBlock addReportColumn(final ReportColumn reportColumn) {
-        reportColumns.add(reportColumn);
-        return this;
-    }
-
-    public boolean isRepeatable() {
-        return isRepeatable;
-    }
-
-    public ReportBlock setRepeatable(final boolean repeatable) {
-        isRepeatable = repeatable;
-        return this;
-    }
-
-    public ReportColumn getColumn(final int columnIndex) {
-        return reportColumns.get(columnIndex);
+    public String getReportName() {
+        return reportName;
     }
 
     public Field getParentField() {
         return parentField;
+    }
+
+    public boolean isColumn() {
+        return annotation instanceof Column;
+    }
+
+    public boolean isSpecialColumn() {
+        return annotation instanceof SpecialColumn;
+    }
+
+    public boolean isSubreport() {
+        return annotation instanceof Subreport;
+    }
+
+    public List<ReportBlock> getBlocks() {
+        return blocks;
+    }
+
+    public List<CellValidator> getCellValidators() {
+        return Arrays.asList(getAsColumn().cellValidators());
+    }
+
+    public List<ColumnValidator> getColumnValidators() {
+        return Arrays.asList(getAsColumn().columnValidators());
+    }
+
+    public void addValue(Object value) {
+        this.values.add(value);
+    }
+
+    public List<Object> getValues() {
+        return values;
+    }
+
+    public int getStartColumn() {
+        return startColumn;
+    }
+
+    public Float getPosition() {
+        if (isColumn()) return getAsColumn().position();
+        else if (isSpecialColumn()) return getAsSpecialColumn().position();
+        else return getAsSubreport().position();
+    }
+
+    public Column getAsColumn() {
+        return (Column) annotation;
+    }
+
+    public SpecialColumn getAsSpecialColumn() {
+        return (SpecialColumn) annotation;
+    }
+
+    public Subreport getAsSubreport() {
+        return (Subreport) annotation;
+    }
+
+    public void addBlock(final ReportBlock block) {
+        this.blocks.add(block);
+    }
+
+    public ReportBlock orderBlocks() {
+        this.blocks.sort(Comparator.comparing(ReportBlock::getPosition));
+        return this;
+    }
+
+    private int getTotalColumnsCount() {
+        int total = 0;
+        for (final ReportBlock block : this.blocks) {
+            if (block.isSubreport()) {
+                total += block.getTotalColumnsCount();
+            } else {
+                total += 1;
+            }
+        }
+        return total;
+    }
+
+    public void setBlockIndexes(int start) {
+        doSetBlockIndexes(start);
+    }
+
+    private int doSetBlockIndexes(int start) {
+        this.startColumn = start;
+        int endColumn;
+        if (parentBlock == null && isSpecialColumn()) {
+            endColumn = start;
+        } else if (isSubreport() || parentBlock == null) {
+            endColumn = start + getTotalColumnsCount() - 1;
+            for (int i = 0, startCount = this.startColumn; i < this.blocks.size(); i++) {
+                startCount += this.blocks.get(i).doSetBlockIndexes(startCount);
+            }
+        } else {
+            endColumn = start;
+        }
+        return endColumn - this.startColumn + 1;
     }
 }

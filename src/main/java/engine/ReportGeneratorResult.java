@@ -11,7 +11,7 @@ import java.util.Collection;
 
 public class ReportGeneratorResult {
 
-    private Collection<ReportData> reportData = new ArrayList<>();
+    private final Collection<ReportData> reportData = new ArrayList<>();
 
     void addData(ReportData data){
         reportData.add(data);

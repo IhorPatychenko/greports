@@ -2,8 +2,6 @@ package positioning;
 
 import org.yaml.snakeyaml.Yaml;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
@@ -15,7 +13,7 @@ public class TranslationsParser {
     public enum FileExtensions {
         YML("yml"), YAML("yaml");
 
-        private String extension;
+        private final String extension;
 
         FileExtensions(String fileExtension) {
             this.extension = fileExtension;
@@ -28,7 +26,7 @@ public class TranslationsParser {
     }
 
     private FileExtensions fileExtension = FileExtensions.YML;
-    private String translationsDir;
+    private final String translationsDir;
 
     public TranslationsParser(String translationsDir) {
         this.translationsDir = translationsDir;

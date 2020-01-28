@@ -1,7 +1,7 @@
 package content.cell;
 
 public abstract class ReportCell {
-    private Float position;
+    private final Float position;
     private String title;
 
     public ReportCell(Float position) {

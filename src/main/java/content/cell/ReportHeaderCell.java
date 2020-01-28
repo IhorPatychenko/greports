@@ -1,8 +1,8 @@
 package content.cell;
 
 public class ReportHeaderCell extends ReportCell {
-    private String id;
-    private boolean autoSizeColumn;
+    private final String id;
+    private final boolean autoSizeColumn;
 
     public ReportHeaderCell(Float position, String title, String id, boolean autoSizeColumn) {
         super(position, title);

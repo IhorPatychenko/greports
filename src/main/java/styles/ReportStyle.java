@@ -11,7 +11,7 @@ import java.awt.Color;
 
 public class ReportStyle<T> {
 
-    private T range;
+    private final T range;
     private Color foregroundColor;
     private Color fontColor;
     private FillPatternType fillPattern;

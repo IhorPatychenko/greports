@@ -5,7 +5,6 @@ import org.apache.poi.ss.usermodel.FillPatternType;
 import org.apache.poi.ss.usermodel.FontUnderline;
 import org.apache.poi.ss.usermodel.HorizontalAlignment;
 import org.apache.poi.ss.usermodel.VerticalAlignment;
-import positioning.RectangleRange;
 import styles.ReportStyle;
 
 import java.awt.Color;
@@ -19,8 +18,8 @@ public abstract class AbstractReportStylesBuilder<T, E, R extends AbstractReport
         PRIORITY1, PRIORITY2, PRIORITY3, PRIORITY4
     }
 
-    private StylePriority priority;
-    protected Collection<R> styleBuilders = new ArrayList<>();
+    private final StylePriority priority;
+    protected final Collection<R> styleBuilders = new ArrayList<>();
     protected R styleBuilder;
 
     public AbstractReportStylesBuilder(StylePriority priority) {

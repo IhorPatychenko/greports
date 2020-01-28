@@ -25,8 +25,8 @@ abstract class AbstractReportStyleBuilder<T extends ReportStyle<E>, E> {
     protected BorderStyle borderBottom;
     protected BorderStyle borderLeft;
     protected Color borderColor;
-    protected E tuple;
-    protected boolean clonePreviousStyle;
+    protected final E tuple;
+    protected final boolean clonePreviousStyle;
 
     AbstractReportStyleBuilder(E tuple, boolean clonePreviousStyle) {
         this.tuple = tuple;

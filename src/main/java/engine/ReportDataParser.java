@@ -46,7 +46,7 @@ final class ReportDataParser {
     private ReportData reportData;
     private Map<String, Object> translations;
     private Configuration configuration;
-    private List<ReportData> subreportsData = new ArrayList<>();
+    private final List<ReportData> subreportsData = new ArrayList<>();
     private static final float SUBREPORT_POSITIONAL_INCREMENT = 0.00000000000001f;
 
     public <T> ReportDataParser parse(Collection<T> collection, final String reportName, Class<T> clazz, ReportConfigurator configurator) throws ReportEngineReflectionException, IOException {
@@ -152,8 +152,8 @@ final class ReportDataParser {
                     float positionalIncrement = subreportPositionalIncrement;
                     final int subreportsInEveryList = subreportsList.get(0).size();
                     for (int i = 0; i < subreportsInEveryList; i++) {
-                        final Collection subreportData = new ArrayList<>();
-                        for (final List list : subreportsList) {
+                        final Collection<Object> subreportData = new ArrayList<>();
+                        for (final List<?> list : subreportsList) {
                             subreportData.add(list.get(i));
                         }
                         parseSubreportData(reportDataParser, returnType, subreportData, positionalIncrement + subreport.position());
@@ -162,7 +162,7 @@ final class ReportDataParser {
                 }
             } else {
                 float subreportPositionalIncrement = AnnotationUtils.getSubreportLastColumn(returnType, reportData.getName()).position() + SUBREPORT_POSITIONAL_INCREMENT;
-                final Collection subreportData = new ArrayList<>();
+                final Collection<Object> subreportData = new ArrayList<>();
                 for (T collectionEntry : collection) {
                     final Object invokeResult = subreportInvokeMethod(method, collectionEntry);
                     subreportData.add(invokeResult);
@@ -172,6 +172,7 @@ final class ReportDataParser {
         }
     }
 
+    @SuppressWarnings("unchecked")
     private void parseSubreportData(final ReportDataParser reportDataParser, final Class<?> returnType, final Collection subreportData, float positionalIncrement) throws IOException {
         final ReportData data = reportDataParser.parse(subreportData, reportData.getName(), returnType, positionalIncrement).getData();
         subreportsData.add(data);

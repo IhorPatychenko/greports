@@ -10,10 +10,10 @@ import java.util.Map;
 
 public class ReportGenerator {
 
-    private Map<Pair<Class<?>, String>, ReportConfigurator> _configurators = new HashMap<>();
+    private final Map<Pair<Class<?>, String>, ReportConfigurator> _configurators = new HashMap<>();
 
-    private ReportDataParser reportDataParser;
-    private ReportGeneratorResult reportGeneratorResult = new ReportGeneratorResult();
+    private final ReportDataParser reportDataParser;
+    private final ReportGeneratorResult reportGeneratorResult = new ReportGeneratorResult();
 
     public ReportGenerator() {
         reportDataParser = new ReportDataParser();

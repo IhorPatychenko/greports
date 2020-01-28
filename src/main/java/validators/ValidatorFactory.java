@@ -9,7 +9,7 @@ import java.util.Map;
 
 public class ValidatorFactory {
 
-    protected static Map<Pair<Class<? extends AbstractValidator>, String>, AbstractValidator> _validators = new HashMap<>();
+    protected static final Map<Pair<Class<? extends AbstractValidator>, String>, AbstractValidator> _validators = new HashMap<>();
 
     public static AbstractValidator get(Class<? extends AbstractValidator> clazz, String value) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
         Pair<Class<? extends AbstractValidator>, String> pair = Pair.of(clazz, value);

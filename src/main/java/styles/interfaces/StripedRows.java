@@ -8,7 +8,8 @@ public interface StripedRows {
     enum StripedRowsIndex {
         EVEN(0), ODD(1);
 
-        private int index;
+        private final int index;
+
         StripedRowsIndex(int index) {
             this.index = index;
         }

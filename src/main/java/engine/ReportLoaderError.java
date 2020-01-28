@@ -9,16 +9,24 @@ public class ReportLoaderError implements Serializable {
 
     private static final long serialVersionUID = 2763041428905940945L;
 
-    private Integer rowIndex;
-    private Integer columnIndex;
+    private final Integer rowIndex;
+    private final Integer columnIndex;
     private String cellReference;
-    private String sheetName;
+    private final String sheetName;
     private String rowReference;
     private String columnReference;
-    private String columnTitle;
-    private String errorMsg;
+    private final String columnTitle;
+    private final String errorMsg;
 
-    public ReportLoaderError(Cell cell, String errorMsg, String columnTitle){
+    public ReportLoaderError(String sheetName, Integer rowIndex, Integer columnIndex, String columnTitle, String errorMsg) {
+        this.sheetName = sheetName;
+        this.rowIndex = rowIndex;
+        this.columnIndex = columnIndex;
+        this.columnTitle = columnTitle;
+        this.errorMsg = errorMsg;
+    }
+
+    public ReportLoaderError(Cell cell, String columnTitle, String errorMsg) {
         this.rowIndex = cell.getRowIndex();
         this.columnIndex = cell.getColumnIndex();
         final CellReference cellReference = new CellReference(cell);
@@ -34,11 +42,11 @@ public class ReportLoaderError implements Serializable {
         return errorMsg;
     }
 
-    public Integer getRowIndex(){
+    public Integer getRowIndex() {
         return rowIndex;
     }
 
-    public Integer getColumnIndex(){
+    public Integer getColumnIndex() {
         return columnIndex;
     }
 
@@ -46,15 +54,15 @@ public class ReportLoaderError implements Serializable {
         return cellReference;
     }
 
-    public String getSheetName(){
+    public String getSheetName() {
         return sheetName;
     }
 
-    public String getRowReference(){
+    public String getRowReference() {
         return rowReference;
     }
 
-    public String getColumnReference(){
+    public String getColumnReference() {
         return columnReference;
     }
 

@@ -5,9 +5,9 @@ import engine.ValueType;
 
 public class ReportDataCell extends ReportCell {
 
-    private Object value;
-    private String format;
-    private ValueType valueType;
+    private final Object value;
+    private final String format;
+    private final ValueType valueType;
 
     public ReportDataCell(Float position, String format, Object value, ValueType valueType) {
         super(position, null);

@@ -1,7 +1,7 @@
 package engine.errors;
 
 public class ReportLoaderColumnError {
-    private String errorMessage;
+    private final String errorMessage;
 
     public ReportLoaderColumnError(final String errorMessage) {
         this.errorMessage = errorMessage;

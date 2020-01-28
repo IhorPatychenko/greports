@@ -17,7 +17,7 @@ public class RectangleRangedStyleBuilder extends AbstractReportStyleBuilder<Rect
     }
 
     @Override
-    protected RectangleRangedStyle setCustomStyles(final ReportStyle style) {
+    protected RectangleRangedStyle setCustomStyles(final ReportStyle<RectangleRange> style) {
         return (RectangleRangedStyle) style;
     }
 }

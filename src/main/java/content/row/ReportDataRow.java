@@ -7,7 +7,7 @@ import java.util.List;
 
 public class ReportDataRow {
 
-    private List<ReportDataCell> cells = new ArrayList<>();
+    private final List<ReportDataCell> cells = new ArrayList<>();
 
     public ReportDataRow() {}
 

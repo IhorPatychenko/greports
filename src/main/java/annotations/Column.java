@@ -38,6 +38,13 @@ public @interface Column {
     CellValidator[] cellValidators() default {};
 
     /**
+     * An array of {@link ColumnValidator} to be applied to the column.
+     *
+     * @return {@link ColumnValidator}
+     */
+    ColumnValidator[] columnValidators() default {};
+
+    /**
      * Column title. This text string will be used to search for
      * the corresponding translation in the translation file located in
      * the directory provided by the {@link Configuration#translationsDir()}

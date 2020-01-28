@@ -4,6 +4,7 @@ import java.util.Objects;
 
 public class Utils {
 
+    @SafeVarargs
     public static <T> boolean anyNotNull(T... objects) {
         for (T object : objects) {
             if(!Objects.isNull(object)){
@@ -19,5 +20,4 @@ public class Utils {
         }
         return null;
     }
-
 }

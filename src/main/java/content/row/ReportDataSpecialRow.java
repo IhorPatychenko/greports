@@ -7,7 +7,7 @@ import java.util.List;
 
 public class ReportDataSpecialRow {
     private int index;
-    private List<ReportDataSpecialRowCell> specialCells = new ArrayList<>();
+    private final List<ReportDataSpecialRowCell> specialCells = new ArrayList<>();
 
     public ReportDataSpecialRow(int index){
         this.index = index;

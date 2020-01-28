@@ -3,10 +3,10 @@ package content.cell;
 import engine.ValueType;
 
 public class ReportDataSpecialRowCell {
-    private ValueType valueType;
-    private Object value;
-    private String format;
-    private String targetId;
+    private final ValueType valueType;
+    private final Object value;
+    private final String format;
+    private final String targetId;
 
     public ReportDataSpecialRowCell(final ValueType valueType, final Object value, final String format, final String targetId) {
         this.valueType = valueType;

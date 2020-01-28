@@ -1,13 +1,10 @@
 package validators;
 
-public class AbstractColumnValidator extends AbstractValidator {
+public abstract class AbstractColumnValidator extends AbstractValidator {
 
     protected AbstractColumnValidator(final String validatorValue) {
         super(validatorValue);
     }
 
-    @Override
-    public boolean isValid(final Object object) {
-        return false;
-    }
+    public abstract int getErrorRowIndex(final Object object);
 }

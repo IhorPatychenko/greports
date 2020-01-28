@@ -16,7 +16,7 @@ public class PositionedStyleBuilder extends AbstractReportStyleBuilder<Positione
     }
 
     @Override
-    protected PositionedStyle setCustomStyles(final ReportStyle style) {
+    protected PositionedStyle setCustomStyles(final ReportStyle<Position> style) {
         return (PositionedStyle) style;
     }
 }

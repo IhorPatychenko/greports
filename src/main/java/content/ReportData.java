@@ -17,16 +17,16 @@ import java.util.Objects;
 public class ReportData {
 
     private final String name;
-    private String sheetName;
-    private URL templateURL;
+    private final String sheetName;
+    private final URL templateURL;
     private ReportHeader header;
     private boolean createHeader = true;
     private int headerStartRow;
     private int dataStartRow;
-    private List<ReportDataSpecialRow> specialRows = new ArrayList<>();
-    private List<ReportDataRow> rows = new ArrayList<>();
-    private ReportDataStyles reportDataStyles = new ReportDataStyles();
-    private Map<String, Integer> targetIndexes = new HashMap<>();
+    private final List<ReportDataSpecialRow> specialRows = new ArrayList<>();
+    private final List<ReportDataRow> rows = new ArrayList<>();
+    private final ReportDataStyles reportDataStyles = new ReportDataStyles();
+    private final Map<String, Integer> targetIndexes = new HashMap<>();
 
     public ReportData(String name, String sheetName, URL templateURL) {
         this.name = name;
