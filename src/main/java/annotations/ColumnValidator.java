@@ -34,12 +34,6 @@ public @interface ColumnValidator {
     String param() default "";
 
     /**
-     * ID of column to be evaluated against the validator.
-     * @return {@link String}
-     */
-    String targetId();
-
-    /**
      * Error message. This text string will be used to search for
      * the corresponding translation in the translation file located in
      * the directory provided by the {@link Configuration#translationsDir()}

@@ -38,6 +38,7 @@ import java.util.Optional;
 import static exceptions.ReportEngineRuntimeExceptionCode.ILLEGAL_ACCESS;
 import static exceptions.ReportEngineRuntimeExceptionCode.INSTANTIATION_ERROR;
 import static exceptions.ReportEngineRuntimeExceptionCode.INVOCATION_ERROR;
+import static exceptions.ReportEngineRuntimeExceptionCode.NO_METHOD_ERROR;
 import static exceptions.ReportEngineRuntimeExceptionCode.VALIDATION_ERROR;
 
 public class ReportLoader {
@@ -69,11 +70,11 @@ public class ReportLoader {
         this.loaderResult = new ReportLoaderResult();
     }
 
-    public <T> ReportLoader bindForClass(Class<T> clazz) throws ReportEngineReflectionException, IOException, IllegalAccessException, InstantiationException, NoSuchMethodException, InvocationTargetException {
+    public <T> ReportLoader bindForClass(Class<T> clazz) throws ReportEngineReflectionException, IOException {
         return bindForClass(clazz, ReportLoaderErrorTreatment.THROW_ERROR);
     }
 
-    public <T> ReportLoader bindForClass(Class<T> clazz, ReportLoaderErrorTreatment treatment) throws ReportEngineReflectionException, IOException, InstantiationException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
+    public <T> ReportLoader bindForClass(Class<T> clazz, ReportLoaderErrorTreatment treatment) throws ReportEngineReflectionException, IOException {
         final Configuration configuration = AnnotationUtils.getClassReportConfiguration(clazz, reportName);
         this.translator = new Translator(new TranslationsParser(configuration.translationsDir()).parse(configuration.reportLang()));
         final ReportBlock reportBlock = new ReportBlock(clazz, reportName, null);
@@ -99,56 +100,66 @@ public class ReportLoader {
         }
     }
 
-    public <T> List<T> bindBlocks(ReportBlock reportBlock, Class<T> clazz, Configuration configuration, ReportLoaderErrorTreatment treatment, List<Integer> skipRows) throws InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
+    public <T> List<T> bindBlocks(ReportBlock reportBlock, Class<T> clazz, Configuration configuration, ReportLoaderErrorTreatment treatment, List<Integer> skipRows) {
         List<T> list = new ArrayList<>();
         final Sheet sheet = currentWorkbook.getSheet(configuration.sheetName());
         boolean errorThrown = false;
-        for (int dataRowNum = configuration.dataStartRowIndex(); dataRowNum <= sheet.getLastRowNum() - AnnotationUtils.getLastSpecialRowsCount(configuration); dataRowNum++) {
-            if (!skipRows.contains(dataRowNum)) {
-                final T instance = ReflectionUtils.newInstance(clazz);
-                final Row row = sheet.getRow(dataRowNum);
-                for (final ReportBlock block : reportBlock.getBlocks()) {
-                    if (block.isColumn()) {
-                        final Method method = ReflectionUtils.fetchFieldSetter(block.getParentField(), clazz);
-                        final Cell cell = row.getCell(block.getStartColumn());
-                        try {
-                            final Object value = getCellValue(method, cell);
-                            instanceSetValue(method, instance, value, block.getCellValidators());
-                            block.addValue(value);
-                        } catch (ReportEngineValidationException e) {
-                            if (ReportLoaderErrorTreatment.THROW_ERROR.equals(treatment)) {
-                                throw e;
-                            } else {
-                                loaderResult.addError(clazz, cell, block.getAsColumn().title(), e.getMessage());
-                                errorThrown = true;
+        try {
+            for (int dataRowNum = configuration.dataStartRowIndex(); dataRowNum <= sheet.getLastRowNum() - AnnotationUtils.getLastSpecialRowsCount(configuration); dataRowNum++) {
+                if (!skipRows.contains(dataRowNum)) {
+                    final T instance = ReflectionUtils.newInstance(clazz);
+                    final Row row = sheet.getRow(dataRowNum);
+                    for (final ReportBlock block : reportBlock.getBlocks()) {
+                        if (block.isColumn()) {
+                            final Method method = ReflectionUtils.fetchFieldSetter(block.getParentField(), clazz);
+                            final Cell cell = row.getCell(block.getStartColumn());
+                            try {
+                                final Object value = getCellValue(method, cell);
+                                instanceSetValue(method, instance, value, block.getCellValidators());
+                                block.addValue(value);
+                            } catch (ReportEngineValidationException e) {
+                                if (ReportLoaderErrorTreatment.THROW_ERROR.equals(treatment)) {
+                                    throw e;
+                                } else {
+                                    loaderResult.addError(clazz, cell, block.getAsColumn().title(), e.getMessage());
+                                    errorThrown = true;
+                                }
                             }
                         }
                     }
+                    if (!errorThrown || !ReportLoaderErrorTreatment.SKIP_ROW_ON_ERROR.equals(treatment)) {
+                        list.add(instance);
+                    }
+                    if (errorThrown && ReportLoaderErrorTreatment.SKIP_ROW_ON_ERROR.equals(treatment)) {
+                        skipRows.add(dataRowNum);
+                    }
+                    errorThrown = false;
                 }
-                if (!errorThrown || !ReportLoaderErrorTreatment.SKIP_ROW_ON_ERROR.equals(treatment)) {
-                    list.add(instance);
-                }
-                if (errorThrown && ReportLoaderErrorTreatment.SKIP_ROW_ON_ERROR.equals(treatment)) {
-                    skipRows.add(dataRowNum);
-                }
-                errorThrown = false;
             }
-        }
 
-        for (final ReportBlock block : reportBlock.getBlocks()) {
-            if (block.isSubreport()) {
-                final List<?> objects = bindBlocks(block, block.getBlockClass(), configuration, treatment, skipRows);
-                final Method method = ReflectionUtils.fetchFieldSetter(block.getParentField(), clazz);
-                for (int i = 0; i < list.size(); i++) {
-                    method.invoke(list.get(i), objects.get(i));
-                }
-            } else if (block.isColumn()) {
-                try {
-                    checkColumnValidations(block.getValues(), block.getColumnValidators());
-                } catch (ReportEngineValidationException e) {
-                    loaderResult.addError(clazz, sheet.getSheetName(), e.getRowIndex() + configuration.dataStartRowIndex(), block.getStartColumn(), block.getAsColumn().title(), e.getMessage());
+            for (final ReportBlock block : reportBlock.getBlocks()) {
+                if (block.isSubreport()) {
+                    final List<?> objects = bindBlocks(block, block.getBlockClass(), configuration, treatment, skipRows);
+                    final Method method = ReflectionUtils.fetchFieldSetter(block.getParentField(), clazz);
+                    for (int i = 0; i < list.size(); i++) {
+                        method.invoke(list.get(i), objects.get(i));
+                    }
+                } else if (block.isColumn()) {
+                    try {
+                        checkColumnValidations(block.getValues(), block.getColumnValidators());
+                    } catch (ReportEngineValidationException e) {
+                        loaderResult.addError(clazz, sheet.getSheetName(), e.getRowIndex() + configuration.dataStartRowIndex(), block.getStartColumn(), block.getAsColumn().title(), e.getMessage());
+                    }
                 }
             }
+        }  catch (NoSuchMethodException e) {
+            throw new ReportEngineReflectionException("Error obtaining constructor reference" , NO_METHOD_ERROR);
+        } catch (InstantiationException e) {
+            throw new ReportEngineReflectionException("Error instantiating an object", INSTANTIATION_ERROR);
+        } catch (IllegalAccessException e) {
+            throw new ReportEngineReflectionException("Error executing method witch does not have access to the definition of the specified class", ILLEGAL_ACCESS);
+        } catch (InvocationTargetException e) {
+            throw new ReportEngineReflectionException("Error executing method witch does not have access to the definition of the specified class", INVOCATION_ERROR);
         }
         return list;
     }
