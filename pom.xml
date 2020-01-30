@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>libreriasNoMavenizadas</groupId>
     <artifactId>reports-engine</artifactId>
-    <version>1.12.1</version>
+    <version>1.13</version>
     <packaging>jar</packaging>
 
     <properties>
@@ -37,6 +37,12 @@
             <groupId>org.apache.poi</groupId>
             <artifactId>poi-ooxml</artifactId>
             <version>3.16</version>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.12</version>
+            <scope>test</scope>
         </dependency>
 
     </dependencies>

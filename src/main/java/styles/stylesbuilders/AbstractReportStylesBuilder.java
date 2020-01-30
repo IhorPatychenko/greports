@@ -12,7 +12,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.stream.Collectors;
 
-public abstract class AbstractReportStylesBuilder<T, E, R extends AbstractReportStyleBuilder<U, E>, U extends ReportStyle<E>> {
+public abstract class AbstractReportStylesBuilder<T, E, R extends AbstractReportStyleBuilder<U, E, R>, U extends ReportStyle<E>> {
 
     public enum StylePriority {
         PRIORITY1, PRIORITY2, PRIORITY3, PRIORITY4

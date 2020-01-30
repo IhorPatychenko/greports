@@ -4,10 +4,15 @@ import positioning.Position;
 import styles.PositionedStyle;
 import styles.ReportStyle;
 
-public class PositionedStyleBuilder extends AbstractReportStyleBuilder<PositionedStyle, Position> {
+public class PositionedStyleBuilder extends AbstractReportStyleBuilder<PositionedStyle, Position, PositionedStyleBuilder> {
 
-    PositionedStyleBuilder(final Position tuple, final boolean clonePreviousStyle) {
-        super(tuple, clonePreviousStyle);
+    PositionedStyleBuilder(final Position position, final boolean clonePreviousStyle) {
+        super(position, clonePreviousStyle);
+    }
+
+    @Override
+    protected PositionedStyleBuilder getThis() {
+        return this;
     }
 
     @Override

@@ -1,5 +1,7 @@
 package annotations;
 
+import utils.Locales;
+
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -8,6 +10,8 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.ANNOTATION_TYPE)
 public @interface Configuration {
+
+    Locales locale() default Locales.US;
 
     /**
      * Defines a name of report which will be used by the engine
@@ -34,12 +38,12 @@ public @interface Configuration {
      */
     String translationsDir() default "i18n/";
 
-    /**
-     * Default report language.
-     *
-     * @return {@link String}
-     */
-    String reportLang() default "en";
+//    /**
+//     * Default report language.
+//     *
+//     * @return {@link String}
+//     */
+//    String reportLang() default "en";
 
     /**
      * Template path to be used to generate the report.

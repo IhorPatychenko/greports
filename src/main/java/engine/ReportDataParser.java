@@ -15,12 +15,19 @@ import content.row.ReportDataRow;
 import content.ReportHeader;
 import content.row.ReportDataSpecialRow;
 import exceptions.ReportEngineReflectionException;
+import positioning.VerticalRange;
+import styles.ReportDataStyles;
+import styles.interfaces.IndexBasedRowStyle;
 import styles.interfaces.StripedRows;
 import styles.interfaces.StyledReport;
 import positioning.TranslationsParser;
+import styles.stylesbuilders.AbstractReportStylesBuilder;
+import styles.stylesbuilders.VerticalRangedStyleBuilder;
+import styles.stylesbuilders.VerticalRangedStylesBuilder;
 import utils.AnnotationUtils;
 import utils.Pair;
 import utils.ReflectionUtils;
+import utils.Utils;
 
 import java.io.IOException;
 import java.lang.reflect.Constructor;
@@ -59,12 +66,12 @@ final class ReportDataParser {
         final Report reportAnnotation = AnnotationUtils.getReportAnnotation(clazz);
         configuration = AnnotationUtils.getReportConfiguration(reportAnnotation, reportName);
         reportData = new ReportData(reportName, configuration.sheetName(), !configuration.templatePath().equals("") ? getClass().getClassLoader().getResource(configuration.templatePath()) : null);
-        translations = new TranslationsParser(configuration.translationsDir()).parse(configuration.reportLang());
+        translations = new TranslationsParser(configuration.translationsDir()).parse(Utils.getLocale(configuration.locale()).getLanguage());
         loadReportHeader(clazz, positionIncrement);
         loadRowsData(collection, clazz, positionIncrement);
         loadSpecialColumns(collection, clazz);
         loadSpecialRows();
-        loadStyles(clazz);
+        loadStyles(collection, clazz);
         loadSubreports(collection, clazz);
         reportData.mergeReportData(subreportsData);
         return this;
@@ -228,34 +235,53 @@ final class ReportDataParser {
         }
     }
 
-    private <T> void loadStyles(Class<T> clazz) {
+    private <T> void loadStyles(Collection<T> collection, Class<T> clazz) {
         try {
             final List<Class<?>> interfaces = Arrays.asList(clazz.getInterfaces());
-            if(interfaces.contains(StyledReport.class) || interfaces.contains(StripedRows.class)){
+            if(interfaces.contains(StyledReport.class) || interfaces.contains(StripedRows.class) || interfaces.contains(IndexBasedRowStyle.class)){
                 final Constructor<T> constructor = clazz.getDeclaredConstructor();
                 constructor.setAccessible(true);
                 final T newInstance = constructor.newInstance();
+                final ReportDataStyles reportDataStyles = reportData.getStyles();
                 if(interfaces.contains(StyledReport.class)){
-                    StyledReport elem = (StyledReport) newInstance;
-                    if(elem.getRangedRowStyles() != null){
-                        reportData.getStyles().setRowStyles(elem.getRangedRowStyles().getOrDefault(reportData.getName(), null));
+                    final StyledReport instance = (StyledReport) newInstance;
+                    if(instance.getRangedRowStyles() != null){
+                        reportDataStyles.setRowStyles(instance.getRangedRowStyles().getOrDefault(reportData.getName(), null));
                     }
-                    if(elem.getRangedColumnStyles() != null){
-                        reportData.getStyles().setColumnStyles(elem.getRangedColumnStyles().getOrDefault(reportData.getName(), null));
+                    if(instance.getRangedColumnStyles() != null){
+                        reportDataStyles.setColumnStyles(instance.getRangedColumnStyles().getOrDefault(reportData.getName(), null));
                     }
-                    if(elem.getPositionedStyles() != null){
-                        reportData.getStyles().setPositionedStyles(elem.getPositionedStyles().getOrDefault(reportData.getName(), null));
+                    if(instance.getPositionedStyles() != null){
+                        reportDataStyles.setPositionedStyles(instance.getPositionedStyles().getOrDefault(reportData.getName(), null));
                     }
-                    if(elem.getRectangleRangedStyles() != null){
-                        reportData.getStyles().setRangedStyleReportStyles(elem.getRectangleRangedStyles().getOrDefault(reportData.getName(), null));
+                    if(instance.getRectangleRangedStyles() != null){
+                        reportDataStyles.setRectangleStyles(instance.getRectangleRangedStyles().getOrDefault(reportData.getName(), null));
                     }
                 }
                 if(interfaces.contains(StripedRows.class)){
-                    StripedRows elem = (StripedRows) newInstance;
-                    if(elem.getStripedRowsIndex() != null && elem.getStripedRowsColor() != null){
-                        reportData.getStyles()
-                                .setStripedRowsIndex(elem.getStripedRowsIndex().getOrDefault(reportData.getName(), null))
-                                .setStripedRowsColor(elem.getStripedRowsColor().getOrDefault(reportData.getName(), null));
+                    final StripedRows instance = (StripedRows) newInstance;
+                    if(instance.getStripedRowsIndex() != null && instance.getStripedRowsColor() != null){
+                        reportDataStyles
+                                .setStripedRowsIndex(instance.getStripedRowsIndex().getOrDefault(reportData.getName(), null))
+                                .setStripedRowsColor(instance.getStripedRowsColor().getOrDefault(reportData.getName(), null));
+                    }
+                }
+                if(interfaces.contains(IndexBasedRowStyle.class)){
+                    final List<T> list = new ArrayList<>(collection);
+                    final short startRowIndex = configuration.dataStartRowIndex();
+                    for (int i = 0; i < list.size(); i++) {
+                        final T entry = list.get(i);
+                        final IndexBasedRowStyle indexBasedRowStyle = (IndexBasedRowStyle) entry;
+                        if(indexBasedRowStyle.isStyled(i)){
+                            final VerticalRangedStyleBuilder styleBuilder = indexBasedRowStyle.getIndexBasedStyle().getOrDefault(reportData.getName(), null);
+                            styleBuilder.setTuple(new VerticalRange(startRowIndex + i, startRowIndex + i));
+                            VerticalRangedStylesBuilder verticalRangedStylesBuilder = reportDataStyles.getRowStyles();
+                            if(verticalRangedStylesBuilder == null){
+                                verticalRangedStylesBuilder = new VerticalRangedStylesBuilder(AbstractReportStylesBuilder.StylePriority.PRIORITY4);
+                                reportDataStyles.setRowStyles(verticalRangedStylesBuilder);
+                            }
+                            verticalRangedStylesBuilder.addStyleBuilder(styleBuilder);
+                        }
                     }
                 }
             }

@@ -13,7 +13,7 @@ public class ReportDataStyles {
     private VerticalRangedStylesBuilder rowStyles;
     private HorizontalRangedStylesBuilder columnStyles;
     private PositionedStylesBuilder positionedStyles;
-    private RectangleRangedStylesBuilder rangedStyleReportStyles;
+    private RectangleRangedStylesBuilder rectangleRangedStylesBuilder;
     private StripedRowsIndex stripedRowsIndex;
     private Color stripedRowsColor;
 
@@ -41,12 +41,12 @@ public class ReportDataStyles {
         this.positionedStyles = positionedStyles;
     }
 
-    public RectangleRangedStylesBuilder getRangedStyleReportStyles() {
-        return rangedStyleReportStyles;
+    public RectangleRangedStylesBuilder getRectangleRangedStylesBuilder() {
+        return rectangleRangedStylesBuilder;
     }
 
-    public void setRangedStyleReportStyles(RectangleRangedStylesBuilder rangedStyleReportStyles) {
-        this.rangedStyleReportStyles = rangedStyleReportStyles;
+    public void setRectangleStyles(RectangleRangedStylesBuilder rectangleRangedStylesBuilder) {
+        this.rectangleRangedStylesBuilder = rectangleRangedStylesBuilder;
     }
 
     public StripedRowsIndex getStripedRowsIndex() {
@@ -86,10 +86,10 @@ public class ReportDataStyles {
             positionedStyles.mergeStyles(other.getPositionedStyles());
         }
 
-        if(rangedStyleReportStyles == null){
-            rangedStyleReportStyles = other.getRangedStyleReportStyles();
+        if(rectangleRangedStylesBuilder == null){
+            rectangleRangedStylesBuilder = other.getRectangleRangedStylesBuilder();
         } else {
-            rangedStyleReportStyles.mergeStyles(other.getRangedStyleReportStyles());
+            rectangleRangedStylesBuilder.mergeStyles(other.getRectangleRangedStylesBuilder());
         }
     }
 }

@@ -17,6 +17,7 @@ import positioning.TranslationsParser;
 import utils.AnnotationUtils;
 import utils.ReflectionUtils;
 import utils.Translator;
+import utils.Utils;
 import validators.AbstractCellValidator;
 import validators.AbstractColumnValidator;
 import validators.AbstractValidator;
@@ -76,7 +77,7 @@ public class ReportLoader {
 
     public <T> ReportLoader bindForClass(Class<T> clazz, ReportLoaderErrorTreatment treatment) throws ReportEngineReflectionException, IOException {
         final Configuration configuration = AnnotationUtils.getClassReportConfiguration(clazz, reportName);
-        this.translator = new Translator(new TranslationsParser(configuration.translationsDir()).parse(configuration.reportLang()));
+        this.translator = new Translator(new TranslationsParser(configuration.translationsDir()).parse(Utils.getLocale(configuration.locale()).getLanguage()));
         final ReportBlock reportBlock = new ReportBlock(clazz, reportName, null);
         loadBlocks(reportBlock);
         reportBlock

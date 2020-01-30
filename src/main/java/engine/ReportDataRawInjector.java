@@ -195,12 +195,15 @@ class ReportDataRawInjector extends ReportDataInjector {
         for (AbstractReportStylesBuilder.StylePriority priority : AbstractReportStylesBuilder.StylePriority.values()) {
             if(reportData.getStyles().getRowStyles() != null && priority.equals(reportData.getStyles().getRowStyles().getPriority())){
                 applyRowStyles(sheet, reportData.getStyles().getRowStyles());
-            } else if(reportData.getStyles().getColumnStyles() != null && priority.equals(reportData.getStyles().getColumnStyles().getPriority())){
+            }
+            if(reportData.getStyles().getColumnStyles() != null && priority.equals(reportData.getStyles().getColumnStyles().getPriority())){
                 applyColumnStyles(sheet, reportData.getStyles().getColumnStyles(), reportData);
-            } else if(reportData.getStyles().getPositionedStyles() != null && priority.equals(reportData.getStyles().getPositionedStyles().getPriority())){
+            }
+            if(reportData.getStyles().getPositionedStyles() != null && priority.equals(reportData.getStyles().getPositionedStyles().getPriority())){
                 applyPositionedStyles(sheet, reportData.getStyles().getPositionedStyles(), reportData);
-            } else if(reportData.getStyles().getRangedStyleReportStyles() != null && priority.equals(reportData.getStyles().getRangedStyleReportStyles().getPriority())){
-                applyRangedStyles(sheet, reportData.getStyles().getRangedStyleReportStyles(), reportData);
+            }
+            if(reportData.getStyles().getRectangleRangedStylesBuilder() != null && priority.equals(reportData.getStyles().getRectangleRangedStylesBuilder().getPriority())){
+                applyRangedStyles(sheet, reportData.getStyles().getRectangleRangedStylesBuilder(), reportData);
             }
         }
     }

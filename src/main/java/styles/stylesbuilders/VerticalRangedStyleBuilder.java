@@ -4,16 +4,26 @@ import positioning.VerticalRange;
 import styles.ReportStyle;
 import styles.VerticalRangedStyle;
 
-public class VerticalRangedStyleBuilder extends AbstractReportStyleBuilder<VerticalRangedStyle, VerticalRange> {
+public class VerticalRangedStyleBuilder extends AbstractReportStyleBuilder<VerticalRangedStyle, VerticalRange, VerticalRangedStyleBuilder> {
 
     private Float rowHeight;
 
-    VerticalRangedStyleBuilder(final VerticalRange tuple, final boolean clonePreviousStyle) {
-        super(tuple, clonePreviousStyle);
+    public VerticalRangedStyleBuilder(final boolean clonePreviousStyle) {
+        this(null, clonePreviousStyle);
     }
 
-    protected void setRowHeight(Float rowHeight) {
+    protected VerticalRangedStyleBuilder(final VerticalRange verticalRange, final boolean clonePreviousStyle) {
+        super(verticalRange, clonePreviousStyle);
+    }
+
+    @Override
+    protected VerticalRangedStyleBuilder getThis() {
+        return this;
+    }
+
+    public VerticalRangedStyleBuilder setRowHeight(Float rowHeight) {
         this.rowHeight = rowHeight;
+        return this;
     }
 
     @Override

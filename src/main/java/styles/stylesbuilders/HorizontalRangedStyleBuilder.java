@@ -4,12 +4,17 @@ import positioning.HorizontalRange;
 import styles.HorizontalRangedStyle;
 import styles.ReportStyle;
 
-public class HorizontalRangedStyleBuilder extends AbstractReportStyleBuilder<HorizontalRangedStyle, HorizontalRange> {
+public class HorizontalRangedStyleBuilder extends AbstractReportStyleBuilder<HorizontalRangedStyle, HorizontalRange, HorizontalRangedStyleBuilder> {
 
     private Integer columnWidth;
 
-    HorizontalRangedStyleBuilder(final HorizontalRange tuple, final boolean clonePreviousStyle) {
-        super(tuple, clonePreviousStyle);
+    HorizontalRangedStyleBuilder(final HorizontalRange horizontalRange, final boolean clonePreviousStyle) {
+        super(horizontalRange, clonePreviousStyle);
+    }
+
+    @Override
+    protected HorizontalRangedStyleBuilder getThis() {
+        return this;
     }
 
     public void setColumnWidth(final Integer columnWidth) {

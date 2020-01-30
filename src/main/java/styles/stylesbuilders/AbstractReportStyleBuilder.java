@@ -9,7 +9,7 @@ import styles.ReportStyle;
 
 import java.awt.Color;
 
-abstract class AbstractReportStyleBuilder<T extends ReportStyle<E>, E> {
+abstract class AbstractReportStyleBuilder<T extends ReportStyle<E>, E, R extends AbstractReportStyleBuilder<T, E, R>> {
 
     protected Color foregroundColor;
     protected Color fontColor;
@@ -25,7 +25,7 @@ abstract class AbstractReportStyleBuilder<T extends ReportStyle<E>, E> {
     protected BorderStyle borderBottom;
     protected BorderStyle borderLeft;
     protected Color borderColor;
-    protected final E tuple;
+    protected E tuple;
     protected final boolean clonePreviousStyle;
 
     AbstractReportStyleBuilder(E tuple, boolean clonePreviousStyle) {
@@ -33,67 +33,86 @@ abstract class AbstractReportStyleBuilder<T extends ReportStyle<E>, E> {
         this.clonePreviousStyle = clonePreviousStyle;
     }
 
-    protected void setForegroundColor(Color foregroundColor) {
+    public void setTuple(E tuple) {
+        this.tuple = tuple;
+    }
+
+    public R setForegroundColor(Color foregroundColor) {
         this.foregroundColor = foregroundColor;
+        return getThis();
     }
 
-    protected void setFontColor(Color fontColor) {
+    public R setFontColor(Color fontColor) {
         this.fontColor = fontColor;
+        return getThis();
     }
 
-    protected void setFillPattern(FillPatternType fillPattern) {
+    public R setFillPattern(FillPatternType fillPattern) {
         this.fillPattern = fillPattern;
+        return getThis();
     }
 
-    protected void setBoldFont(Boolean boldFont) {
+    public R setBoldFont(Boolean boldFont) {
         this.boldFont = boldFont;
+        return getThis();
     }
 
-    protected void setItalicFont(Boolean italicFont) {
+    public R setItalicFont(Boolean italicFont) {
         this.italicFont = italicFont;
+        return getThis();
     }
 
-    protected void setUnderlineFont(FontUnderline underlineFont) {
+    public R setUnderlineFont(FontUnderline underlineFont) {
         this.underlineFont = underlineFont;
+        return getThis();
     }
 
-    protected void setStrikeoutFont(Boolean strikeoutFont) {
+    public R setStrikeoutFont(Boolean strikeoutFont) {
         this.strikeoutFont = strikeoutFont;
+        return getThis();
     }
 
-    protected void setHorizontalAlignment(HorizontalAlignment horizontalAlignment) {
+    public R setHorizontalAlignment(HorizontalAlignment horizontalAlignment) {
         this.horizontalAlignment = horizontalAlignment;
+        return getThis();
     }
 
-    protected void setVerticalAlignment(VerticalAlignment verticalAlignment) {
+    public R setVerticalAlignment(VerticalAlignment verticalAlignment) {
         this.verticalAlignment = verticalAlignment;
+        return getThis();
     }
 
-    protected void setBorder(BorderStyle border) {
+    public R setBorder(BorderStyle border) {
         setBorderTop(border);
         setBorderBottom(border);
         setBorderLeft(border);
         setBorderRight(border);
+        return getThis();
     }
 
-    protected void setBorderTop(BorderStyle borderTop) {
+    public R setBorderTop(BorderStyle borderTop) {
         this.borderTop = borderTop;
+        return getThis();
     }
 
-    protected void setBorderRight(BorderStyle borderRight) {
+    public R setBorderRight(BorderStyle borderRight) {
         this.borderRight = borderRight;
+        return getThis();
     }
 
-    protected void setBorderBottom(BorderStyle borderBottom) {
+    public R setBorderBottom(BorderStyle borderBottom) {
         this.borderBottom = borderBottom;
+        return getThis();
     }
 
-    protected void setBorderLeft(BorderStyle borderLeft) {
+    public R setBorderLeft(BorderStyle borderLeft) {
         this.borderLeft = borderLeft;
+        return getThis();
     }
 
-    protected void setBorderColor(Color color) {
+    public R setBorderColor(Color color) {
         this.borderColor = color;
+        return getThis();
     }
 
     protected T buildStyle() {
@@ -116,6 +135,7 @@ abstract class AbstractReportStyleBuilder<T extends ReportStyle<E>, E> {
         return setCustomStyles(reportStyle);
     }
 
+    protected abstract R getThis();
     protected abstract T newStyleInstance();
     protected abstract T setCustomStyles(ReportStyle<E> style);
 }
