@@ -27,15 +27,11 @@ public class ReportLoaderError implements Serializable {
     }
 
     public ReportLoaderError(Cell cell, String columnTitle, String errorMsg) {
-        this.rowIndex = cell.getRowIndex();
-        this.columnIndex = cell.getColumnIndex();
+        this(cell.getSheet().getSheetName(), cell.getRowIndex(), cell.getColumnIndex(), columnTitle, errorMsg);
         final CellReference cellReference = new CellReference(cell);
         this.cellReference = cellReference.formatAsString();
-        this.sheetName = cell.getSheet().getSheetName();
         this.rowReference = cellReference.getCellRefParts()[1];
         this.columnReference = cellReference.getCellRefParts()[2];
-        this.errorMsg = errorMsg;
-        this.columnTitle = columnTitle;
     }
 
     public String getErrorMsg() {
