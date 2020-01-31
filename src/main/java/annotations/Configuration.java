@@ -6,12 +6,11 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import java.util.Locale;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.ANNOTATION_TYPE)
 public @interface Configuration {
-
-    Locales locale() default Locales.US;
 
     /**
      * Defines a name of report which will be used by the engine
@@ -38,12 +37,14 @@ public @interface Configuration {
      */
     String translationsDir() default "i18n/";
 
-//    /**
-//     * Default report language.
-//     *
-//     * @return {@link String}
-//     */
-//    String reportLang() default "en";
+    /**
+     * Locale information of the report.
+     * Due to the restrictions of Java it is not possible to directly use the {@link Locale} class,
+     * so the engine performs the necessary conversion to operate with {@link Locale} internally.
+     *
+     * @return {@link Locales}
+     */
+    Locales locale() default Locales.US;
 
     /**
      * Template path to be used to generate the report.

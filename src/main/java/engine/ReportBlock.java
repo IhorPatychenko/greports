@@ -116,11 +116,7 @@ public class ReportBlock {
     private int getTotalColumnsCount() {
         int total = 0;
         for (final ReportBlock block : this.blocks) {
-            if (block.isSubreport()) {
-                total += block.getTotalColumnsCount();
-            } else {
-                total += 1;
-            }
+            total += block.isSubreport() ? block.getTotalColumnsCount() : 1;
         }
         return total;
     }
