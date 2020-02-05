@@ -33,7 +33,7 @@ public class ReflectionUtils {
 
     public static <T> Method fetchFieldGetter(Field field, Class<T> clazz) throws ReportEngineReflectionException {
         List<String> getterPossibleNames = new ArrayList<>();
-        gettersPrefixes.forEach(prefix -> getterPossibleNames.add(prefix + Utils.capitalizeString(field.getName())));
+        gettersPrefixes.forEach(prefix -> getterPossibleNames.addAll(Arrays.asList(prefix + Utils.capitalizeString(field.getName()), prefix + field.getName())));
 
         for (String getterPossibleName : getterPossibleNames) {
             try {
@@ -48,7 +48,7 @@ public class ReflectionUtils {
 
     public static <T> Method fetchFieldSetter(Field field, Class<T> clazz) throws ReportEngineReflectionException {
         List<String> setterPossibleNames = new ArrayList<>();
-        settersPrefixes.forEach(prefix -> setterPossibleNames.add(prefix + Utils.capitalizeString(field.getName())));
+        settersPrefixes.forEach(prefix -> setterPossibleNames.addAll(Arrays.asList(prefix + Utils.capitalizeString(field.getName()), prefix + field.getName())));
 
         for (String setterPossibleName : setterPossibleNames) {
             try {
