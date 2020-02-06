@@ -148,7 +148,7 @@ final class ReportDataParser {
                 List<List<?>> subreportsList = new ArrayList<>();
                 ParameterizedType parameterizedType = (ParameterizedType) field.getGenericType();
                 returnType = (Class<?>) parameterizedType.getActualTypeArguments()[0];
-                float subreportPositionalIncrement = AnnotationUtils.getSubreportLastColumn(returnType, reportData.getName()).position() + SUBREPORT_POSITIONAL_INCREMENT;
+                float subreportPositionalIncrement = Math.max(AnnotationUtils.getSubreportLastColumn(returnType, reportData.getName()).position(), SUBREPORT_POSITIONAL_INCREMENT) + SUBREPORT_POSITIONAL_INCREMENT;
 
                 for (T collectionEntry : collection) {
                     final Object invokeResult = subreportInvokeMethod(method, collectionEntry);
