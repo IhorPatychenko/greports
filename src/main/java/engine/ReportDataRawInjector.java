@@ -160,12 +160,16 @@ class ReportDataRawInjector extends ReportDataInjector {
                     WorkbookUtils.setCellValue(cell, specialCell.getValue());
                 } else {
                     String formulaString = specialCell.getValue().toString();
-                    for (Map.Entry<String, Integer> entry : reportData.getTargetIndexes().entrySet()) {
-                        CellReference firstCellReference = super.getCellReferenceForTargetId(sheet.getRow(reportData.getDataStartRow()), specialCell.getTargetId());
-                        CellReference lastCellReference = super.getCellReferenceForTargetId(sheet.getRow(reportData.getDataStartRow() + reportData.getRowsCount() - 1), specialCell.getTargetId());
-                        formulaString = formulaString.replaceAll(entry.getKey(), firstCellReference.formatAsString() + ":" + lastCellReference.formatAsString());
+                    if(sheet.getLastRowNum() > reportData.getDataStartRow()){
+                        for (Map.Entry<String, Integer> entry : reportData.getTargetIndexes().entrySet()) {
+                            CellReference firstCellReference = super.getCellReferenceForTargetId(sheet.getRow(reportData.getDataStartRow()), specialCell.getTargetId());
+                            CellReference lastCellReference = super.getCellReferenceForTargetId(sheet.getRow(reportData.getDataStartRow() + reportData.getRowsCount() - 1), specialCell.getTargetId());
+                            formulaString = formulaString.replaceAll(entry.getKey(), firstCellReference.formatAsString() + ":" + lastCellReference.formatAsString());
+                        }
                     }
-                    cell.setCellFormula(formulaString);
+                    if(sheet.getLastRowNum() > reportData.getDataStartRow()){
+                        cell.setCellFormula(formulaString);
+                    }
                 }
                 setCellFormat(cell, specialCell.getFormat());
             }

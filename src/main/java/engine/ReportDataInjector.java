@@ -44,14 +44,7 @@ public abstract class ReportDataInjector {
     }
 
     protected CellReference getCellReferenceForTargetId(Row row, String id) {
-        final Cell cell = row.getCell(reportData.getColumnIndexForTarget(id));
-        if(cell == null){
-            throw new ReportEngineInjectorException(
-                String.format("Error occurred trying to obtain the cell for row \"%d\" and id \"%s\"", row.getRowNum(), id),
-                ReportEngineRuntimeExceptionCode.INJECTOR_ERROR
-            );
-        }
-        return new CellReference(cell);
+        return new CellReference(row.getCell(reportData.getColumnIndexForTarget(id)));
     }
 
     protected abstract void inject();
