@@ -33,14 +33,19 @@ public class AnnotationUtils {
         if (annotation != null) {
             return annotation;
         }
-        throw new ReportEngineReflectionException(clazz.toString() + " is not annotated as @Report", ReportEngineRuntimeExceptionCode.REPORT_ANNOTATION_NOT_FOUND);
+        throw new ReportEngineReflectionException(clazz.toString() + " is not annotated as @Report", ReportEngineRuntimeExceptionCode.REPORT_ANNOTATION_NOT_FOUND, clazz, clazz);
     }
 
     public static Configuration getReportConfiguration(Report report, String reportName) {
         return Arrays.stream(report.reportConfigurations())
                 .filter(entry -> entry.reportName().equals(reportName))
                 .findFirst()
-                .orElseThrow(() -> new ReportEngineReflectionException(String.format("@Report has no @ReportConfiguration annotation with name \"%s\"", reportName), ReportEngineRuntimeExceptionCode.CONFIGURATION_ANNOTATION_NOT_FOUND));
+                .orElseThrow(() -> new ReportEngineReflectionException(
+                        String.format("@Report has no @ReportConfiguration annotation with name \"%s\"", reportName),
+                        ReportEngineRuntimeExceptionCode.CONFIGURATION_ANNOTATION_NOT_FOUND,
+                        report.getClass(),
+                        report.getClass()
+                ));
     }
 
     public static int getLastSpecialRowsCount(Configuration configuration) {
@@ -108,7 +113,7 @@ public class AnnotationUtils {
     }
 
     private static Predicate<Annotation> getReportColumnPredicate(String reportName) {
-        return annotation -> ((Column) annotation).reportName().equals(reportName);
+        return annotation -> Arrays.asList(((Column) annotation).reportName()).contains(reportName);
     }
 
     private static Predicate<Annotation> getSubreportPredicate(String reportName) {

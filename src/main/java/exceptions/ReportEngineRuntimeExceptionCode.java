@@ -9,5 +9,7 @@ public class ReportEngineRuntimeExceptionCode {
     public static final Integer VALIDATION_ERROR = 6;
 
     public static final Integer REPORT_ANNOTATION_NOT_FOUND = 10;
-    public static final Integer CONFIGURATION_ANNOTATION_NOT_FOUND = 10;
+    public static final Integer CONFIGURATION_ANNOTATION_NOT_FOUND = 11;
+
+    public static final Integer INJECTOR_ERROR = 20;
 }

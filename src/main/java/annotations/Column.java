@@ -18,7 +18,7 @@ public @interface Column {
      *
      * @return {@link String}
      */
-    String reportName();
+    String[] reportName();
 
     /**
      * Position of column in the report.

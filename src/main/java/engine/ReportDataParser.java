@@ -101,6 +101,7 @@ final class ReportDataParser {
 
         AnnotationUtils.fieldsWithColumnAnnotations(clazz, columnFunction, reportData.getName());
 
+        Method method = null;
         try {
             for (Map.Entry<Field, Column> entry : columnsMap.entrySet()) {
                 methodsMap.put(entry.getKey(), ReflectionUtils.fetchFieldGetter(entry.getKey(), clazz));
@@ -109,7 +110,7 @@ final class ReportDataParser {
                 ReportDataRow row = new ReportDataRow();
                 for(Map.Entry<Field, Method> entry : methodsMap.entrySet()){
                     final Field field = entry.getKey();
-                    final Method method = entry.getValue();
+                    method = entry.getValue();
                     final Column column = columnsMap.get(field);
                     method.setAccessible(true);
                     final Object invokedValue = dto != null ? method.invoke(dto) : null;
@@ -124,9 +125,9 @@ final class ReportDataParser {
                 reportData.addRow(row);
             }
         } catch (IllegalAccessException e) {
-            throw new ReportEngineReflectionException("Error invoking the method with no access", ILLEGAL_ACCESS);
+            throw new ReportEngineReflectionException("Error invoking the method with no access", ILLEGAL_ACCESS, e.getStackTrace(), clazz, method);
         } catch (InvocationTargetException e) {
-            throw new ReportEngineReflectionException("Error invoking the method", INVOCATION_ERROR);
+            throw new ReportEngineReflectionException("Error invoking the method", INVOCATION_ERROR, e.getStackTrace(), clazz, method);
         }
     }
 
@@ -188,9 +189,9 @@ final class ReportDataParser {
         try {
             return method.invoke(collectionEntry);
         } catch (IllegalAccessException e) {
-            throw new ReportEngineReflectionException("Error invoking the method with no access", ILLEGAL_ACCESS);
+            throw new ReportEngineReflectionException("Error invoking the method with no access", ILLEGAL_ACCESS, e.getStackTrace(), method.getDeclaringClass(), method);
         } catch (InvocationTargetException e) {
-            throw new ReportEngineReflectionException("Error invoking the method", INVOCATION_ERROR);
+            throw new ReportEngineReflectionException("Error invoking the method", INVOCATION_ERROR, e.getStackTrace(), method.getDeclaringClass(), method);
         }
     }
 
@@ -216,9 +217,9 @@ final class ReportDataParser {
                             specialColumn.valueType()
                     ));
                 } catch (IllegalAccessException e) {
-                    throw new ReportEngineReflectionException("Error invoking the method with no access", ILLEGAL_ACCESS);
+                    throw new ReportEngineReflectionException("Error invoking the method with no access", ILLEGAL_ACCESS, e.getStackTrace(), clazz, method != null ? method : value);
                 } catch (InvocationTargetException e) {
-                    throw new ReportEngineReflectionException("Error invoking the method", INVOCATION_ERROR);
+                    throw new ReportEngineReflectionException("Error invoking the method", INVOCATION_ERROR, e.getStackTrace(), clazz, method != null ? method : value);
                 }
             }
         }
@@ -282,13 +283,13 @@ final class ReportDataParser {
                 }
             }
         } catch (NoSuchMethodException e) {
-            throw new ReportEngineReflectionException("Error obtaining the method reference" , NO_METHOD_ERROR);
+            throw new ReportEngineReflectionException("Error obtaining the method reference" , NO_METHOD_ERROR, e.getStackTrace(), clazz, Constructor.class);
         } catch (InstantiationException e) {
-            throw new ReportEngineReflectionException("Error instantiating an object", INSTANTIATION_ERROR);
+            throw new ReportEngineReflectionException("Error instantiating an object", INSTANTIATION_ERROR, e.getStackTrace(), clazz, Constructor.class);
         } catch (IllegalAccessException e) {
-            throw new ReportEngineReflectionException("Error instantiating an object with no access to the constructor", ILLEGAL_ACCESS);
+            throw new ReportEngineReflectionException("Error instantiating an object with no access to the constructor", ILLEGAL_ACCESS, e.getStackTrace(), clazz, Constructor.class);
         } catch (InvocationTargetException e) {
-            throw new ReportEngineReflectionException("Error instantiating an object with no parameter constructor", INVOCATION_ERROR);
+            throw new ReportEngineReflectionException("Error instantiating an object with no parameter constructor", INVOCATION_ERROR, e.getStackTrace(), clazz, Constructor.class);
         }
     }
 

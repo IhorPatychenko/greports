@@ -21,7 +21,7 @@ public class ReflectionUtils {
         try {
             return clazz.getDeclaredMethod(methodName, parameters);
         } catch (NoSuchMethodException e) {
-            throw new ReportEngineReflectionException(e.getMessage(), ReportEngineRuntimeExceptionCode.NO_METHOD_ERROR);
+            throw new ReportEngineReflectionException(e.getMessage(), ReportEngineRuntimeExceptionCode.NO_METHOD_ERROR, e.getStackTrace(), clazz, methodName);
         }
     }
 
@@ -43,7 +43,13 @@ public class ReflectionUtils {
                 }
             } catch (ReportEngineReflectionException ignored) {}
         }
-        throw new ReportEngineReflectionException("No getter was found with any of these names \"" + String.join(", ", getterPossibleNames) + "\" for field " + field.getName() + " in class @" + clazz.getSimpleName(), ReportEngineRuntimeExceptionCode.NO_METHOD_ERROR);
+        throw new ReportEngineReflectionException(
+                "No getter was found with any of these names \"" + String.join(", ", getterPossibleNames) + "\" for field " + field.getName() + " in class @" + clazz.getSimpleName(),
+                ReportEngineRuntimeExceptionCode.NO_METHOD_ERROR,
+                new StackTraceElement[]{},
+                clazz,
+                field
+        );
     }
 
     public static <T> Method fetchFieldSetter(Field field, Class<T> clazz) throws ReportEngineReflectionException {
@@ -59,6 +65,12 @@ public class ReflectionUtils {
                 }
             } catch (ReportEngineReflectionException ignored) {}
         }
-        throw new ReportEngineReflectionException("No setter was found with any of these names \"" + String.join(", ", setterPossibleNames) + "\" for field " + field.getName(), ReportEngineRuntimeExceptionCode.NO_METHOD_ERROR);
+        throw new ReportEngineReflectionException(
+                "No setter was found with any of these names \"" + String.join(", ", setterPossibleNames) + "\" for field " + field.getName(),
+                ReportEngineRuntimeExceptionCode.NO_METHOD_ERROR,
+                new StackTraceElement[]{},
+                clazz,
+                field
+        );
     }
 }

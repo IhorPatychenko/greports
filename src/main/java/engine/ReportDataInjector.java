@@ -1,6 +1,9 @@
 package engine;
 
 import content.ReportData;
+import exceptions.ReportEngineInjectorException;
+import exceptions.ReportEngineRuntimeException;
+import exceptions.ReportEngineRuntimeExceptionCode;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CreationHelper;
 import org.apache.poi.ss.usermodel.Row;
@@ -41,7 +44,14 @@ public abstract class ReportDataInjector {
     }
 
     protected CellReference getCellReferenceForTargetId(Row row, String id) {
-        return new CellReference(row.getCell(reportData.getColumnIndexForTarget(id)));
+        final Cell cell = row.getCell(reportData.getColumnIndexForTarget(id));
+        if(cell == null){
+            throw new ReportEngineInjectorException(
+                String.format("Error occurred trying to obtain the cell for row \"%d\" and id \"%s\"", row.getRowNum(), id),
+                ReportEngineRuntimeExceptionCode.INJECTOR_ERROR
+            );
+        }
+        return new CellReference(cell);
     }
 
     protected abstract void inject();

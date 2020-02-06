@@ -105,6 +105,7 @@ public class ReportLoader {
         List<T> list = new ArrayList<>();
         final Sheet sheet = currentWorkbook.getSheet(configuration.sheetName());
         boolean errorThrown = false;
+        Method method = null;
         try {
             for (int dataRowNum = configuration.dataStartRowIndex(); dataRowNum <= sheet.getLastRowNum() - AnnotationUtils.getLastSpecialRowsCount(configuration); dataRowNum++) {
                 if (!skipRows.contains(dataRowNum)) {
@@ -112,7 +113,7 @@ public class ReportLoader {
                     final Row row = sheet.getRow(dataRowNum);
                     for (final ReportBlock block : reportBlock.getBlocks()) {
                         if (block.isColumn()) {
-                            final Method method = ReflectionUtils.fetchFieldSetter(block.getParentField(), clazz);
+                            method = ReflectionUtils.fetchFieldSetter(block.getParentField(), clazz);
                             final Cell cell = row.getCell(block.getStartColumn());
                             try {
                                 final Object value = getCellValue(method, cell);
@@ -141,7 +142,7 @@ public class ReportLoader {
             for (final ReportBlock block : reportBlock.getBlocks()) {
                 if (block.isSubreport()) {
                     final List<?> objects = bindBlocks(block, block.getBlockClass(), configuration, treatment, skipRows);
-                    final Method method = ReflectionUtils.fetchFieldSetter(block.getParentField(), clazz);
+                    method = ReflectionUtils.fetchFieldSetter(block.getParentField(), clazz);
                     for (int i = 0; i < list.size(); i++) {
                         method.invoke(list.get(i), objects.get(i));
                     }
@@ -153,14 +154,14 @@ public class ReportLoader {
                     }
                 }
             }
-        }  catch (NoSuchMethodException e) {
-            throw new ReportEngineReflectionException("Error obtaining constructor reference" , NO_METHOD_ERROR);
+        } catch (NoSuchMethodException e) {
+            throw new ReportEngineReflectionException("Error obtaining constructor reference" , NO_METHOD_ERROR, e.getStackTrace(), clazz, clazz);
         } catch (InstantiationException e) {
-            throw new ReportEngineReflectionException("Error instantiating an object", INSTANTIATION_ERROR);
+            throw new ReportEngineReflectionException("Error instantiating an object", INSTANTIATION_ERROR, e.getStackTrace(), clazz, clazz);
         } catch (IllegalAccessException e) {
-            throw new ReportEngineReflectionException("Error executing method witch does not have access to the definition of the specified class", ILLEGAL_ACCESS);
+            throw new ReportEngineReflectionException("Error executing method witch does not have access to the definition of the specified class", ILLEGAL_ACCESS, e.getStackTrace(), clazz, clazz);
         } catch (InvocationTargetException e) {
-            throw new ReportEngineReflectionException("Error executing method witch does not have access to the definition of the specified class", INVOCATION_ERROR);
+            throw new ReportEngineReflectionException("Error executing method witch does not have access to the definition of the specified class", INVOCATION_ERROR, e.getStackTrace(), clazz, method);
         }
         return list;
     }
@@ -171,9 +172,9 @@ public class ReportLoader {
             checkCellValidations(value, cellValidators);
             method.invoke(instance, value);
         } catch (IllegalAccessException e) {
-            throw new ReportEngineReflectionException("Error executing method witch does not have access to the definition of the specified class", ILLEGAL_ACCESS);
+            throw new ReportEngineReflectionException("Error executing method witch does not have access to the definition of the specified class", ILLEGAL_ACCESS, e.getStackTrace(), method.getDeclaringClass(), method);
         } catch (InvocationTargetException e) {
-            throw new ReportEngineReflectionException("Error executing method witch does not have access to the definition of the specified class", INVOCATION_ERROR);
+            throw new ReportEngineReflectionException("Error executing method witch does not have access to the definition of the specified class", INVOCATION_ERROR, e.getStackTrace(), method.getDeclaringClass(), method);
         }
     }
 
