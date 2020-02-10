@@ -20,6 +20,9 @@ public class ReflectionUtils {
         try {
             return clazz.getDeclaredMethod(methodName, parameters);
         } catch (NoSuchMethodException e) {
+            if(clazz.getSuperclass() != null){
+                return getMethodWithName(clazz.getSuperclass(), methodName, parameters);
+            }
             throw new ReportEngineReflectionException(e.getMessage(), e, clazz);
         }
     }
@@ -43,8 +46,8 @@ public class ReflectionUtils {
             } catch (ReportEngineReflectionException ignored) {}
         }
         throw new ReportEngineReflectionException(
-                "No getter was found with any of these names \"" + String.join(", ", getterPossibleNames) + "\" for field " + field.getName() + " in class @" + clazz.getSimpleName(),
-                clazz
+            "No getter was found with any of these names \"" + String.join(", ", getterPossibleNames) + "\" for field " + field.getName() + " in class @" + clazz.getSimpleName(),
+            clazz
         );
     }
 

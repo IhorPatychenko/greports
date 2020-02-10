@@ -47,7 +47,7 @@ public class AnnotationUtils {
     }
 
     public static <T> void fieldsWithColumnAnnotations(Class<T> clazz, Function<Pair<Field, Column>, Void> columnFunction, String reportName) {
-        for (Field declaredField : clazz.getDeclaredFields()) {
+        for (Field declaredField : getAllClassFields(clazz)) {
             final Column[] annotationsByType = declaredField.getAnnotationsByType(Column.class);
             for (Column generatorColumn : annotationsByType) {
                 if (getReportColumnPredicate(reportName).test(generatorColumn)) {
@@ -57,9 +57,17 @@ public class AnnotationUtils {
         }
     }
 
+    private static <T> List<Field> getAllClassFields(Class<T> clazz){
+        List<Field> list = new ArrayList<>(Arrays.asList(clazz.getDeclaredFields()));
+        if(clazz.getSuperclass() != null){
+            list.addAll(getAllClassFields(clazz.getSuperclass()));
+        }
+        return list;
+    }
+
     public static <T> Column getSubreportLastColumn(Class<T> clazz, String reportName) {
         List<Column> list = new ArrayList<>();
-        final Field[] fields = clazz.getDeclaredFields();
+        final List<Field> fields = getAllClassFields(clazz);
         for (final Field field : fields) {
             final Column[] columns = field.getAnnotationsByType(Column.class);
             for (final Column columnAnnotation : columns) {
@@ -74,7 +82,7 @@ public class AnnotationUtils {
     public static <T> Map<Annotation, Field> loadBlockAnnotations(final ReportBlock reportBlock) {
         Map<Annotation, Field> map = new HashMap<>();
         Class<?> clazz = reportBlock.getBlockClass();
-        final Field[] fields = clazz.getDeclaredFields();
+        final List<Field> fields = getAllClassFields(clazz);
         for (final Field field : fields) {
             Arrays.stream(field.getAnnotationsByType(Subreport.class))
                     .filter(subreport -> subreport.reportName().equals(reportBlock.getReportName()))
@@ -95,7 +103,7 @@ public class AnnotationUtils {
     }
 
     public static <T> void fieldsWithSubreportAnnotations(Class<T> clazz, Function<Pair<Field, Subreport>, Void> columnFunction, String reportName) {
-        for (Field field : clazz.getDeclaredFields()) {
+        for (Field field : getAllClassFields(clazz)) {
             final Subreport[] annotationsByType = field.getAnnotationsByType(Subreport.class);
             for (Subreport subreport : annotationsByType) {
                 if (getSubreportPredicate(reportName).test(subreport)) {
