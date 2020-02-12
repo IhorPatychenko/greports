@@ -16,11 +16,11 @@ import java.lang.annotation.Target;
 public @interface Subreport {
 
     /**
-     * Indicates the report's name which contains the subreport.
+     * Indicates the report's names which contains the subreport.
      *
      * @return {@link String}
      */
-    String reportName();
+    String[] reportName();
 
     float position();
 }

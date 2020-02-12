@@ -9,7 +9,11 @@ public class Translator {
         this.translations = translations;
     }
 
-    public String translate(String key, Object... params){
-        return String.format(translations.getOrDefault(key, key).toString(), params);
+    public String translate(String key, String... params){
+        String text = translations.getOrDefault(key, key).toString();
+        for (int i = 0; i < params.length; i++) {
+            text = text.replaceAll("\\{" + i + "}", params[i]);
+        }
+        return text;
     }
 }

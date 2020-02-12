@@ -222,14 +222,14 @@ public class ReportLoader {
         if (!validatorInstance.isValid(values)) {
             String errorMessage = translator.translate(errorMessageKey, validatorInstance.getValidatorValue());
             final Integer errorRowIndex = validatorInstance.getErrorRowIndex(values);
-            throw new ReportEngineValidationException(errorMessage.replace("%value%", errorMessage), validatorInstance.getClass(), errorRowIndex);
+            throw new ReportEngineValidationException(errorMessage, validatorInstance.getClass(), errorRowIndex);
         }
     }
 
     private void validateCell(final AbstractCellValidator validatorInstance, final Object value, final String errorMessageKey) throws ReportEngineValidationException {
         if (!validatorInstance.isValid(value)) {
             String errorMessage = translator.translate(errorMessageKey, validatorInstance.getValidatorValue());
-            throw new ReportEngineValidationException(errorMessage.replace("%value%", errorMessage), validatorInstance.getClass());
+            throw new ReportEngineValidationException(errorMessage, validatorInstance.getClass());
         }
     }
 

@@ -85,12 +85,12 @@ public class AnnotationUtils {
         final List<Field> fields = getAllClassFields(clazz);
         for (final Field field : fields) {
             Arrays.stream(field.getAnnotationsByType(Subreport.class))
-                    .filter(subreport -> subreport.reportName().equals(reportBlock.getReportName()))
+                    .filter(subreport -> Arrays.asList(subreport.reportName()).contains(reportBlock.getReportName()))
                     .findFirst()
                     .ifPresent(subreportAnnotation -> map.put(subreportAnnotation, field));
 
             Arrays.stream(field.getAnnotationsByType(Column.class))
-                    .filter(column -> column.reportName().equals(reportBlock.getReportName()))
+                    .filter(column -> Arrays.asList(column.reportName()).contains(reportBlock.getReportName()))
                     .findFirst()
                     .ifPresent(columnAnnotation -> map.put(columnAnnotation, field));
         }
