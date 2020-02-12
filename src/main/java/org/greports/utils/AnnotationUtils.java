@@ -132,7 +132,7 @@ public class AnnotationUtils {
     public static Function<Pair<Field, Column>, Void> getHeadersFunction(List<ReportHeaderCell> cells, Translator translator, Float positionIncrement) {
         return pair -> {
             Column column = pair.getRight();
-            cells.add(new ReportHeaderCell(column.position() + positionIncrement, translator.translate(column.title(), column.title()), column.id(), column.autoSizeColumn()));
+            cells.add(new ReportHeaderCell(column.position() + positionIncrement, translator.translate(column.title()), column.id(), column.autoSizeColumn()));
             return null;
         };
     }

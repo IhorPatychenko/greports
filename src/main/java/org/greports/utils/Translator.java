@@ -10,6 +10,6 @@ public class Translator {
     }
 
     public String translate(String key, Object... params){
-        return String.format(translations.getOrDefault(key, key).toString().replaceAll("%", "%%"), params);
+        return String.format(translations.getOrDefault(key, key).toString(), params);
     }
 }

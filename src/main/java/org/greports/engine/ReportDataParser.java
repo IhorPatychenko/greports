@@ -38,7 +38,6 @@ import java.lang.reflect.ParameterizedType;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -52,7 +51,7 @@ final class ReportDataParser {
     private List<ReportData> subreportsData = new ArrayList<>();
     private static final float SUBREPORT_POSITIONAL_INCREMENT = 0.00000000000001f;
 
-    public <T> ReportDataParser parse(Collection<T> collection, final String reportName, Class<T> clazz, ReportConfigurator configurator) throws ReportEngineReflectionException, ReportEngineRuntimeException {
+    protected <T> ReportDataParser parse(Collection<T> collection, final String reportName, Class<T> clazz, ReportConfigurator configurator) throws ReportEngineReflectionException, ReportEngineRuntimeException {
         final ReportDataParser parser = parse(collection, reportName, clazz, 0f);
         overrideSubreportsTitles(configurator.getOverriddenTitles());
         return parser;

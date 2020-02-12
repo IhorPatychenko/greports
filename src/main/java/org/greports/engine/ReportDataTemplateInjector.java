@@ -1,5 +1,6 @@
 package org.greports.engine;
 
+import org.apache.poi.xssf.usermodel.XSSFCell;
 import org.greports.content.ReportData;
 import org.greports.content.ReportHeader;
 import org.greports.content.column.ReportDataCell;
@@ -80,7 +81,7 @@ public class ReportDataTemplateInjector extends ReportDataInjector {
 //            final Row lastDataRow = sheet.getRow(reportData.getDataStartRow() + reportData.getRowsCount() - 1);
 //            table.setCellReferences(new AreaReference(
 //                table.getCellReferences().getFirstCell(),
-//                new CellReference(lastDataRow.getCell(lastDataRow.getLastCellNum() - 1)),
+//                new CellReference(lastDataRow.getCell(table.getEndCellReference().getCol())),
 //                SpreadsheetVersion.EXCEL2007
 //            ));
 //        }
@@ -88,11 +89,11 @@ public class ReportDataTemplateInjector extends ReportDataInjector {
 
     private void reindexTablesRows(final Sheet sheet) {
         for (final XSSFTable table : currentWorkbook.getSheet(reportData.getSheetName()).getTables()) {
-            final Row lastDataRow = sheet.getRow(reportData.getDataStartRow() + reportData.getRowsCount() - 1);
+            final Row lastDataRow = sheet.getRow(sheet.getLastRowNum());
             final CTTable ctTable = table.getCTTable();
             final AreaReference reference = new AreaReference(
                 table.getStartCellReference(),
-                new CellReference(lastDataRow.getCell(lastDataRow.getLastCellNum() - 1))
+                new CellReference(lastDataRow.getCell(table.getEndColIndex()))
             );
             ctTable.setRef(reference.formatAsString());
         }
