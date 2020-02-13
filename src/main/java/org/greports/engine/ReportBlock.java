@@ -7,7 +7,7 @@ import org.greports.annotations.SpecialColumn;
 import org.greports.annotations.Subreport;
 
 import java.lang.annotation.Annotation;
-import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -21,7 +21,7 @@ public class ReportBlock {
     private final List<ReportBlock> blocks = new ArrayList<>();
     private final List<Object> values = new ArrayList<>();
     private final ReportBlock parentBlock;
-    private Field parentField;
+    private Method parentMethod;
     private int startColumn;
 
     public ReportBlock(final Class<?> blockClass, String reportName, final ReportBlock parentBlock) {
@@ -30,12 +30,12 @@ public class ReportBlock {
         this.parentBlock = parentBlock;
     }
 
-    public ReportBlock(final Class<?> blockClass, String reportName, final ReportBlock parentBlock, final Annotation annotation, final Field parentField) {
+    public ReportBlock(final Class<?> blockClass, String reportName, final ReportBlock parentBlock, final Annotation annotation, final Method parentMethod) {
         this.blockClass = blockClass;
         this.reportName = reportName;
         this.parentBlock = parentBlock;
         this.annotation = annotation;
-        this.parentField = parentField;
+        this.parentMethod = parentMethod;
     }
 
     public Class<?> getBlockClass() {
@@ -46,8 +46,8 @@ public class ReportBlock {
         return reportName;
     }
 
-    public Field getParentField() {
-        return parentField;
+    public Method getParentMethod() {
+        return parentMethod;
     }
 
     public boolean isColumn() {

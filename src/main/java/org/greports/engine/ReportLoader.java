@@ -28,7 +28,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.annotation.Annotation;
-import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -82,12 +81,13 @@ public class ReportLoader {
         return this;
     }
 
-    public void loadBlocks(ReportBlock reportBlock) {
-        final Map<Annotation, Field> annotationFieldMap = AnnotationUtils.loadBlockAnnotations(reportBlock);
-        for (final Map.Entry<Annotation, Field> entry : annotationFieldMap.entrySet()) {
+    public void loadBlocks(ReportBlock reportBlock) throws ReportEngineReflectionException {
+        final Map<Annotation, Method> annotationMethodMap = AnnotationUtils.loadBlockAnnotations(reportBlock);
+        for (final Map.Entry<Annotation, Method> entry : annotationMethodMap.entrySet()) {
             final Annotation annotation = entry.getKey();
-            final Field field = entry.getValue();
-            final ReportBlock block = new ReportBlock(Optional.ofNullable(field).map(Field::getType).orElse(null), reportBlock.getReportName(), reportBlock, annotation, field);
+            final Method method = entry.getValue();
+            final ReportBlock block = new ReportBlock(Optional.ofNullable(method)
+                    .map(m -> m.getParameterTypes()[0]).orElse(null), reportBlock.getReportName(), reportBlock, annotation, method);
             reportBlock.addBlock(block);
             if (block.isSubreport()) {
                 loadBlocks(block);
@@ -99,15 +99,15 @@ public class ReportLoader {
         List<T> list = new ArrayList<>();
         final Sheet sheet = currentWorkbook.getSheet(configuration.sheetName());
         boolean errorThrown = false;
-        Method method = null;
         try {
+            Method method;
             for (int dataRowNum = configuration.dataStartRowIndex(); dataRowNum <= sheet.getLastRowNum() - AnnotationUtils.getLastSpecialRowsCount(configuration); dataRowNum++) {
                 if (!skipRows.contains(dataRowNum)) {
                     final T instance = ReflectionUtils.newInstance(clazz);
                     final Row row = sheet.getRow(dataRowNum);
                     for (final ReportBlock block : reportBlock.getBlocks()) {
                         if (block.isColumn()) {
-                            method = ReflectionUtils.fetchFieldSetter(block.getParentField(), clazz);
+                            method = block.getParentMethod();
                             final Cell cell = row.getCell(block.getStartColumn());
                             try {
                                 final Object value = getCellValue(method, cell);
@@ -136,7 +136,7 @@ public class ReportLoader {
             for (final ReportBlock block : reportBlock.getBlocks()) {
                 if (block.isSubreport()) {
                     final List<?> objects = bindBlocks(block, block.getBlockClass(), configuration, treatment, skipRows);
-                    method = ReflectionUtils.fetchFieldSetter(block.getParentField(), clazz);
+                    method = block.getParentMethod();
                     for (int i = 0; i < list.size(); i++) {
                         method.invoke(list.get(i), objects.get(i));
                     }

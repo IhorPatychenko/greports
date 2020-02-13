@@ -31,7 +31,6 @@ import org.greports.utils.Translator;
 import org.greports.utils.Utils;
 
 import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
@@ -74,12 +73,12 @@ final class ReportDataParser {
         return this;
     }
 
-    private <T> void parseReportHeader(Class<T> clazz, Float positionIncrement) {
+    private <T> void parseReportHeader(Class<T> clazz, Float positionIncrement) throws ReportEngineReflectionException {
         reportData.setCreateHeader(configuration.createHeader());
         reportData.setHeaderStartRow(configuration.headerRowIndex());
         List<ReportHeaderCell> cells = new ArrayList<>();
-        Function<Pair<Field, Column>, Void> columnFunction = AnnotationUtils.getHeadersFunction(cells, translator, positionIncrement);
-        AnnotationUtils.fieldsWithColumnAnnotations(clazz, columnFunction, reportData.getName());
+        final Function<Pair<Method, Column>, Void> columnFunction = AnnotationUtils.getHeadersFunction(cells, translator, positionIncrement);
+        AnnotationUtils.methodsWithColumnAnnotations(clazz, columnFunction, reportData.getName());
 
         for (SpecialColumn specialColumn : configuration.specialColumns()) {
             cells.add(new ReportHeaderCell(specialColumn.position(), specialColumn.title(), specialColumn.id(), specialColumn.autoSizeColumn()));
@@ -93,23 +92,16 @@ final class ReportDataParser {
     private <T> void parseRowsData(Collection<T> collection, Class<T> clazz, Float positionIncrement) throws ReportEngineReflectionException {
         reportData.setDataStartRow(configuration.dataStartRowIndex());
 
-        Map<Field, Column> columnsMap = new LinkedHashMap<>();
-        Map<Field, Method> methodsMap = new LinkedHashMap<>();
-        Function<Pair<Field, Column>, Void> columnFunction = AnnotationUtils.getFieldsAndColumnsFunction(columnsMap);
+        Map<Method, Column> columnsMap = new LinkedHashMap<>();
+        Function<Pair<Method, Column>, Void> columnFunction = AnnotationUtils.getMethodsAndColumnsFunction(columnsMap);
+        AnnotationUtils.methodsWithColumnAnnotations(clazz, columnFunction, reportData.getName());
 
-        AnnotationUtils.fieldsWithColumnAnnotations(clazz, columnFunction, reportData.getName());
-
-        Method method;
         try {
-            for (Map.Entry<Field, Column> entry : columnsMap.entrySet()) {
-                methodsMap.put(entry.getKey(), ReflectionUtils.fetchFieldGetter(entry.getKey(), clazz));
-            }
             for (T dto : collection) {
                 ReportDataRow row = new ReportDataRow();
-                for(Map.Entry<Field, Method> entry : methodsMap.entrySet()){
-                    final Field field = entry.getKey();
-                    method = entry.getValue();
-                    final Column column = columnsMap.get(field);
+                for (final Map.Entry<Method, Column> entry : columnsMap.entrySet()) {
+                    final Column column = entry.getValue();
+                    final Method method = entry.getKey();
                     method.setAccessible(true);
                     final Object invokedValue = dto != null ? method.invoke(dto) : null;
                     ReportDataCell reportDataCell = new ReportDataCell(
@@ -131,13 +123,12 @@ final class ReportDataParser {
 
     private <T> void parseSubreports(Collection<T> collection, Class<T> clazz) throws ReportEngineReflectionException {
         final ReportDataParser reportDataParser = new ReportDataParser();
-        Map<Field, Subreport> subreportMap = new LinkedHashMap<>();
-        Function<Pair<Field, Subreport>, Void> subreportFunction = AnnotationUtils.getSubreportsFunction(subreportMap);
-        AnnotationUtils.fieldsWithSubreportAnnotations(clazz, subreportFunction, reportData.getName());
+        Map<Method, Subreport> subreportMap = new LinkedHashMap<>();
+        Function<Pair<Method, Subreport>, Void> subreportFunction = AnnotationUtils.getSubreportsFunction(subreportMap);
+        AnnotationUtils.methodsWithSubreportAnnotations(clazz, subreportFunction, reportData.getName());
 
-        for (Map.Entry<Field, Subreport> entry : subreportMap.entrySet()) {
-            final Field field = entry.getKey();
-            final Method method = ReflectionUtils.fetchFieldGetter(field, clazz);
+        for (Map.Entry<Method, Subreport> entry : subreportMap.entrySet()) {
+            final Method method = entry.getKey();
             final Subreport subreport = entry.getValue();
             Class<?> returnType = method.getReturnType();
             method.setAccessible(true);
@@ -149,7 +140,7 @@ final class ReportDataParser {
                 if(returnType.isArray()){
                     componentType = returnType.getComponentType();
                 } else {
-                    ParameterizedType parameterizedType = (ParameterizedType) field.getGenericType();
+                    ParameterizedType parameterizedType = (ParameterizedType) method.getGenericReturnType();
                     componentType = (Class<?>) parameterizedType.getActualTypeArguments()[0];
                 }
                 float subreportPositionalIncrement = Math.max(AnnotationUtils.getSubreportLastColumn(componentType, reportData.getName()).position(), SUBREPORT_POSITIONAL_INCREMENT) + SUBREPORT_POSITIONAL_INCREMENT;
