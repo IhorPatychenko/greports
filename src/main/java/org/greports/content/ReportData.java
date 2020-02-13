@@ -17,7 +17,7 @@ import java.util.Objects;
 public class ReportData {
 
     private final String name;
-    private final String sheetName;
+    private String sheetName;
     private final URL templateURL;
     private ReportHeader header;
     private boolean createHeader = true;
@@ -40,6 +40,10 @@ public class ReportData {
 
     public String getSheetName() {
         return sheetName;
+    }
+
+    public void setSheetName(final String sheetName) {
+        this.sheetName = sheetName;
     }
 
     public URL getTemplateURL() {

@@ -53,6 +53,7 @@ final class ReportDataParser {
 
     protected <T> ReportDataParser parse(Collection<T> collection, final String reportName, Class<T> clazz, ReportConfigurator configurator) throws ReportEngineReflectionException, ReportEngineRuntimeException {
         final ReportDataParser parser = parse(collection, reportName, clazz, 0f);
+        overrideSheetName(configurator.getSheetName());
         overrideSubreportsTitles(configurator.getOverriddenTitles());
         return parser;
     }
@@ -299,6 +300,12 @@ final class ReportDataParser {
             throw new ReportEngineReflectionException("Error instantiating an object with no access to the constructor", e, clazz);
         } catch (InvocationTargetException e) {
             throw new ReportEngineReflectionException("Error instantiating an object with no parameter constructor", e, clazz);
+        }
+    }
+
+    private void overrideSheetName(final String sheetName) {
+        if(sheetName != null){
+            reportData.setSheetName(sheetName);
         }
     }
 
