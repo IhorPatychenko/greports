@@ -13,7 +13,6 @@ import org.greports.content.ReportData;
 import org.greports.content.row.ReportDataRow;
 import org.greports.content.ReportHeader;
 import org.greports.content.row.ReportDataSpecialRow;
-import org.greports.exceptions.ReportEngineParseException;
 import org.greports.exceptions.ReportEngineReflectionException;
 import org.greports.exceptions.ReportEngineRuntimeException;
 import org.greports.positioning.VerticalRange;
@@ -43,6 +42,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
+import java.util.function.Predicate;
 
 final class ReportDataParser {
 
@@ -80,7 +80,7 @@ final class ReportDataParser {
         reportData.setHeaderStartRow(configuration.headerRowIndex());
         List<ReportHeaderCell> cells = new ArrayList<>();
         final Function<Pair<Method, Column>, Void> columnFunction = AnnotationUtils.getHeadersFunction(cells, translator, positionIncrement);
-        AnnotationUtils.methodsWithColumnAnnotations(clazz, columnFunction, reportData.getName());
+        AnnotationUtils.methodsWithColumnAnnotations(clazz, columnFunction, reportData.getReportName());
 
         for (SpecialColumn specialColumn : configuration.specialColumns()) {
             cells.add(new ReportHeaderCell(specialColumn.position(), specialColumn.title(), specialColumn.id(), specialColumn.autoSizeColumn()));
@@ -96,7 +96,7 @@ final class ReportDataParser {
 
         Map<Method, Column> columnsMap = new LinkedHashMap<>();
         Function<Pair<Method, Column>, Void> columnFunction = AnnotationUtils.getMethodsAndColumnsFunction(columnsMap);
-        AnnotationUtils.methodsWithColumnAnnotations(clazz, columnFunction, reportData.getName());
+        AnnotationUtils.methodsWithColumnAnnotations(clazz, columnFunction, reportData.getReportName());
 
         try {
             for (T dto : collection) {
@@ -134,7 +134,7 @@ final class ReportDataParser {
         final ReportDataParser reportDataParser = new ReportDataParser();
         Map<Method, Subreport> subreportMap = new LinkedHashMap<>();
         Function<Pair<Method, Subreport>, Void> subreportFunction = AnnotationUtils.getSubreportsFunction(subreportMap);
-        AnnotationUtils.methodsWithSubreportAnnotations(clazz, subreportFunction, reportData.getName());
+        AnnotationUtils.methodsWithSubreportAnnotations(clazz, subreportFunction, reportData.getReportName());
 
         for (Map.Entry<Method, Subreport> entry : subreportMap.entrySet()) {
             final Method method = entry.getKey();
@@ -152,7 +152,7 @@ final class ReportDataParser {
                     ParameterizedType parameterizedType = (ParameterizedType) method.getGenericReturnType();
                     componentType = (Class<?>) parameterizedType.getActualTypeArguments()[0];
                 }
-                float subreportPositionalIncrement = Math.max(AnnotationUtils.getSubreportLastColumn(componentType, reportData.getName()).position(), SUBREPORT_POSITIONAL_INCREMENT) + SUBREPORT_POSITIONAL_INCREMENT;
+                float subreportPositionalIncrement = Math.max(AnnotationUtils.getSubreportLastColumn(componentType, reportData.getReportName()).position(), SUBREPORT_POSITIONAL_INCREMENT) + SUBREPORT_POSITIONAL_INCREMENT;
 
                 for (T collectionEntry : collection) {
                     final Object invokeResult = subreportInvokeMethod(method, collectionEntry);
@@ -176,7 +176,7 @@ final class ReportDataParser {
                     }
                 }
             } else {
-                float subreportPositionalIncrement = AnnotationUtils.getSubreportLastColumn(componentType, reportData.getName()).position() + SUBREPORT_POSITIONAL_INCREMENT;
+                float subreportPositionalIncrement = AnnotationUtils.getSubreportLastColumn(componentType, reportData.getReportName()).position() + SUBREPORT_POSITIONAL_INCREMENT;
                 final Collection<Object> subreportData = new ArrayList<>();
                 for (T collectionEntry : collection) {
                     final Object invokeResult = subreportInvokeMethod(method, collectionEntry);
@@ -189,7 +189,7 @@ final class ReportDataParser {
 
     @SuppressWarnings("unchecked")
     private void parseSubreportData(final ReportDataParser reportDataParser, final Class<?> returnType, final Collection subreportData, float positionalIncrement) throws ReportEngineReflectionException {
-        final ReportData data = reportDataParser.parse(subreportData, reportData.getName(), returnType, positionalIncrement).getData();
+        final ReportData data = reportDataParser.parse(subreportData, reportData.getReportName(), returnType, positionalIncrement).getData();
         subreportsData.add(data);
     }
 
@@ -252,24 +252,24 @@ final class ReportDataParser {
             if(newInstance instanceof StyledReport){
                 final StyledReport instance = (StyledReport) newInstance;
                 if(instance.getRangedRowStyles() != null){
-                    reportDataStyles.setRowStyles(instance.getRangedRowStyles().getOrDefault(reportData.getName(), null));
+                    reportDataStyles.setRowStyles(instance.getRangedRowStyles().getOrDefault(reportData.getReportName(), null));
                 }
                 if(instance.getRangedColumnStyles() != null){
-                    reportDataStyles.setColumnStyles(instance.getRangedColumnStyles().getOrDefault(reportData.getName(), null));
+                    reportDataStyles.setColumnStyles(instance.getRangedColumnStyles().getOrDefault(reportData.getReportName(), null));
                 }
                 if(instance.getPositionedStyles() != null){
-                    reportDataStyles.setPositionedStyles(instance.getPositionedStyles().getOrDefault(reportData.getName(), null));
+                    reportDataStyles.setPositionedStyles(instance.getPositionedStyles().getOrDefault(reportData.getReportName(), null));
                 }
                 if(instance.getRectangleRangedStyles() != null){
-                    reportDataStyles.setRectangleStyles(instance.getRectangleRangedStyles().getOrDefault(reportData.getName(), null));
+                    reportDataStyles.setRectangleStyles(instance.getRectangleRangedStyles().getOrDefault(reportData.getReportName(), null));
                 }
             }
             if(newInstance instanceof StripedRows){
                 final StripedRows instance = (StripedRows) newInstance;
                 if(instance.getStripedRowsIndex() != null && instance.getStripedRowsColor() != null){
                     reportDataStyles
-                            .setStripedRowsIndex(instance.getStripedRowsIndex().getOrDefault(reportData.getName(), null))
-                            .setStripedRowsColor(instance.getStripedRowsColor().getOrDefault(reportData.getName(), null));
+                            .setStripedRowsIndex(instance.getStripedRowsIndex().getOrDefault(reportData.getReportName(), null))
+                            .setStripedRowsColor(instance.getStripedRowsColor().getOrDefault(reportData.getReportName(), null));
                 }
             }
             if(newInstance instanceof ConditionalRowStyles){
@@ -278,9 +278,10 @@ final class ReportDataParser {
                 for (int i = 0; i < list.size(); i++) {
                     final T entry = list.get(i);
                     final ConditionalRowStyles conditionalRowStyles = (ConditionalRowStyles) entry;
-                    if(conditionalRowStyles.isStyled(i)){
+                    final Predicate<Integer> predicate = conditionalRowStyles.isStyled().get(reportData.getReportName());
+                    if(predicate != null && predicate.test(i)){
                         VerticalRangedStyleBuilder styleBuilder;
-                        if(null != (styleBuilder = conditionalRowStyles.getIndexBasedStyle().get(reportData.getName()))){
+                        if(null != (styleBuilder = conditionalRowStyles.getIndexBasedStyle().get(reportData.getReportName()))){
                             styleBuilder.setTuple(new VerticalRange(startRowIndex + i, startRowIndex + i));
                             VerticalRangedStylesBuilder verticalRangedStylesBuilder = reportDataStyles.getRowStyles();
                             if(verticalRangedStylesBuilder == null){

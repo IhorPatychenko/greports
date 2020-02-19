@@ -25,12 +25,14 @@ public class ReportBlock {
     private Method parentMethod;
     private int startColumn;
     private boolean multiple;
+    private int repeatCount;
 
     public ReportBlock(final Class<?> blockClass, String reportName, final ReportBlock parentBlock) {
         this.blockClass = blockClass;
         this.reportName = reportName;
         this.parentBlock = parentBlock;
         this.multiple = false;
+        this.repeatCount = 1;
     }
 
     public ReportBlock(final Class<?> blockClass, String reportName, final ReportBlock parentBlock, final Annotation annotation, final Method parentMethod, boolean multiple) {
@@ -92,8 +94,24 @@ public class ReportBlock {
         return values;
     }
 
+    public ReportBlock getParentBlock() {
+        return parentBlock;
+    }
+
     public int getStartColumn() {
         return startColumn;
+    }
+
+    public boolean isMultiple() {
+        return multiple;
+    }
+
+    public int getRepeatCount() {
+        return repeatCount;
+    }
+
+    public void setRepeatCount(final int repeatCount) {
+        this.repeatCount = repeatCount;
     }
 
     public Float getPosition() {

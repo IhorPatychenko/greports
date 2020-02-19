@@ -16,7 +16,7 @@ import java.util.Objects;
 
 public class ReportData {
 
-    private final String name;
+    private final String reportName;
     private String sheetName;
     private final URL templateURL;
     private ReportHeader header;
@@ -28,14 +28,14 @@ public class ReportData {
     private final ReportDataStyles reportDataStyles = new ReportDataStyles();
     private final Map<String, Integer> targetIndexes = new HashMap<>();
 
-    public ReportData(String name, String sheetName, URL templateURL) {
-        this.name = name;
+    public ReportData(String reportName, String sheetName, URL templateURL) {
+        this.reportName = reportName;
         this.sheetName = !sheetName.isEmpty() ? sheetName : null;
         this.templateURL = templateURL;
     }
 
-    public String getName() {
-        return name;
+    public String getReportName() {
+        return reportName;
     }
 
     public String getSheetName() {
