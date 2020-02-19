@@ -44,6 +44,13 @@ public @interface ColumnSetter {
     ColumnValidator[] columnValidators() default {};
 
     /**
+     * A {@link Converter} which will be used if case
+     * the conversion is needed. The array should contain only one converter or be empty.
+     * @return {@link Converter}
+     */
+    Converter[] typeConverters() default {};
+
+    /**
      * Column title. This text string will be used to search for
      * the corresponding translation in the translation file located in
      * the directory provided by the {@link Configuration#translationsDir()}

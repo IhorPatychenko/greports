@@ -44,6 +44,10 @@ public @interface Column {
      */
     ColumnValidator[] columnValidators() default {};
 
+    Converter[] getterConverter() default {};
+
+    Converter[] setterConverters() default {};
+
     /**
      * Column title. This text string will be used to search for
      * the corresponding translation in the translation file located in

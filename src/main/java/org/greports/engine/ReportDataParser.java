@@ -13,6 +13,7 @@ import org.greports.content.ReportData;
 import org.greports.content.row.ReportDataRow;
 import org.greports.content.ReportHeader;
 import org.greports.content.row.ReportDataSpecialRow;
+import org.greports.exceptions.ReportEngineParseException;
 import org.greports.exceptions.ReportEngineReflectionException;
 import org.greports.exceptions.ReportEngineRuntimeException;
 import org.greports.positioning.VerticalRange;
@@ -25,6 +26,7 @@ import org.greports.styles.stylesbuilders.AbstractReportStylesBuilder;
 import org.greports.styles.stylesbuilders.VerticalRangedStyleBuilder;
 import org.greports.styles.stylesbuilders.VerticalRangedStylesBuilder;
 import org.greports.utils.AnnotationUtils;
+import org.greports.utils.ConverterUtils;
 import org.greports.utils.Pair;
 import org.greports.utils.ReflectionUtils;
 import org.greports.utils.Translator;
@@ -103,7 +105,14 @@ final class ReportDataParser {
                     final Column column = entry.getValue();
                     final Method method = entry.getKey();
                     method.setAccessible(true);
-                    final Object invokedValue = dto != null ? method.invoke(dto) : null;
+                    Object invokedValue = dto != null ? method.invoke(dto) : null;
+
+                    if(column.getterConverter().length > 1){
+                        throw new ReportEngineRuntimeException("A column cannot have more than 1 getter converter", clazz);
+                    } else if(column.getterConverter().length == 1){
+                        invokedValue = ConverterUtils.convertValue(invokedValue, column.getterConverter()[0]);
+                    }
+
                     ReportDataCell reportDataCell = new ReportDataCell(
                         column.position() + positionIncrement,
                         column.format(),
@@ -134,7 +143,7 @@ final class ReportDataParser {
             method.setAccessible(true);
             Class<?> componentType = returnType;
 
-            if(returnType.isArray() || returnType.equals(List.class)){
+            if(ReflectionUtils.isListOrArray(returnType)){
 
                 List<List<?>> subreportsList = new ArrayList<>();
                 if(returnType.isArray()){

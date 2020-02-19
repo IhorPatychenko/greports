@@ -6,6 +6,7 @@ import org.greports.annotations.ColumnGetter;
 import org.greports.annotations.ColumnSetter;
 import org.greports.annotations.ColumnValidator;
 import org.greports.annotations.Configuration;
+import org.greports.annotations.Converter;
 import org.greports.annotations.Report;
 import org.greports.annotations.SpecialColumn;
 import org.greports.annotations.Subreport;
@@ -257,6 +258,16 @@ public class AnnotationUtils {
             }
 
             @Override
+            public Converter[] getterConverter() {
+                return columnGetter.typeConverter();
+            }
+
+            @Override
+            public Converter[] setterConverters() {
+                return new Converter[0];
+            }
+
+            @Override
             public String title() {
                 return columnGetter.title();
             }
@@ -283,7 +294,7 @@ public class AnnotationUtils {
         };
     }
 
-    private static Column getColumnAnnotationFromColumnSetter(final ColumnSetter columnGetter) {
+    private static Column getColumnAnnotationFromColumnSetter(final ColumnSetter columnSetter) {
         return new Column() {
             @Override
             public Class<? extends Annotation> annotationType() {
@@ -292,47 +303,57 @@ public class AnnotationUtils {
 
             @Override
             public String[] reportName() {
-                return columnGetter.reportName();
+                return columnSetter.reportName();
             }
 
             @Override
             public float position() {
-                return columnGetter.position();
+                return columnSetter.position();
             }
 
             @Override
             public CellValidator[] cellValidators() {
-                return columnGetter.cellValidators();
+                return columnSetter.cellValidators();
             }
 
             @Override
             public ColumnValidator[] columnValidators() {
-                return columnGetter.columnValidators();
+                return columnSetter.columnValidators();
+            }
+
+            @Override
+            public Converter[] getterConverter() {
+                return new Converter[0];
+            }
+
+            @Override
+            public Converter[] setterConverters() {
+                return columnSetter.typeConverters();
             }
 
             @Override
             public String title() {
-                return columnGetter.title();
+                return columnSetter.title();
             }
 
             @Override
             public String format() {
-                return columnGetter.format();
+                return columnSetter.format();
             }
 
             @Override
             public ValueType valueType() {
-                return columnGetter.valueType();
+                return columnSetter.valueType();
             }
 
             @Override
             public String id() {
-                return columnGetter.id();
+                return columnSetter.id();
             }
 
             @Override
             public boolean autoSizeColumn() {
-                return columnGetter.autoSizeColumn();
+                return columnSetter.autoSizeColumn();
             }
         };
     }

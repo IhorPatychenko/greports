@@ -39,6 +39,13 @@ public @interface ColumnGetter {
     String title() default "";
 
     /**
+     * A {@link Converter} which will be used if case
+     * the conversion is needed. The array should contain only one converter or be empty.
+     * @return {@link Converter}
+     */
+    Converter[] typeConverter() default {};
+
+    /**
      * Visualisation format to be displayed.
      * You can find information on how to create your own org.greports.styles
      * by going through this <a href="http://poi.apache.org/components/spreadsheet/quick-guide.html#DataFormats">link</a>

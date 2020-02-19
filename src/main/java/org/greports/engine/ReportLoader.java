@@ -15,6 +15,7 @@ import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.greports.positioning.TranslationsParser;
 import org.greports.utils.AnnotationUtils;
+import org.greports.utils.ConverterUtils;
 import org.greports.utils.ReflectionUtils;
 import org.greports.utils.Translator;
 import org.greports.utils.Utils;
@@ -81,13 +82,21 @@ public class ReportLoader {
         return this;
     }
 
+
     public void loadBlocks(ReportBlock reportBlock) throws ReportEngineReflectionException {
         final Map<Annotation, Method> annotationMethodMap = AnnotationUtils.loadBlockAnnotations(reportBlock);
         for (final Map.Entry<Annotation, Method> entry : annotationMethodMap.entrySet()) {
             final Annotation annotation = entry.getKey();
             final Method method = entry.getValue();
-            final ReportBlock block = new ReportBlock(Optional.ofNullable(method)
-                    .map(m -> m.getParameterTypes()[0]).orElse(null), reportBlock.getReportName(), reportBlock, annotation, method);
+            final Class<?> blockClass = Optional.ofNullable(method).map(m -> m.getParameterTypes()[0]).orElse(null);
+            final ReportBlock block = new ReportBlock(
+                blockClass,
+                reportBlock.getReportName(),
+                reportBlock,
+                annotation,
+                method,
+                ReflectionUtils.isListOrArray(blockClass)
+            );
             reportBlock.addBlock(block);
             if (block.isSubreport()) {
                 loadBlocks(block);
@@ -110,7 +119,8 @@ public class ReportLoader {
                             method = block.getParentMethod();
                             final Cell cell = row.getCell(block.getStartColumn());
                             try {
-                                final Object value = getCellValue(method, cell);
+                                Object value = getCellValue(method, cell);
+                                value = ConverterUtils.convertValue(value, block.getSetterConverters(), block.getBlockClass());
                                 instanceSetValue(method, instance, value, block.getCellValidators());
                                 block.addValue(value);
                             } catch (ReportEngineValidationException e) {
@@ -157,6 +167,8 @@ public class ReportLoader {
         }
         return list;
     }
+
+
 
     private void instanceSetValue(final Method method, final Object instance, final Object value, final List<CellValidator> cellValidators) throws ReportEngineReflectionException, ReportEngineValidationException {
         try {

@@ -69,4 +69,8 @@ public class ReflectionUtils {
                 clazz
         );
     }
+
+    public static boolean isListOrArray(Class<?> clazz){
+        return clazz != null && (clazz.isArray() || clazz.equals(List.class));
+    }
 }

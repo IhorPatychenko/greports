@@ -3,6 +3,7 @@ package org.greports.engine;
 import org.greports.annotations.CellValidator;
 import org.greports.annotations.Column;
 import org.greports.annotations.ColumnValidator;
+import org.greports.annotations.Converter;
 import org.greports.annotations.SpecialColumn;
 import org.greports.annotations.Subreport;
 
@@ -23,19 +24,20 @@ public class ReportBlock {
     private final ReportBlock parentBlock;
     private Method parentMethod;
     private int startColumn;
+    private boolean multiple;
 
     public ReportBlock(final Class<?> blockClass, String reportName, final ReportBlock parentBlock) {
         this.blockClass = blockClass;
         this.reportName = reportName;
         this.parentBlock = parentBlock;
+        this.multiple = false;
     }
 
-    public ReportBlock(final Class<?> blockClass, String reportName, final ReportBlock parentBlock, final Annotation annotation, final Method parentMethod) {
-        this.blockClass = blockClass;
-        this.reportName = reportName;
-        this.parentBlock = parentBlock;
+    public ReportBlock(final Class<?> blockClass, String reportName, final ReportBlock parentBlock, final Annotation annotation, final Method parentMethod, boolean multiple) {
+        this(blockClass, reportName, parentBlock);
         this.annotation = annotation;
         this.parentMethod = parentMethod;
+        this.multiple = multiple;
     }
 
     public Class<?> getBlockClass() {
@@ -72,6 +74,14 @@ public class ReportBlock {
 
     public List<ColumnValidator> getColumnValidators() {
         return Arrays.asList(getAsColumn().columnValidators());
+    }
+
+    public List<Converter> getSetterConverters() {
+        return Arrays.asList(getAsColumn().setterConverters());
+    }
+
+    public List<Converter> getGetterConverters() {
+        return Arrays.asList(getAsColumn().getterConverter());
     }
 
     public void addValue(Object value) {
