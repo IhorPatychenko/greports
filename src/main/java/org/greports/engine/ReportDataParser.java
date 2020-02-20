@@ -15,6 +15,7 @@ import org.greports.content.ReportHeader;
 import org.greports.content.row.ReportDataSpecialRow;
 import org.greports.exceptions.ReportEngineReflectionException;
 import org.greports.exceptions.ReportEngineRuntimeException;
+import org.greports.interfaces.CollectedValues;
 import org.greports.positioning.VerticalRange;
 import org.greports.styles.ReportDataStyles;
 import org.greports.styles.interfaces.ConditionalRowStyles;
@@ -68,7 +69,7 @@ final class ReportDataParser {
         parseReportHeader(clazz, positionIncrement);
         parseRowsData(collection, clazz, positionIncrement);
         parseSpecialColumns(collection, clazz);
-        parseSpecialRows();
+        parseSpecialRows(collection, clazz);
         parseStyles(collection, clazz);
         parseSubreports(collection, clazz);
         reportData.mergeReportData(subreportsData);
@@ -233,11 +234,27 @@ final class ReportDataParser {
         }
     }
 
-    private void parseSpecialRows(){
+    private <T> void parseSpecialRows(Collection<T> collection, Class<T> clazz) throws ReportEngineReflectionException {
         for(SpecialRow specialRow : configuration.specialRows()){
             final ReportDataSpecialRow reportDataSpecialRow = new ReportDataSpecialRow(specialRow.rowIndex());
-            for (final SpecialRowCell column : specialRow.cells()) {
-                reportDataSpecialRow.addCell(new ReportDataSpecialRowCell(column.valueType(), column.value(), column.format(), column.targetId()));
+            for (final SpecialRowCell specialRowCell : specialRow.cells()) {
+                if(!specialRowCell.valueType().equals(ValueType.COLLECTED_VALUE)) {
+                    reportDataSpecialRow.addCell(new ReportDataSpecialRowCell(specialRowCell.valueType(), specialRowCell.value(), specialRowCell.format(), specialRowCell.targetId()));
+                } else if(CollectedValues.class.isAssignableFrom(clazz)){
+                    try {
+                        final T newInstance = ReflectionUtils.newInstance(clazz);
+                        final CollectedValues instance = (CollectedValues) newInstance;
+                        final List<Object> list = new ArrayList<>();
+                        for (final T t : collection) {
+                            final CollectedValues values = (CollectedValues) t;
+                            list.add(values.getCollectedValue().get(Pair.of(reportData.getReportName(), specialRowCell.value())));
+                        }
+                        final Object value = instance.getCollectedValuesResult(list);
+                        reportDataSpecialRow.addCell(new ReportDataSpecialRowCell(specialRowCell.valueType(), value, specialRowCell.format(), specialRowCell.targetId()));
+                    } catch (ReflectiveOperationException e) {
+                        throw new ReportEngineReflectionException("Error instantiating an object. The class should have an empty constructor without parameters", e, clazz);
+                    }
+                }
             }
             reportData.addSpecialRow(reportDataSpecialRow);
         }
@@ -245,9 +262,7 @@ final class ReportDataParser {
 
     private <T> void parseStyles(Collection<T> collection, Class<T> clazz) throws ReportEngineReflectionException {
         try {
-            final Constructor<T> constructor = clazz.getDeclaredConstructor();
-            constructor.setAccessible(true);
-            final T newInstance = constructor.newInstance();
+            final T newInstance = ReflectionUtils.newInstance(clazz);
             final ReportDataStyles reportDataStyles = reportData.getStyles();
             if(newInstance instanceof StyledReport){
                 final StyledReport instance = (StyledReport) newInstance;
@@ -293,14 +308,8 @@ final class ReportDataParser {
                     }
                 }
             }
-        } catch (NoSuchMethodException e) {
-            throw new ReportEngineReflectionException("Error obtaining the method reference", e, clazz);
-        } catch (InstantiationException e) {
-            throw new ReportEngineReflectionException("Error instantiating an object", e, clazz);
-        } catch (IllegalAccessException e) {
-            throw new ReportEngineReflectionException("Error instantiating an object with no access to the constructor", e, clazz);
-        } catch (InvocationTargetException e) {
-            throw new ReportEngineReflectionException("Error instantiating an object with no parameter constructor", e, clazz);
+        } catch (ReflectiveOperationException e) {
+            throw new ReportEngineReflectionException("Error instantiating an object. The class should have an empty constructor without parameters", e, clazz);
         }
     }
 

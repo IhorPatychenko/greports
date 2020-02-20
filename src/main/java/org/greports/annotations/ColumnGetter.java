@@ -59,7 +59,7 @@ public @interface ColumnGetter {
      *
      * @return {@link ValueType}
      */
-    ValueType valueType() default ValueType.LITERAL;
+    ValueType valueType() default ValueType.PLAIN_VALUE;
 
     /**
      * Column ID which will be used by other column if that one

@@ -23,17 +23,17 @@ public @interface SpecialRowCell {
      *
      * @return {@link ValueType}
      */
-    ValueType valueType() default ValueType.LITERAL;
+    ValueType valueType() default ValueType.PLAIN_VALUE;
 
     /**
-     * value of the cell with data to show
+     * Value of the cell with data to show
      *
      * @return {@link String}
      */
-    String value();
+    String value() default "";
 
     /**
-     * Visualisation format to be displayed.
+     * Visualisation format to be applied.
      * You can find information on how to create your own org.greports.styles
      * by going through this <a href="http://poi.apache.org/components/spreadsheet/quick-guide.html#DataFormats">link</a>
      *

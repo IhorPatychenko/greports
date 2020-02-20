@@ -66,7 +66,7 @@ public @interface SpecialColumn {
      *
      * @return {@link ValueType}
      */
-    ValueType valueType() default ValueType.LITERAL;
+    ValueType valueType() default ValueType.PLAIN_VALUE;
 
     /**
      * The value indicates whether the column has to fit the width of the longest cell.
