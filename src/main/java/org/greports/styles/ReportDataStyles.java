@@ -1,6 +1,7 @@
 package org.greports.styles;
 
 import org.greports.styles.interfaces.StripedRows.StripedRowsIndex;
+import org.greports.styles.stylesbuilders.AbstractReportStylesBuilder;
 import org.greports.styles.stylesbuilders.HorizontalRangedStylesBuilder;
 import org.greports.styles.stylesbuilders.PositionedStylesBuilder;
 import org.greports.styles.stylesbuilders.RectangleRangedStylesBuilder;
@@ -91,5 +92,10 @@ public class ReportDataStyles {
         } else {
             rectangleRangedStylesBuilder.mergeStyles(other.getRectangleRangedStylesBuilder());
         }
+    }
+
+    public RectangleRangedStylesBuilder createRectangleRangedStylesBuilder(final AbstractReportStylesBuilder.StylePriority priority) {
+        this.rectangleRangedStylesBuilder = new RectangleRangedStylesBuilder(priority);
+        return this.rectangleRangedStylesBuilder;
     }
 }

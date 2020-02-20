@@ -24,10 +24,6 @@ public class VerticalRangedStylesBuilder extends AbstractReportStylesBuilder<Ver
         return new VerticalRangedStyleBuilder(tuple, clonePreviousStyle);
     }
 
-    public void addStyleBuilder(VerticalRangedStyleBuilder styleBuilder){
-        this.styleBuilders.add(styleBuilder);
-    }
-
     @Override
     public void mergeStyles(final VerticalRangedStylesBuilder other) {
         if (other != null) {

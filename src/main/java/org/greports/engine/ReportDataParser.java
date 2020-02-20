@@ -23,6 +23,9 @@ import org.greports.styles.interfaces.StripedRows;
 import org.greports.styles.interfaces.StyledReport;
 import org.greports.positioning.TranslationsParser;
 import org.greports.styles.stylesbuilders.AbstractReportStylesBuilder;
+import org.greports.styles.stylesbuilders.HorizontalRangedStyleBuilder;
+import org.greports.styles.stylesbuilders.RectangleRangedStyleBuilder;
+import org.greports.styles.stylesbuilders.RectangleRangedStylesBuilder;
 import org.greports.styles.stylesbuilders.VerticalRangedStyleBuilder;
 import org.greports.styles.stylesbuilders.VerticalRangedStylesBuilder;
 import org.greports.utils.AnnotationUtils;
@@ -290,20 +293,19 @@ final class ReportDataParser {
             if(newInstance instanceof ConditionalRowStyles){
                 final List<T> list = new ArrayList<>(collection);
                 final short startRowIndex = configuration.dataStartRowIndex();
+                RectangleRangedStylesBuilder rectangleRangedStylesBuilder = reportData.getStyles().getRectangleRangedStylesBuilder();
+                if(rectangleRangedStylesBuilder == null){
+                    rectangleRangedStylesBuilder = reportData.getStyles().createRectangleRangedStylesBuilder(AbstractReportStylesBuilder.StylePriority.PRIORITY4);
+                }
                 for (int i = 0; i < list.size(); i++) {
                     final T entry = list.get(i);
                     final ConditionalRowStyles conditionalRowStyles = (ConditionalRowStyles) entry;
                     final Predicate<Integer> predicate = conditionalRowStyles.isStyled().get(reportData.getReportName());
                     if(predicate != null && predicate.test(i)){
-                        VerticalRangedStyleBuilder styleBuilder;
-                        if(null != (styleBuilder = conditionalRowStyles.getIndexBasedStyle().get(reportData.getReportName()))){
-                            styleBuilder.setTuple(new VerticalRange(startRowIndex + i, startRowIndex + i));
-                            VerticalRangedStylesBuilder verticalRangedStylesBuilder = reportDataStyles.getRowStyles();
-                            if(verticalRangedStylesBuilder == null){
-                                verticalRangedStylesBuilder = new VerticalRangedStylesBuilder(AbstractReportStylesBuilder.StylePriority.PRIORITY4);
-                                reportDataStyles.setRowStyles(verticalRangedStylesBuilder);
-                            }
-                            verticalRangedStylesBuilder.addStyleBuilder(styleBuilder);
+                        final List<HorizontalRangedStyleBuilder> horizontalRangedStyleBuilders = conditionalRowStyles.getIndexBasedStyle().get(reportData.getReportName());
+                        for (final HorizontalRangedStyleBuilder styleBuilder : horizontalRangedStyleBuilders) {
+                            final RectangleRangedStyleBuilder rectangleRangedStyleBuilder = new RectangleRangedStyleBuilder(styleBuilder, startRowIndex + i);
+                            rectangleRangedStylesBuilder.addStyleBuilder(rectangleRangedStyleBuilder);
                         }
                     }
                 }

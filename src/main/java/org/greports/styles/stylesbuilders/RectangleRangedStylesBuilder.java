@@ -25,4 +25,8 @@ public class RectangleRangedStylesBuilder extends AbstractReportStylesBuilder<Re
             styleBuilders.addAll(other.getStylesBuilders());
         }
     }
+
+    public void addStyleBuilder(final RectangleRangedStyleBuilder rectangleRangedStyleBuilder) {
+        this.styleBuilders.add(rectangleRangedStyleBuilder);
+    }
 }

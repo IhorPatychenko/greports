@@ -8,7 +8,7 @@ public class HorizontalRangedStyleBuilder extends AbstractReportStyleBuilder<Hor
 
     private Integer columnWidth;
 
-    HorizontalRangedStyleBuilder(final HorizontalRange horizontalRange, final boolean clonePreviousStyle) {
+    public HorizontalRangedStyleBuilder(final HorizontalRange horizontalRange, final boolean clonePreviousStyle) {
         super(horizontalRange, clonePreviousStyle);
     }
 

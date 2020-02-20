@@ -30,7 +30,7 @@ public @interface SpecialRowCell {
      *
      * @return {@link String}
      */
-    String value() default "";
+    String value();
 
     /**
      * Visualisation format to be applied.
