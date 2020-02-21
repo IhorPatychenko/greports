@@ -13,10 +13,15 @@ public class ReportGenerator {
     private final Map<Pair<Class<?>, String>, ReportConfigurator> _configurators = new HashMap<>();
 
     private final ReportDataParser reportDataParser;
-    private final ReportGeneratorResult reportGeneratorResult = new ReportGeneratorResult();
+    private final ReportGeneratorResult reportGeneratorResult;
 
     public ReportGenerator() {
-        reportDataParser = new ReportDataParser();
+        this(false);
+    }
+
+    public ReportGenerator(boolean loggerEnabled) {
+        reportDataParser = new ReportDataParser(loggerEnabled);
+        reportGeneratorResult = new ReportGeneratorResult(loggerEnabled);
     }
 
     public <T> ReportGenerator parse(Collection<T> collection, final String reportName, Class<T> clazz) throws ReportEngineReflectionException {

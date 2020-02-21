@@ -1,6 +1,5 @@
 package org.greports.engine;
 
-import org.apache.poi.xssf.usermodel.XSSFCell;
 import org.greports.content.ReportData;
 import org.greports.content.ReportHeader;
 import org.greports.content.column.ReportDataCell;
@@ -21,8 +20,8 @@ public class ReportDataTemplateInjector extends ReportDataInjector {
 
     private final Map<Integer, XSSFCellStyle> _stylesCache = new HashMap<>();
 
-    public ReportDataTemplateInjector(XSSFWorkbook targetWorkbook, ReportData data) {
-        super(targetWorkbook, data);
+    public ReportDataTemplateInjector(XSSFWorkbook targetWorkbook, ReportData data, boolean loggerEnabled) {
+        super(targetWorkbook, data, loggerEnabled);
     }
 
     @Override

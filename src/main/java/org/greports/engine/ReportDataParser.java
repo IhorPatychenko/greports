@@ -1,5 +1,6 @@
 package org.greports.engine;
 
+import com.google.common.base.Stopwatch;
 import org.greports.annotations.Column;
 import org.greports.annotations.Configuration;
 import org.greports.annotations.SpecialColumn;
@@ -16,7 +17,7 @@ import org.greports.content.row.ReportDataSpecialRow;
 import org.greports.exceptions.ReportEngineReflectionException;
 import org.greports.exceptions.ReportEngineRuntimeException;
 import org.greports.interfaces.CollectedValues;
-import org.greports.positioning.VerticalRange;
+import org.greports.services.LoggerService;
 import org.greports.styles.ReportDataStyles;
 import org.greports.styles.interfaces.ConditionalRowStyles;
 import org.greports.styles.interfaces.StripedRows;
@@ -26,8 +27,6 @@ import org.greports.styles.stylesbuilders.AbstractReportStylesBuilder;
 import org.greports.styles.stylesbuilders.HorizontalRangedStyleBuilder;
 import org.greports.styles.stylesbuilders.RectangleRangedStyleBuilder;
 import org.greports.styles.stylesbuilders.RectangleRangedStylesBuilder;
-import org.greports.styles.stylesbuilders.VerticalRangedStyleBuilder;
-import org.greports.styles.stylesbuilders.VerticalRangedStylesBuilder;
 import org.greports.utils.AnnotationUtils;
 import org.greports.utils.ConverterUtils;
 import org.greports.utils.Pair;
@@ -35,7 +34,6 @@ import org.greports.utils.ReflectionUtils;
 import org.greports.utils.Translator;
 import org.greports.utils.Utils;
 
-import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
@@ -50,16 +48,26 @@ import java.util.function.Predicate;
 
 final class ReportDataParser {
 
+    private LoggerService loggerService;
+
     private ReportData reportData;
     private Translator translator;
     private Configuration configuration;
     private List<ReportData> subreportsData = new ArrayList<>();
     private static final float SUBREPORT_POSITIONAL_INCREMENT = 0.00000000000001f;
 
+    public ReportDataParser(boolean loggerEnabled) {
+        loggerService = LoggerService.forClass(ReportDataParser.class, loggerEnabled);
+    }
+
     protected <T> ReportDataParser parse(Collection<T> collection, final String reportName, Class<T> clazz, ReportConfigurator configurator) throws ReportEngineReflectionException, ReportEngineRuntimeException {
+        loggerService.info("Parsing started...");
+        loggerService.info("Parsing report with name \"" + reportName + "\"...");
+        Stopwatch timer = Stopwatch.createStarted();
         final ReportDataParser parser = parse(collection, reportName, clazz, 0f);
         overrideSheetName(configurator.getSheetName());
         overrideSubreportsTitles(configurator.getOverriddenTitles());
+        loggerService.info("Report with name \"" + reportName + "\" successfully parsed. Parse time: " + timer.stop());
         return parser;
     }
 
@@ -135,7 +143,7 @@ final class ReportDataParser {
     }
 
     private <T> void parseSubreports(Collection<T> collection, Class<T> clazz) throws ReportEngineReflectionException {
-        final ReportDataParser reportDataParser = new ReportDataParser();
+        final ReportDataParser reportDataParser = new ReportDataParser(this.loggerService.isEnabled());
         Map<Method, Subreport> subreportMap = new LinkedHashMap<>();
         Function<Pair<Method, Subreport>, Void> subreportFunction = AnnotationUtils.getSubreportsFunction(subreportMap);
         AnnotationUtils.methodsWithSubreportAnnotations(clazz, subreportFunction, reportData.getReportName());

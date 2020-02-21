@@ -1,5 +1,6 @@
 package org.greports.engine;
 
+import com.google.common.base.Stopwatch;
 import org.greports.content.ReportData;
 import org.greports.content.ReportHeader;
 import org.greports.content.column.ReportDataCell;
@@ -46,8 +47,8 @@ class ReportDataRawInjector extends ReportDataInjector {
     private final ReportData reportData;
     private Map<Pair<ReportStyle<?>, String>, XSSFCellStyle> _stylesCache = new HashedMap<>();
 
-    public ReportDataRawInjector(XSSFWorkbook currentWorkbook, ReportData reportData) {
-        super(currentWorkbook, reportData);
+    public ReportDataRawInjector(XSSFWorkbook currentWorkbook, ReportData reportData, boolean loggerEnabled) {
+        super(currentWorkbook, reportData, loggerEnabled);
         this.reportData = reportData;
     }
 
@@ -68,12 +69,35 @@ class ReportDataRawInjector extends ReportDataInjector {
     }
 
     protected void injectData(Sheet sheet) {
+        loggerService.info("Creating headers...");
+        final Stopwatch headersStopwatch = Stopwatch.createStarted();
         createHeader(sheet);
+        loggerService.info("Headers created. Time: " + headersStopwatch.stop());
+
+        loggerService.info("Creating data rows...");
+        final Stopwatch dataRowsStopwatch = Stopwatch.createStarted();
         createDataRows(sheet);
+        loggerService.info("Data rows created. Time: " + dataRowsStopwatch.stop());
+
+        loggerService.info("Creating special rows...");
+        final Stopwatch specialRowsStopwatch = Stopwatch.createStarted();
         createSpecialRows(sheet);
+        loggerService.info("Special rows created. Time: " + specialRowsStopwatch.stop());
+
+        loggerService.info("Adding striped row styles...");
+        final Stopwatch stripedRowsStopwatch = Stopwatch.createStarted();
         addStripedRows(sheet);
+        loggerService.info("Striped row styles added. Time: " + stripedRowsStopwatch.stop());
+
+        loggerService.info("Adding styles...");
+        final Stopwatch stylesStopwatch = Stopwatch.createStarted();
         addStyles(sheet);
+        loggerService.info("Styles added. Time: " + stylesStopwatch.stop());
+
+        loggerService.info("Adjusting columns...");
+        final Stopwatch adjustColumnsStopwatch = Stopwatch.createStarted();
         adjustColumns(sheet);
+        loggerService.info("Columns adjusted. Time: " + adjustColumnsStopwatch.stop());
     }
 
     private void createHeader(Sheet sheet) {

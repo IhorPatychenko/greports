@@ -13,23 +13,25 @@ public class ReportInjector {
 
     private XSSFWorkbook currentWorkbook = new XSSFWorkbook();
     private final Collection<ReportData> reportData;
+    private boolean loggerEnabled;
 
-    public ReportInjector(Collection<ReportData> reportData) {
+    public ReportInjector(Collection<ReportData> reportData, boolean loggerEnabled) {
         this.reportData = reportData;
+        this.loggerEnabled = loggerEnabled;
     }
 
     public void inject() throws IOException, InvalidFormatException {
         for (ReportData data : reportData) {
             if (data.isReportWithTemplate()) {
                 currentWorkbook = (XSSFWorkbook) WorkbookFactory.create(data.getTemplateURL().openStream());
-                new ReportDataTemplateInjector(currentWorkbook, data).inject();
+                new ReportDataTemplateInjector(currentWorkbook, data, loggerEnabled).inject();
             } else {
-                new ReportDataRawInjector(currentWorkbook, data).inject();
+                new ReportDataRawInjector(currentWorkbook, data, loggerEnabled).inject();
             }
         }
     }
 
-    synchronized void writeToFileOutputStream(OutputStream fileOutputStream) throws IOException {
+    void writeToFileOutputStream(OutputStream fileOutputStream) throws IOException {
         currentWorkbook.write(fileOutputStream);
         fileOutputStream.close();
         currentWorkbook.close();
