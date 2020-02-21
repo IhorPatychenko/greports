@@ -302,7 +302,7 @@ final class ReportDataParser {
                     final ConditionalRowStyles conditionalRowStyles = (ConditionalRowStyles) entry;
                     final Predicate<Integer> predicate = conditionalRowStyles.isStyled().get(reportData.getReportName());
                     if(predicate != null && predicate.test(i)){
-                        final List<HorizontalRangedStyleBuilder> horizontalRangedStyleBuilders = conditionalRowStyles.getIndexBasedStyle().get(reportData.getReportName());
+                        final List<HorizontalRangedStyleBuilder> horizontalRangedStyleBuilders = conditionalRowStyles.getIndexBasedStyle().getOrDefault(reportData.getReportName(), new ArrayList<>());
                         for (final HorizontalRangedStyleBuilder styleBuilder : horizontalRangedStyleBuilders) {
                             final RectangleRangedStyleBuilder rectangleRangedStyleBuilder = new RectangleRangedStyleBuilder(styleBuilder, startRowIndex + i);
                             rectangleRangedStylesBuilder.addStyleBuilder(rectangleRangedStyleBuilder);
