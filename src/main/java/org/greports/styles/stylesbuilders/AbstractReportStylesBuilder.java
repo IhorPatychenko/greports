@@ -35,6 +35,11 @@ public abstract class AbstractReportStylesBuilder<T, E, R extends AbstractReport
         return getThis();
     }
 
+    public T setFontSize(Short fontSize) {
+        this.styleBuilder.setFontSize(fontSize);
+        return getThis();
+    }
+
     public T setFontColor(Color fontColor) {
         this.styleBuilder.setFontColor(fontColor);
         return getThis();

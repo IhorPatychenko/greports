@@ -15,6 +15,7 @@ public class ReportStyle<T> {
     private Color foregroundColor;
     private Color fontColor;
     private FillPatternType fillPattern;
+    private Short fontSize;
     private Boolean boldFont;
     private Boolean italicFont;
     private FontUnderline underlineFont;
@@ -67,6 +68,15 @@ public class ReportStyle<T> {
 
     public ReportStyle<T> setFillPattern(FillPatternType fillPattern) {
         this.fillPattern = fillPattern;
+        return this;
+    }
+
+    public Short getFontSize() {
+        return fontSize;
+    }
+
+    public ReportStyle<T> setFontSize(final Short fontSize) {
+        this.fontSize = fontSize;
         return this;
     }
 

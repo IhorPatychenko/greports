@@ -13,6 +13,7 @@ abstract class AbstractReportStyleBuilder<T extends ReportStyle<E>, E, R extends
 
     protected Color foregroundColor;
     protected Color fontColor;
+    protected Short fontSize;
     protected FillPatternType fillPattern = FillPatternType.SOLID_FOREGROUND;
     protected Boolean boldFont;
     protected Boolean italicFont;
@@ -44,6 +45,11 @@ abstract class AbstractReportStyleBuilder<T extends ReportStyle<E>, E, R extends
 
     public R setFontColor(Color fontColor) {
         this.fontColor = fontColor;
+        return getThis();
+    }
+
+    public R setFontSize(Short fontSize) {
+        this.fontSize = fontSize;
         return getThis();
     }
 
@@ -120,6 +126,7 @@ abstract class AbstractReportStyleBuilder<T extends ReportStyle<E>, E, R extends
             .setClonePreviousStyle(clonePreviousStyle)
             .setForegroundColor(foregroundColor)
             .setFontColor(fontColor)
+            .setFontSize(fontSize)
             .setFillPattern(fillPattern)
             .setBoldFont(boldFont)
             .setItalicFont(italicFont)

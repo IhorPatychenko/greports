@@ -375,8 +375,11 @@ class ReportDataRawInjector extends ReportDataInjector {
                 }
 
                 // Font
-                if(Utils.anyNotNull(style.getFontColor(), style.getBoldFont(), style.getItalicFont(), style.getUnderlineFont(), style.getStrikeoutFont())){
+                if(Utils.anyNotNull(style.getFontSize(), style.getFontColor(), style.getBoldFont(), style.getItalicFont(), style.getUnderlineFont(), style.getStrikeoutFont())){
                     XSSFFont font = currentWorkbook.createFont();
+                    if(style.getFontSize() != null){
+                        font.setFontHeightInPoints(style.getFontSize());
+                    }
                     if(style.getFontColor() != null) {
                         font.setColor(new XSSFColor(style.getFontColor()));
                     }
