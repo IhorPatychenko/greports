@@ -15,6 +15,11 @@ public class ReportEngineRuntimeException extends RuntimeException {
         super(message, cause);
     }
 
+    public ReportEngineRuntimeException(final String message, final Throwable cause, final Class<?> clazz) {
+        super(message, cause);
+        this.clazz = clazz;
+    }
+
     public Class<?> getClazz() {
         return clazz;
     }

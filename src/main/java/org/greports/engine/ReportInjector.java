@@ -4,6 +4,7 @@ import org.greports.content.ReportData;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.greports.exceptions.ReportEngineRuntimeException;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -20,14 +21,20 @@ public class ReportInjector {
         this.loggerEnabled = loggerEnabled;
     }
 
-    public void inject() throws IOException, InvalidFormatException {
-        for (ReportData data : reportData) {
-            if (data.isReportWithTemplate()) {
-                currentWorkbook = (XSSFWorkbook) WorkbookFactory.create(data.getTemplateURL().openStream());
-                new ReportDataTemplateInjector(currentWorkbook, data, loggerEnabled).inject();
-            } else {
-                new ReportDataRawInjector(currentWorkbook, data, loggerEnabled).inject();
+    public void inject() {
+        try {
+            for (ReportData data : reportData) {
+                if (data.isReportWithTemplate()) {
+                    currentWorkbook = (XSSFWorkbook) WorkbookFactory.create(data.getTemplateURL().openStream());
+                    new ReportDataTemplateInjector(currentWorkbook, data, loggerEnabled).inject();
+                } else {
+                    new ReportDataRawInjector(currentWorkbook, data, loggerEnabled).inject();
+                }
             }
+        } catch (InvalidFormatException e) {
+            throw new ReportEngineRuntimeException("Error creating a workbook", e, ReportInjector.class);
+        } catch (IOException e) {
+            throw new ReportEngineRuntimeException("Error opening a stream of template url", e, ReportInjector.class);
         }
     }
 

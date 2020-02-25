@@ -31,15 +31,15 @@ public class ReportGeneratorResult {
         reportData.add(data);
     }
 
-    public void writeToFile(String filePath) throws IOException, InvalidFormatException {
+    public void writeToFile(String filePath) throws IOException {
         writeToFile(new File(filePath));
     }
 
-    public void writeToFile(File file) throws IOException, InvalidFormatException {
+    public void writeToFile(File file) throws IOException {
         writeToFile(new FileOutputStream(file));
     }
 
-    public void writeToFile(FileOutputStream fileOutputStream) throws IOException, InvalidFormatException {
+    public void writeToFile(FileOutputStream fileOutputStream) throws IOException {
         Stopwatch injectStopwatch = Stopwatch.createStarted();
         ReportInjector reportInjector = new ReportInjector(reportData, loggerEnabled);
         loggerService.info("Inject started...");
