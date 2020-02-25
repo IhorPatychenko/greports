@@ -44,10 +44,10 @@ public class AnnotationUtils {
     public static Configuration getReportConfiguration(Class<?> clazz, String reportName) {
         final Report report = getReportAnnotation(clazz);
         return Arrays.stream(report.reportConfigurations())
-            .filter(entry -> entry.reportName().equals(reportName))
+            .filter(entry -> Arrays.asList(entry.reportName()).contains(reportName))
             .findFirst()
             .orElseThrow(() -> new ReportEngineRuntimeException(
-                String.format("@Report has no @ReportConfiguration annotation with name \"%s\"", reportName),
+                String.format("@Report has no @Configuration annotation with name \"%s\"", reportName),
                 report.getClass()
             ));
     }

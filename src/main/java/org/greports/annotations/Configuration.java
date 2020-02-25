@@ -18,7 +18,7 @@ public @interface Configuration {
      *
      * @return {@link String}
      */
-    String reportName();
+    String[] reportName();
 
     /**
      * Relative route to directory containing translations.
