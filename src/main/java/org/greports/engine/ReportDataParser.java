@@ -1,6 +1,7 @@
 package org.greports.engine;
 
 import com.google.common.base.Stopwatch;
+import org.apache.log4j.Level;
 import org.greports.annotations.Column;
 import org.greports.annotations.Configuration;
 import org.greports.annotations.SpecialColumn;
@@ -56,8 +57,8 @@ final class ReportDataParser {
     private List<ReportData> subreportsData = new ArrayList<>();
     private static final float SUBREPORT_POSITIONAL_INCREMENT = 0.00000000000001f;
 
-    public ReportDataParser(boolean loggerEnabled) {
-        loggerService = LoggerService.forClass(ReportDataParser.class, loggerEnabled);
+    public ReportDataParser(boolean loggerEnabled, Level level) {
+        loggerService = LoggerService.forClass(ReportDataParser.class, loggerEnabled, level);
     }
 
     protected <T> ReportDataParser parse(Collection<T> collection, final String reportName, Class<T> clazz, ReportConfigurator configurator) throws ReportEngineReflectionException, ReportEngineRuntimeException {
@@ -143,7 +144,7 @@ final class ReportDataParser {
     }
 
     private <T> void parseSubreports(Collection<T> collection, Class<T> clazz) throws ReportEngineReflectionException {
-        final ReportDataParser reportDataParser = new ReportDataParser(this.loggerService.isEnabled());
+        final ReportDataParser reportDataParser = new ReportDataParser(this.loggerService.isEnabled(), this.loggerService.getLevel());
         Map<Method, Subreport> subreportMap = new LinkedHashMap<>();
         Function<Pair<Method, Subreport>, Void> subreportFunction = AnnotationUtils.getSubreportsFunction(subreportMap);
         AnnotationUtils.methodsWithSubreportAnnotations(clazz, subreportFunction, reportData.getReportName());

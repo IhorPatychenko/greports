@@ -1,5 +1,6 @@
 package org.greports.engine;
 
+import org.apache.log4j.Level;
 import org.greports.content.ReportData;
 import org.greports.exceptions.ReportEngineReflectionException;
 import org.greports.utils.Pair;
@@ -16,11 +17,11 @@ public class ReportGenerator {
     private final ReportGeneratorResult reportGeneratorResult;
 
     public ReportGenerator() {
-        this(false);
+        this(false, Level.ALL);
     }
 
-    public ReportGenerator(boolean loggerEnabled) {
-        reportDataParser = new ReportDataParser(loggerEnabled);
+    public ReportGenerator(boolean loggerEnabled, Level level) {
+        reportDataParser = new ReportDataParser(loggerEnabled, level);
         reportGeneratorResult = new ReportGeneratorResult(loggerEnabled);
     }
 

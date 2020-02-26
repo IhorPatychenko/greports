@@ -42,9 +42,9 @@ public class ReportGeneratorResult {
     public void writeToFile(FileOutputStream fileOutputStream) throws IOException {
         Stopwatch injectStopwatch = Stopwatch.createStarted();
         ReportInjector reportInjector = new ReportInjector(reportData, loggerEnabled);
-        loggerService.info("Inject started...");
+        loggerService.info("Data inject started...");
         reportInjector.inject();
-        loggerService.info("Inject successfully finished. Inject time: " + injectStopwatch.stop());
+        loggerService.info("Data inject successfully finished. Inject time: " + injectStopwatch.stop());
 
         loggerService.info("Write to file started...");
         final Stopwatch writeToStreamStopwatch = Stopwatch.createStarted();
