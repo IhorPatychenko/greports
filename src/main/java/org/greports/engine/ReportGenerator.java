@@ -13,6 +13,7 @@ public class ReportGenerator {
     private final Map<Pair<Class<?>, String>, ReportConfigurator> _configurators = new HashMap<>();
 
     private final ReportDataParser reportDataParser;
+    private final ReportSingleDataParser reportSingleDataParser;
     private final ReportGeneratorResult reportGeneratorResult;
 
     public ReportGenerator() {
@@ -21,11 +22,18 @@ public class ReportGenerator {
 
     public ReportGenerator(boolean loggerEnabled) {
         reportDataParser = new ReportDataParser(loggerEnabled);
+        reportSingleDataParser = new ReportSingleDataParser(loggerEnabled);
         reportGeneratorResult = new ReportGeneratorResult(loggerEnabled);
     }
 
     public <T> ReportGenerator parse(Collection<T> collection, final String reportName, Class<T> clazz) throws ReportEngineReflectionException {
         final ReportData data = reportDataParser.parse(collection, reportName, clazz, getConfigurator(clazz, reportName)).getData();
+        reportGeneratorResult.addData(data);
+        return this;
+    }
+
+    public <T> ReportGenerator parseSingleObject(T object, final String reportName, Class<T> clazz) throws ReportEngineReflectionException {
+        final ReportData data = reportSingleDataParser.parse(object, reportName, clazz).getData();
         reportGeneratorResult.addData(data);
         return this;
     }

@@ -71,35 +71,35 @@ class ReportDataRawInjector extends ReportDataInjector {
     }
 
     protected void injectData(Sheet sheet) {
-        loggerService.info("Creating headers...");
+        loggerService.trace("Creating headers...");
         final Stopwatch headersStopwatch = Stopwatch.createStarted();
         createHeader(sheet);
-        loggerService.info("Headers created. Time: " + headersStopwatch.stop());
+        loggerService.trace("Headers created. Time: " + headersStopwatch.stop());
 
-        loggerService.info("Creating data rows...");
+        loggerService.trace("Creating data rows...");
         final Stopwatch dataRowsStopwatch = Stopwatch.createStarted();
         createDataRows(sheet);
-        loggerService.info("Data rows created. Time: " + dataRowsStopwatch.stop());
+        loggerService.trace("Data rows created. Time: " + dataRowsStopwatch.stop());
 
-        loggerService.info("Creating special rows...");
+        loggerService.trace("Creating special rows...");
         final Stopwatch specialRowsStopwatch = Stopwatch.createStarted();
         createSpecialRows(sheet);
-        loggerService.info("Special rows created. Time: " + specialRowsStopwatch.stop());
+        loggerService.trace("Special rows created. Time: " + specialRowsStopwatch.stop());
 
-        loggerService.info("Adding striped row styles...");
+        loggerService.trace("Adding striped row styles...");
         final Stopwatch stripedRowsStopwatch = Stopwatch.createStarted();
         addStripedRows(sheet);
-        loggerService.info("Striped row styles added. Time: " + stripedRowsStopwatch.stop());
+        loggerService.trace("Striped row styles added. Time: " + stripedRowsStopwatch.stop());
 
-        loggerService.info("Adding styles...");
+        loggerService.trace("Adding styles...");
         final Stopwatch stylesStopwatch = Stopwatch.createStarted();
         addStyles(sheet);
-        loggerService.info("Styles added. Time: " + stylesStopwatch.stop());
+        loggerService.trace("Styles added. Time: " + stylesStopwatch.stop());
 
-        loggerService.info("Adjusting columns...");
+        loggerService.trace("Adjusting columns...");
         final Stopwatch adjustColumnsStopwatch = Stopwatch.createStarted();
         adjustColumns(sheet);
-        loggerService.info("Columns adjusted. Time: " + adjustColumnsStopwatch.stop());
+        loggerService.trace("Columns adjusted. Time: " + adjustColumnsStopwatch.stop());
     }
 
     private void createHeader(Sheet sheet) {
@@ -122,7 +122,7 @@ class ReportDataRawInjector extends ReportDataInjector {
             for (int y = 0; y < reportData.getRow(i).getCells().size(); y++) {
                 final ReportDataCell column = reportData.getRow(i).getColumn(y);
                 if(!column.getValueType().equals(ValueType.FORMULA)){
-                    createCell(dataRow, column, y);
+                    createCell(dataRow, column, column.isPhysicalPosition() ? column.getPosition().intValue() : y);
                 }
             }
         }
@@ -132,7 +132,7 @@ class ReportDataRawInjector extends ReportDataInjector {
             for (int y = 0; y < reportData.getRow(i).getCells().size(); y++) {
                 final ReportDataCell column = reportData.getRow(i).getColumn(y);
                 if(column.getValueType().equals(ValueType.FORMULA)){
-                    createCell(dataRow, column, y);
+                    createCell(dataRow, column, column.isPhysicalPosition() ? column.getPosition().intValue() : y);
                 }
             }
         }

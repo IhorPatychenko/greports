@@ -22,7 +22,7 @@ public class ReportData {
     private String sheetName;
     private final URL templateURL;
     private ReportHeader header;
-    private boolean createHeader = true;
+    private boolean createHeader;
     private int headerStartRow;
     private int dataStartRow;
     private final List<ReportDataSpecialRow> specialRows = new ArrayList<>();
@@ -116,7 +116,7 @@ public class ReportData {
 
     public List<Integer> getAutoSizedColumns() {
         List<Integer> autosizedColumns = new ArrayList<>();
-        for (int i = 0; i < header.getCells().size(); i++) {
+        for (int i = 0; header != null && i < header.getCells().size(); i++) {
             if(header.getCells().get(i).isAutoSizeColumn()){
                 autosizedColumns.add(i);
             }

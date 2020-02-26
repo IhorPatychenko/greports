@@ -46,7 +46,7 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-final class ReportDataParser {
+final class ReportDataParser extends ReportParser {
 
     private LoggerService loggerService;
 
@@ -61,12 +61,12 @@ final class ReportDataParser {
 
     protected <T> ReportDataParser parse(Collection<T> collection, final String reportName, Class<T> clazz, ReportConfigurator configurator) throws ReportEngineReflectionException, ReportEngineRuntimeException {
         loggerService.info("Parsing started...");
-        loggerService.info("Parsing report with name \"" + reportName + "\"...");
+        loggerService.info(String.format("Parsing report for class \"%s\" with name \"%s\"...", clazz.getSimpleName(), reportName));
         Stopwatch timer = Stopwatch.createStarted();
         final ReportDataParser parser = parse(collection, reportName, clazz, 0f);
         overrideSheetName(configurator.getSheetName());
         overrideSubreportsTitles(configurator.getOverriddenTitles());
-        loggerService.info("Report with name \"" + reportName + "\" successfully parsed. Parse time: " + timer.stop());
+        loggerService.info(String.format("Report with name \"%s\" successfully parsed. Parse time: %s", reportName, timer.stop()));
         return parser;
     }
 
@@ -109,9 +109,12 @@ final class ReportDataParser {
         Function<Pair<Method, Column>, Void> columnFunction = AnnotationUtils.getMethodsAndColumnsFunction(columnsMap);
         AnnotationUtils.methodsWithColumnAnnotations(clazz, columnFunction, reportData.getReportName());
 
+        List<T> list = new ArrayList<>(collection);
+
         try {
-            for (T dto : collection) {
-                ReportDataRow row = new ReportDataRow();
+            for (int i = 0; i < list.size(); i++) {
+                T dto = list.get(i);
+                ReportDataRow row = new ReportDataRow(reportData.getConfiguration().dataStartRowIndex() + i);
                 for (final Map.Entry<Method, Column> entry : columnsMap.entrySet()) {
                     final Column column = entry.getValue();
                     final Method method = entry.getKey();
@@ -126,6 +129,7 @@ final class ReportDataParser {
 
                     ReportDataCell reportDataCell = new ReportDataCell(
                         column.position() + positionIncrement,
+                        false,
                         column.format(),
                         invokedValue,
                         column.valueType()
@@ -231,6 +235,7 @@ final class ReportDataParser {
                     }
                     reportData.getRows().get(i).addCell(new ReportDataCell(
                             specialColumn.position(),
+                            false,
                             specialColumn.format(),
                             value,
                             specialColumn.valueType()
@@ -271,32 +276,9 @@ final class ReportDataParser {
     }
 
     private <T> void parseStyles(Collection<T> collection, Class<T> clazz) throws ReportEngineReflectionException {
+        super.parseStyles(reportData, clazz);
         try {
             final T newInstance = ReflectionUtils.newInstance(clazz);
-            final ReportDataStyles reportDataStyles = reportData.getStyles();
-            if(newInstance instanceof StyledReport){
-                final StyledReport instance = (StyledReport) newInstance;
-                if(instance.getRangedRowStyles() != null){
-                    reportDataStyles.setRowStyles(instance.getRangedRowStyles().getOrDefault(reportData.getReportName(), null));
-                }
-                if(instance.getRangedColumnStyles() != null){
-                    reportDataStyles.setColumnStyles(instance.getRangedColumnStyles().getOrDefault(reportData.getReportName(), null));
-                }
-                if(instance.getPositionedStyles() != null){
-                    reportDataStyles.setPositionedStyles(instance.getPositionedStyles().getOrDefault(reportData.getReportName(), null));
-                }
-                if(instance.getRectangleRangedStyles() != null){
-                    reportDataStyles.setRectangleStyles(instance.getRectangleRangedStyles().getOrDefault(reportData.getReportName(), null));
-                }
-            }
-            if(newInstance instanceof StripedRows){
-                final StripedRows instance = (StripedRows) newInstance;
-                if(instance.getStripedRowsIndex() != null && instance.getStripedRowsColor() != null){
-                    reportDataStyles
-                            .setStripedRowsIndex(instance.getStripedRowsIndex().getOrDefault(reportData.getReportName(), null))
-                            .setStripedRowsColor(instance.getStripedRowsColor().getOrDefault(reportData.getReportName(), null));
-                }
-            }
             if(newInstance instanceof ConditionalRowStyles){
                 final List<T> list = new ArrayList<>(collection);
                 final short startRowIndex = reportData.getConfiguration().dataStartRowIndex();

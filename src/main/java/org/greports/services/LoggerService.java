@@ -20,6 +20,14 @@ public class LoggerService {
         return enabled;
     }
 
+    public void trace(Object message){
+        if(this.enabled) this.logger.trace(message);
+    }
+
+    public void trace(Object message, Throwable cause){
+        if(this.enabled) this.logger.trace(message, cause);
+    }
+
     public void info(Object message){
         if(this.enabled) this.logger.info(message);
     }
