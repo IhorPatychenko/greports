@@ -1,7 +1,5 @@
 package org.greports.annotations;
 
-import org.greports.utils.Locales;
-
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -38,13 +36,11 @@ public @interface Configuration {
     String translationsDir() default "i18n/";
 
     /**
-     * Locale information of the report.
-     * Due to the restrictions of Java it is not possible to directly use the {@link Locale} class,
-     * so the org.greports.engine performs the necessary conversion to operate with {@link Locale} internally.
+     * Locale string representation.
      *
-     * @return {@link Locales}
+     * @return {@link String}
      */
-    Locales locale() default Locales.US;
+    String locale() default "en_US";
 
     /**
      * Template path to be used to generate the report.
@@ -83,11 +79,22 @@ public @interface Configuration {
     short headerRowIndex() default 0;
 
     /**
-     * Indicated where the data will start.
+     * Indicates where the data will start.
      *
      * @return {@link short}
      */
     short dataStartRowIndex() default 1;
+
+    /**
+     * When set to true the engine tries to inject
+     * data into an existing sheet. If the sheet with
+     * name indicated in {@link Configuration#sheetName()}
+     * doesn't exist the engine will create a sheet
+     * with value of passed sheet name.
+     *
+     * @return boolean
+     */
+    boolean useExistingSheet() default false;
 
     /**
      * An array of {@link SpecialRow}

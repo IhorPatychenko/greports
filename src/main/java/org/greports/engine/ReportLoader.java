@@ -71,7 +71,7 @@ public class ReportLoader {
 
     public <T> ReportLoader bindForClass(Class<T> clazz, ReportLoaderErrorTreatment treatment) throws ReportEngineReflectionException {
         final Configuration configuration = AnnotationUtils.getReportConfiguration(clazz, reportName);
-        this.translator = new Translator(new TranslationsParser(configuration.translationsDir()).parse(Utils.getLocale(configuration.locale()).getLanguage()));
+        this.translator = new Translator(new TranslationsParser(configuration.translationsDir()).parse(Utils.getLocale(configuration.locale())));
         final ReportBlock reportBlock = new ReportBlock(clazz, reportName, null);
         loadBlocks(reportBlock);
         reportBlock

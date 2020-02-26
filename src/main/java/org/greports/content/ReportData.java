@@ -1,5 +1,6 @@
 package org.greports.content;
 
+import org.greports.annotations.Configuration;
 import org.greports.content.cell.ReportCell;
 import org.greports.content.cell.ReportHeaderCell;
 import org.greports.content.row.ReportDataRow;
@@ -17,6 +18,7 @@ import java.util.Objects;
 public class ReportData {
 
     private final String reportName;
+    private Configuration configuration;
     private String sheetName;
     private final URL templateURL;
     private ReportHeader header;
@@ -28,14 +30,19 @@ public class ReportData {
     private final ReportDataStyles reportDataStyles = new ReportDataStyles();
     private final Map<String, Integer> targetIndexes = new HashMap<>();
 
-    public ReportData(String reportName, String sheetName, URL templateURL) {
+    public ReportData(String reportName, Configuration configuration, URL templateURL) {
         this.reportName = reportName;
-        this.sheetName = !sheetName.isEmpty() ? sheetName : null;
+        this.configuration = configuration;
+        this.sheetName = !configuration.sheetName().isEmpty() ? configuration.sheetName() : null;
         this.templateURL = templateURL;
     }
 
     public String getReportName() {
         return reportName;
+    }
+
+    public Configuration getConfiguration() {
+        return configuration;
     }
 
     public String getSheetName() {
