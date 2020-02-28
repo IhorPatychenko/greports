@@ -23,8 +23,8 @@ public class ReportGenerator {
 
     public ReportGenerator(boolean loggerEnabled, Level level) {
         reportDataParser = new ReportDataParser(loggerEnabled, level);
-        reportSingleDataParser = new ReportSingleDataParser(loggerEnabled);
-        reportGeneratorResult = new ReportGeneratorResult(loggerEnabled);
+        reportSingleDataParser = new ReportSingleDataParser(loggerEnabled, level);
+        reportGeneratorResult = new ReportGeneratorResult(loggerEnabled, level);
     }
 
     public <T> ReportGenerator parse(Collection<T> collection, final String reportName, Class<T> clazz) throws ReportEngineReflectionException {

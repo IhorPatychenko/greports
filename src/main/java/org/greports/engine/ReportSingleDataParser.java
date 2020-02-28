@@ -1,6 +1,7 @@
 package org.greports.engine;
 
 import com.google.common.base.Stopwatch;
+import org.apache.log4j.Level;
 import org.greports.annotations.Cell;
 import org.greports.annotations.Configuration;
 import org.greports.content.ReportData;
@@ -29,8 +30,8 @@ public class ReportSingleDataParser extends ReportParser {
 
     private ReportData reportData;
 
-    public ReportSingleDataParser(boolean loggerEnabled) {
-        loggerService = LoggerService.forClass(ReportSingleDataParser.class, loggerEnabled);
+    public ReportSingleDataParser(boolean loggerEnabled, Level level) {
+        loggerService = LoggerService.forClass(ReportSingleDataParser.class, loggerEnabled, level);
     }
 
     public <T> ReportSingleDataParser parse(final T object, final String reportName, final Class<T> clazz) throws ReportEngineReflectionException {

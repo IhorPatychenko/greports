@@ -1,6 +1,7 @@
 package org.greports.engine;
 
 import com.google.common.base.Stopwatch;
+import org.apache.log4j.Level;
 import org.greports.content.ReportData;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.greports.services.LoggerService;
@@ -17,12 +18,12 @@ public class ReportGeneratorResult {
     private LoggerService loggerService;
 
     public ReportGeneratorResult() {
-        this(false);
+        this(false, Level.ALL);
     }
 
-    public ReportGeneratorResult(boolean loggerEnabled) {
+    public ReportGeneratorResult(boolean loggerEnabled, Level level) {
         this.loggerEnabled = loggerEnabled;
-        loggerService = new LoggerService(ReportGeneratorResult.class, loggerEnabled);
+        loggerService = new LoggerService(ReportGeneratorResult.class, loggerEnabled, level);
     }
 
     private final Collection<ReportData> reportData = new ArrayList<>();
