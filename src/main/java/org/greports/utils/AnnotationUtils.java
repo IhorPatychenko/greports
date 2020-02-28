@@ -1,5 +1,7 @@
 package org.greports.utils;
 
+import org.greports.annotations.Cell;
+import org.greports.annotations.CellGetter;
 import org.greports.annotations.CellValidator;
 import org.greports.annotations.Column;
 import org.greports.annotations.ColumnGetter;
@@ -74,6 +76,28 @@ public class AnnotationUtils {
                 final Column column = getColumnAnnotationFromColumnGetter(columnGetter);
                 if (getReportColumnPredicate(reportName).test(column)) {
                     columnFunction.apply(Pair.of(declaredMethod, column));
+                }
+            }
+        }
+    }
+
+    public static <T> void cellsWithMethodsFunction(Class<T> clazz, Function<Pair<Cell, Method>, Void> cellFunction, String reportName) throws ReportEngineReflectionException {
+        for (Field declaredField : getAllClassFields(clazz)) {
+            final Cell[] cells = declaredField.getAnnotationsByType(Cell.class);
+            for (Cell cell : cells) {
+                if (getReportCellPredicate(reportName).test(cell)) {
+                    final Method method = ReflectionUtils.fetchFieldGetter(declaredField, clazz);
+                    cellFunction.apply(Pair.of(cell, method));
+                }
+            }
+        }
+
+        for (final Method declaredMethod : getAllClassMethods(clazz)) {
+            final CellGetter[] cellGetters = declaredMethod.getAnnotationsByType(CellGetter.class);
+            for (final CellGetter cellGetter : cellGetters) {
+                final Cell cell = getCellFromCellGetter(cellGetter);
+                if (getReportCellPredicate(reportName).test(cell)) {
+                    cellFunction.apply(Pair.of(cell, declaredMethod));
                 }
             }
         }
@@ -294,6 +318,67 @@ public class AnnotationUtils {
         };
     }
 
+
+    private static Cell getCellFromCellGetter(final CellGetter cellGetter) {
+        return new Cell() {
+
+            @Override
+            public Class<? extends Annotation> annotationType() {
+                return Cell.class;
+            }
+
+            @Override
+            public String[] reportName() {
+                return cellGetter.reportName();
+            }
+
+            @Override
+            public int row() {
+                return cellGetter.row();
+            }
+
+            @Override
+            public int column() {
+                return cellGetter.column();
+            }
+
+            @Override
+            public CellValidator[] cellValidators() {
+                return cellGetter.cellValidators();
+            }
+
+            @Override
+            public Converter[] getterConverter() {
+                return cellGetter.getterConverter();
+            }
+
+            @Override
+            public Converter[] setterConverters() {
+                return new Converter[0];
+            }
+
+            @Override
+            public String format() {
+                return cellGetter.format();
+            }
+
+            @Override
+            public ValueType valueType() {
+                return cellGetter.valueType();
+            }
+
+            @Override
+            public String id() {
+                return cellGetter.id();
+            }
+
+            @Override
+            public boolean autoSizeColumn() {
+                return cellGetter.autoSizeColumn();
+            }
+        };
+    }
+
     private static Column getColumnAnnotationFromColumnSetter(final ColumnSetter columnSetter) {
         return new Column() {
             @Override
@@ -362,6 +447,10 @@ public class AnnotationUtils {
         return annotation -> Arrays.asList(((Column) annotation).reportName()).contains(reportName);
     }
 
+    private static Predicate<Annotation> getReportCellPredicate(String reportName) {
+        return annotation -> Arrays.asList(((Cell) annotation).reportName()).contains(reportName);
+    }
+
     private static Predicate<Annotation> getSubreportPredicate(String reportName) {
         return annotation -> Arrays.asList(((Subreport) annotation).reportName()).contains(reportName);
     }
@@ -373,6 +462,12 @@ public class AnnotationUtils {
         };
     }
 
+    public static Function<Pair<Cell, Method>, Void> getCellsAndMethodsFunction(Map<Cell, Method> cellMap){
+        return pair -> {
+            cellMap.put(pair.getLeft(), pair.getRight());
+            return null;
+        };
+    }
 
     public static Function<Pair<Method, Column>, Void> getHeadersFunction(List<ReportHeaderCell> cells, Translator translator, Float positionIncrement) {
         return pair -> {

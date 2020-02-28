@@ -47,13 +47,12 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-final class ReportDataParser {
+final class ReportDataParser extends ReportParser {
 
     private LoggerService loggerService;
 
     private ReportData reportData;
     private Translator translator;
-    private Configuration configuration;
     private List<ReportData> subreportsData = new ArrayList<>();
     private static final float SUBREPORT_POSITIONAL_INCREMENT = 0.00000000000001f;
 
@@ -63,19 +62,19 @@ final class ReportDataParser {
 
     protected <T> ReportDataParser parse(Collection<T> collection, final String reportName, Class<T> clazz, ReportConfigurator configurator) throws ReportEngineReflectionException, ReportEngineRuntimeException {
         loggerService.info("Parsing started...");
-        loggerService.info("Parsing report with name \"" + reportName + "\"...");
+        loggerService.info(String.format("Parsing report for class \"%s\" with name \"%s\"...", clazz.getSimpleName(), reportName));
         Stopwatch timer = Stopwatch.createStarted();
         final ReportDataParser parser = parse(collection, reportName, clazz, 0f);
         overrideSheetName(configurator.getSheetName());
         overrideSubreportsTitles(configurator.getOverriddenTitles());
-        loggerService.info("Report with name \"" + reportName + "\" successfully parsed. Parse time: " + timer.stop());
+        loggerService.info(String.format("Report with name \"%s\" successfully parsed. Parse time: %s", reportName, timer.stop()));
         return parser;
     }
 
     private <T> ReportDataParser parse(Collection<T> collection, final String reportName, Class<T> clazz, Float positionIncrement) throws ReportEngineReflectionException, ReportEngineRuntimeException {
-        configuration = AnnotationUtils.getReportConfiguration(clazz, reportName);
-        reportData = new ReportData(reportName, configuration.sheetName(), !configuration.templatePath().equals("") ? getClass().getClassLoader().getResource(configuration.templatePath()) : null);
-        final Map<String, Object> translations = new TranslationsParser(configuration.translationsDir()).parse(Utils.getLocale(configuration.locale()).getLanguage());
+        final Configuration configuration = AnnotationUtils.getReportConfiguration(clazz, reportName);
+        reportData = new ReportData(reportName, configuration, !configuration.templatePath().equals("") ? getClass().getClassLoader().getResource(configuration.templatePath()) : null);
+        final Map<String, Object> translations = new TranslationsParser(reportData.getConfiguration().translationsDir()).parse(Utils.getLocale(reportData.getConfiguration().locale()));
         translator = new Translator(translations);
         subreportsData = new ArrayList<>();
         parseReportHeader(clazz, positionIncrement);
@@ -89,31 +88,34 @@ final class ReportDataParser {
     }
 
     private <T> void parseReportHeader(Class<T> clazz, Float positionIncrement) throws ReportEngineReflectionException {
-        reportData.setCreateHeader(configuration.createHeader());
-        reportData.setHeaderStartRow(configuration.headerRowIndex());
+        reportData.setCreateHeader(reportData.getConfiguration().createHeader());
+        reportData.setHeaderStartRow(reportData.getConfiguration().headerRowIndex());
         List<ReportHeaderCell> cells = new ArrayList<>();
         final Function<Pair<Method, Column>, Void> columnFunction = AnnotationUtils.getHeadersFunction(cells, translator, positionIncrement);
         AnnotationUtils.methodsWithColumnAnnotations(clazz, columnFunction, reportData.getReportName());
 
-        for (SpecialColumn specialColumn : configuration.specialColumns()) {
+        for (SpecialColumn specialColumn : reportData.getConfiguration().specialColumns()) {
             cells.add(new ReportHeaderCell(specialColumn.position(), specialColumn.title(), specialColumn.id(), specialColumn.autoSizeColumn()));
         }
 
         reportData
-                .setHeader(new ReportHeader(configuration.sortableHeader()))
+                .setHeader(new ReportHeader(reportData.getConfiguration().sortableHeader()))
                 .addCells(cells);
     }
 
     private <T> void parseRowsData(Collection<T> collection, Class<T> clazz, Float positionIncrement) throws ReportEngineReflectionException {
-        reportData.setDataStartRow(configuration.dataStartRowIndex());
+        reportData.setDataStartRow(reportData.getConfiguration().dataStartRowIndex());
 
         Map<Method, Column> columnsMap = new LinkedHashMap<>();
         Function<Pair<Method, Column>, Void> columnFunction = AnnotationUtils.getMethodsAndColumnsFunction(columnsMap);
         AnnotationUtils.methodsWithColumnAnnotations(clazz, columnFunction, reportData.getReportName());
 
+        List<T> list = new ArrayList<>(collection);
+
         try {
-            for (T dto : collection) {
-                ReportDataRow row = new ReportDataRow();
+            for (int i = 0; i < list.size(); i++) {
+                T dto = list.get(i);
+                ReportDataRow row = new ReportDataRow(reportData.getConfiguration().dataStartRowIndex() + i);
                 for (final Map.Entry<Method, Column> entry : columnsMap.entrySet()) {
                     final Column column = entry.getValue();
                     final Method method = entry.getKey();
@@ -128,6 +130,7 @@ final class ReportDataParser {
 
                     ReportDataCell reportDataCell = new ReportDataCell(
                         column.position() + positionIncrement,
+                        false,
                         column.format(),
                         invokedValue,
                         column.valueType()
@@ -218,7 +221,7 @@ final class ReportDataParser {
 
     private <T> void parseSpecialColumns(Collection<T> collection, Class<T> clazz) throws ReportEngineReflectionException {
         List<T> list = new ArrayList<>(collection);
-        for (SpecialColumn specialColumn : configuration.specialColumns()) {
+        for (SpecialColumn specialColumn : reportData.getConfiguration().specialColumns()) {
             Method method = null;
             if(ValueType.METHOD.equals(specialColumn.valueType())){
                 method = ReflectionUtils.getMethodWithName(clazz, specialColumn.value(), new Class<?>[]{});
@@ -233,6 +236,7 @@ final class ReportDataParser {
                     }
                     reportData.getRows().get(i).addCell(new ReportDataCell(
                             specialColumn.position(),
+                            false,
                             specialColumn.format(),
                             value,
                             specialColumn.valueType()
@@ -247,7 +251,7 @@ final class ReportDataParser {
     }
 
     private <T> void parseSpecialRows(Collection<T> collection, Class<T> clazz) throws ReportEngineReflectionException {
-        for(SpecialRow specialRow : configuration.specialRows()){
+        for(SpecialRow specialRow : reportData.getConfiguration().specialRows()){
             final ReportDataSpecialRow reportDataSpecialRow = new ReportDataSpecialRow(specialRow.rowIndex());
             for (final SpecialRowCell specialRowCell : specialRow.cells()) {
                 if(!specialRowCell.valueType().equals(ValueType.COLLECTED_VALUE)) {
@@ -273,35 +277,12 @@ final class ReportDataParser {
     }
 
     private <T> void parseStyles(Collection<T> collection, Class<T> clazz) throws ReportEngineReflectionException {
+        super.parseStyles(reportData, clazz);
         try {
             final T newInstance = ReflectionUtils.newInstance(clazz);
-            final ReportDataStyles reportDataStyles = reportData.getStyles();
-            if(newInstance instanceof StyledReport){
-                final StyledReport instance = (StyledReport) newInstance;
-                if(instance.getRangedRowStyles() != null){
-                    reportDataStyles.setRowStyles(instance.getRangedRowStyles().getOrDefault(reportData.getReportName(), null));
-                }
-                if(instance.getRangedColumnStyles() != null){
-                    reportDataStyles.setColumnStyles(instance.getRangedColumnStyles().getOrDefault(reportData.getReportName(), null));
-                }
-                if(instance.getPositionedStyles() != null){
-                    reportDataStyles.setPositionedStyles(instance.getPositionedStyles().getOrDefault(reportData.getReportName(), null));
-                }
-                if(instance.getRectangleRangedStyles() != null){
-                    reportDataStyles.setRectangleStyles(instance.getRectangleRangedStyles().getOrDefault(reportData.getReportName(), null));
-                }
-            }
-            if(newInstance instanceof StripedRows){
-                final StripedRows instance = (StripedRows) newInstance;
-                if(instance.getStripedRowsIndex() != null && instance.getStripedRowsColor() != null){
-                    reportDataStyles
-                            .setStripedRowsIndex(instance.getStripedRowsIndex().getOrDefault(reportData.getReportName(), null))
-                            .setStripedRowsColor(instance.getStripedRowsColor().getOrDefault(reportData.getReportName(), null));
-                }
-            }
             if(newInstance instanceof ConditionalRowStyles){
                 final List<T> list = new ArrayList<>(collection);
-                final short startRowIndex = configuration.dataStartRowIndex();
+                final short startRowIndex = reportData.getConfiguration().dataStartRowIndex();
                 RectangleRangedStylesBuilder rectangleRangedStylesBuilder = reportData.getStyles().getRectangleRangedStylesBuilder();
                 if(rectangleRangedStylesBuilder == null){
                     rectangleRangedStylesBuilder = reportData.getStyles().createRectangleRangedStylesBuilder(AbstractReportStylesBuilder.StylePriority.PRIORITY4);
