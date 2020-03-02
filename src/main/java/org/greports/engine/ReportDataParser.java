@@ -19,10 +19,7 @@ import org.greports.exceptions.ReportEngineReflectionException;
 import org.greports.exceptions.ReportEngineRuntimeException;
 import org.greports.interfaces.CollectedValues;
 import org.greports.services.LoggerService;
-import org.greports.styles.ReportDataStyles;
 import org.greports.styles.interfaces.ConditionalRowStyles;
-import org.greports.styles.interfaces.StripedRows;
-import org.greports.styles.interfaces.StyledReport;
 import org.greports.positioning.TranslationsParser;
 import org.greports.styles.stylesbuilders.AbstractReportStylesBuilder;
 import org.greports.styles.stylesbuilders.HorizontalRangedStyleBuilder;
@@ -53,6 +50,7 @@ final class ReportDataParser extends ReportParser {
 
     private ReportData reportData;
     private Translator translator;
+    private ReportConfigurator reportConfigurator;
     private List<ReportData> subreportsData = new ArrayList<>();
     private static final float SUBREPORT_POSITIONAL_INCREMENT = 0.00000000000001f;
 
@@ -64,19 +62,20 @@ final class ReportDataParser extends ReportParser {
         loggerService.info("Parsing started...");
         loggerService.info(String.format("Parsing report for class \"%s\" with name \"%s\"...", clazz.getSimpleName(), reportName));
         Stopwatch timer = Stopwatch.createStarted();
-        final ReportDataParser parser = parse(collection, reportName, clazz, 0f);
+        final ReportDataParser parser = parse(collection, reportName, clazz, 0f, configurator);
         overrideSheetName(configurator.getSheetName());
         overrideSubreportsTitles(configurator.getOverriddenTitles());
         loggerService.info(String.format("Report with name \"%s\" successfully parsed. Parse time: %s", reportName, timer.stop()));
         return parser;
     }
 
-    private <T> ReportDataParser parse(Collection<T> collection, final String reportName, Class<T> clazz, Float positionIncrement) throws ReportEngineReflectionException, ReportEngineRuntimeException {
+    private <T> ReportDataParser parse(Collection<T> collection, final String reportName, Class<T> clazz, Float positionIncrement, ReportConfigurator configurator) throws ReportEngineReflectionException, ReportEngineRuntimeException {
         final Configuration configuration = AnnotationUtils.getReportConfiguration(clazz, reportName);
         reportData = new ReportData(reportName, configuration, !configuration.templatePath().equals("") ? getClass().getClassLoader().getResource(configuration.templatePath()) : null);
         final Map<String, Object> translations = new TranslationsParser(reportData.getConfiguration().translationsDir()).parse(Utils.getLocale(reportData.getConfiguration().locale()));
         translator = new Translator(translations);
         subreportsData = new ArrayList<>();
+        reportConfigurator = configurator;
         parseReportHeader(clazz, positionIncrement);
         parseRowsData(collection, clazz, positionIncrement);
         parseSpecialColumns(collection, clazz);
@@ -128,10 +127,19 @@ final class ReportDataParser extends ReportParser {
                         invokedValue = ConverterUtils.convertValue(invokedValue, column.getterConverter()[0]);
                     }
 
+                    String format = column.format();
+
+                    if(invokedValue != null) {
+                        final String formatForClass = reportConfigurator.getFormatForClass(invokedValue.getClass());
+                        if(format.isEmpty()){
+                            format = formatForClass;
+                        }
+                    }
+
                     ReportDataCell reportDataCell = new ReportDataCell(
                         column.position() + positionIncrement,
                         false,
-                        column.format(),
+                        format,
                         invokedValue,
                         column.valueType()
                     );
@@ -205,7 +213,7 @@ final class ReportDataParser extends ReportParser {
 
     @SuppressWarnings("unchecked")
     private void parseSubreportData(final ReportDataParser reportDataParser, final Class<?> returnType, final Collection subreportData, float positionalIncrement) throws ReportEngineReflectionException {
-        final ReportData data = reportDataParser.parse(subreportData, reportData.getReportName(), returnType, positionalIncrement).getData();
+        final ReportData data = reportDataParser.parse(subreportData, reportData.getReportName(), returnType, positionalIncrement, reportConfigurator.getReportGenerator().getConfigurator(returnType, reportData.getReportName())).getData();
         subreportsData.add(data);
     }
 

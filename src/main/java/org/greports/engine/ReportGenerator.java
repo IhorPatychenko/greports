@@ -11,7 +11,7 @@ import java.util.Map;
 
 public class ReportGenerator {
 
-    private final Map<Pair<Class<?>, String>, ReportConfigurator> _configurators = new HashMap<>();
+    private final static Map<Pair<Class<?>, String>, ReportConfigurator> _configurators = new HashMap<>();
 
     private final ReportDataParser reportDataParser;
     private final ReportSingleDataParser reportSingleDataParser;
@@ -42,7 +42,7 @@ public class ReportGenerator {
     public ReportConfigurator getConfigurator(Class<?> clazz, String reportName){
         final Pair<Class<?>, String> key = Pair.of(clazz, reportName);
         if(!_configurators.containsKey(key)){
-            _configurators.put(key, new ReportConfigurator());
+            _configurators.put(key, new ReportConfigurator(this));
         }
         return _configurators.get(key);
     }
