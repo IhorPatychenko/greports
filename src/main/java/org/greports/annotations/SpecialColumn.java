@@ -9,10 +9,7 @@ import java.lang.annotation.Target;
 
 /**
  * A column which has no corresponding attribute in source class.
- * Deprecated annotation. Use {@link ColumnGetter} instead.
- * Will be removed in version 2.0
  */
-@Deprecated
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.ANNOTATION_TYPE)
 public @interface SpecialColumn {
@@ -76,4 +73,16 @@ public @interface SpecialColumn {
      * @return {@link boolean}
      */
     boolean autoSizeColumn() default false;
+
+    /**
+     * This value indicates the number of merged cells.
+     * A count of merged cells needs to be grater o equals than 1.
+     * If the value is greater than 1 means that the column will merge
+     * cells of his right. Example:
+     * position = 1 (first column), columnWidth = 2. In this case
+     * the row will have the cells A1 and B1 merged in only one cell
+     * which will be placed into A1 cell.
+     * @return int
+     */
+    int columnWidth() default 1;
 }

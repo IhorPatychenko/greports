@@ -116,9 +116,14 @@ public class ReportData {
 
     public List<Integer> getAutoSizedColumns() {
         List<Integer> autosizedColumns = new ArrayList<>();
+        int mergedCount = 0;
         for (int i = 0; header != null && i < header.getCells().size(); i++) {
-            if(header.getCells().get(i).isAutoSizeColumn()){
-                autosizedColumns.add(i);
+            final ReportHeaderCell headerCell = header.getCells().get(i);
+            if(headerCell.isAutoSizeColumn()){
+                autosizedColumns.add(i + mergedCount);
+            }
+            if(headerCell.getColumnWidth() > 1){
+                mergedCount += headerCell.getColumnWidth() - 1;
             }
         }
         return autosizedColumns;

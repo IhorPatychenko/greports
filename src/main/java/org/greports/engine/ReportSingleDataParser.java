@@ -74,7 +74,8 @@ public class ReportSingleDataParser extends ReportParser {
                         true,
                         cell.format(),
                         cellValue,
-                        cell.valueType()
+                        cell.valueType(),
+                        cell.columnWidth()
                 );
                 dataRow.addCell(reportDataCell);
             } catch (IllegalAccessException e) {

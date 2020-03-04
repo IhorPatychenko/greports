@@ -94,7 +94,7 @@ final class ReportDataParser extends ReportParser {
         AnnotationUtils.methodsWithColumnAnnotations(clazz, columnFunction, reportData.getReportName());
 
         for (SpecialColumn specialColumn : reportData.getConfiguration().specialColumns()) {
-            cells.add(new ReportHeaderCell(specialColumn.position(), specialColumn.title(), specialColumn.id(), specialColumn.autoSizeColumn()));
+            cells.add(new ReportHeaderCell(specialColumn.position(), specialColumn.title(), specialColumn.id(), specialColumn.autoSizeColumn(), specialColumn.columnWidth()));
         }
 
         reportData
@@ -109,11 +109,11 @@ final class ReportDataParser extends ReportParser {
         Function<Pair<Method, Column>, Void> columnFunction = AnnotationUtils.getMethodsAndColumnsFunction(columnsMap);
         AnnotationUtils.methodsWithColumnAnnotations(clazz, columnFunction, reportData.getReportName());
 
-        List<T> list = new ArrayList<>(collection);
+        List<T> dataList = new ArrayList<>(collection);
 
         try {
-            for (int i = 0; i < list.size(); i++) {
-                T dto = list.get(i);
+            for (int i = 0; i < dataList.size(); i++) {
+                T dto = dataList.get(i);
                 ReportDataRow row = new ReportDataRow(reportData.getConfiguration().dataStartRowIndex() + i);
                 for (final Map.Entry<Method, Column> entry : columnsMap.entrySet()) {
                     final Column column = entry.getValue();
@@ -136,12 +136,13 @@ final class ReportDataParser extends ReportParser {
                         }
                     }
 
-                    ReportDataCell reportDataCell = new ReportDataCell(
+                    final ReportDataCell reportDataCell = new ReportDataCell(
                         column.position() + positionIncrement,
                         false,
                         format,
                         invokedValue,
-                        column.valueType()
+                        column.valueType(),
+                        column.columnWidth()
                     );
                     row.addCell(reportDataCell);
                 }
@@ -247,7 +248,8 @@ final class ReportDataParser extends ReportParser {
                             false,
                             specialColumn.format(),
                             value,
-                            specialColumn.valueType()
+                            specialColumn.valueType(),
+                            specialColumn.columnWidth()
                     ));
                 } catch (IllegalAccessException e) {
                     throw new ReportEngineReflectionException("Error invoking the method with no access", e, clazz);
@@ -263,7 +265,7 @@ final class ReportDataParser extends ReportParser {
             final ReportDataSpecialRow reportDataSpecialRow = new ReportDataSpecialRow(specialRow.rowIndex());
             for (final SpecialRowCell specialRowCell : specialRow.cells()) {
                 if(!specialRowCell.valueType().equals(ValueType.COLLECTED_VALUE)) {
-                    reportDataSpecialRow.addCell(new ReportDataSpecialRowCell(specialRowCell.valueType(), specialRowCell.value(), specialRowCell.format(), specialRowCell.targetId()));
+                    reportDataSpecialRow.addCell(new ReportDataSpecialRowCell(specialRowCell.valueType(), specialRowCell.value(), specialRowCell.format(), specialRowCell.targetId(), specialRowCell.columnWidth()));
                 } else if(CollectedValues.class.isAssignableFrom(clazz)){
                     try {
                         final T newInstance = ReflectionUtils.newInstance(clazz);

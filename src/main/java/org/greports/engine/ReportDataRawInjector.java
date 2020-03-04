@@ -6,6 +6,7 @@ import org.greports.content.ReportHeader;
 import org.greports.content.column.ReportDataCell;
 import org.greports.content.cell.ReportDataSpecialRowCell;
 import org.greports.content.cell.ReportHeaderCell;
+import org.greports.content.row.ReportDataRow;
 import org.greports.content.row.ReportDataSpecialRow;
 import org.apache.commons.collections4.map.HashedMap;
 import org.apache.poi.ss.usermodel.*;
@@ -41,6 +42,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 class ReportDataRawInjector extends ReportDataInjector {
 
@@ -106,9 +109,15 @@ class ReportDataRawInjector extends ReportDataInjector {
         if(reportData.isCreateHeader()){
             final ReportHeader header = reportData.getHeader();
             final Row headerRow = sheet.createRow(reportData.getHeaderRowIndex());
+            int mergeCount = 0;
             for (int i = 0; i < header.getCells().size(); i++) {
-                createHeaderCell(headerRow, header.getCells().get(i), i);
+                final ReportHeaderCell headerCell = header.getCells().get(i);
+                createHeaderCell(sheet, headerRow, headerCell, i + mergeCount, headerCell.getColumnWidth());
+                if(headerCell.getColumnWidth() > 1){
+                    mergeCount += headerCell.getColumnWidth() - 1;
+                }
             }
+
             if(header.isColumnFilter()){
                 sheet.setAutoFilter(new CellRangeAddress(headerRow.getRowNum(), headerRow.getRowNum(), 0, header.getCells().size() - 1));
             }
@@ -118,32 +127,52 @@ class ReportDataRawInjector extends ReportDataInjector {
     private void createDataRows(Sheet sheet){
         // First create cells with data
         for (int i = 0; i < reportData.getRows().size(); i++) {
-            Row dataRow = sheet.createRow(reportData.getDataStartRow() + i);
-            for (int y = 0; y < reportData.getRow(i).getCells().size(); y++) {
-                final ReportDataCell column = reportData.getRow(i).getColumn(y);
-                if(!column.getValueType().equals(ValueType.FORMULA)){
-                    createCell(dataRow, column, column.isPhysicalPosition() ? column.getPosition().intValue() : y);
+            final ReportDataRow reportDataRow = reportData.getRow(i);
+            final Row row = sheet.createRow(reportData.getDataStartRow() + i);
+            int mergedCellsCount = 0;
+            for (int y = 0; y < reportDataRow.getCells().size(); y++) {
+                final ReportDataCell reportDataCell = reportDataRow.getColumn(y);
+                if(!reportDataCell.getValueType().equals(ValueType.FORMULA)){
+                    createCell(sheet, row, reportDataCell, reportDataCell.isPhysicalPosition() ? reportDataCell.getPosition().intValue() : y + mergedCellsCount);
+                    if(reportDataCell.getColumnWidth() > 1){
+                        mergedCellsCount += reportDataCell.getColumnWidth() - 1;
+                    }
                 }
             }
         }
-        // After create cells with formulas to can evaluate
+        // After create cells with formulas to can evaluate them
         for (int i = 0; i < reportData.getRows().size(); i++) {
-            Row dataRow = sheet.getRow(reportData.getDataStartRow() + i);
-            for (int y = 0; y < reportData.getRow(i).getCells().size(); y++) {
-                final ReportDataCell column = reportData.getRow(i).getColumn(y);
-                if(column.getValueType().equals(ValueType.FORMULA)){
-                    createCell(dataRow, column, column.isPhysicalPosition() ? column.getPosition().intValue() : y);
+            final ReportDataRow reportDataRow = reportData.getRow(i);
+            final Row row = sheet.getRow(reportData.getDataStartRow() + i);
+            int mergedCellsCount = 0;
+            for (int y = 0; y < reportDataRow.getCells().size(); y++) {
+                final ReportDataCell reportDataCell = reportDataRow.getColumn(y);
+                if(reportDataCell.getValueType().equals(ValueType.FORMULA)){
+                    createCell(sheet, row, reportDataCell, reportDataCell.isPhysicalPosition() ? reportDataCell.getPosition().intValue() : y + mergedCellsCount);
+                    if(reportDataCell.getColumnWidth() > 1){
+                        mergedCellsCount += reportDataCell.getColumnWidth() - 1;
+                    }
                 }
             }
         }
     }
 
-    private void createHeaderCell(Row row, ReportHeaderCell headerCell, int cellIndex){
+    private void createHeaderCell(final Sheet sheet, final Row row, final ReportHeaderCell headerCell, final int cellIndex, final int columnWidth){
         final Cell cell = row.createCell(cellIndex);
+        createColumnsToMerge(sheet, row, cellIndex, columnWidth);
         WorkbookUtils.setCellValue(cell, headerCell.getTitle());
     }
 
-    private void createCell(Row row, ReportDataCell reportDataCell, int cellIndex){
+    private void createColumnsToMerge(final Sheet sheet, final Row row, final int cellIndex, final int columnWidth) {
+        if (columnWidth > 1) {
+            for (int i = 1; i < columnWidth; i++) {
+                row.createCell(cellIndex + i, CellType.BLANK);
+            }
+            sheet.addMergedRegion(new CellRangeAddress(row.getRowNum(), row.getRowNum(), cellIndex, cellIndex + columnWidth - 1));
+        }
+    }
+
+    private void createCell(Sheet sheet, Row row, ReportDataCell reportDataCell, int columnIndex){
         CellType cellType = CellType.BLANK;
         final ValueType valueType = reportDataCell.getValueType();
         if(!ValueType.FORMULA.equals(valueType)){
@@ -154,12 +183,12 @@ class ReportDataRawInjector extends ReportDataInjector {
             } else if(reportDataCell.getValue() instanceof Boolean) {
                 cellType = CellType.BOOLEAN;
             }
-            final Cell cell = row.createCell(cellIndex, cellType);
+            final Cell cell = row.createCell(columnIndex, cellType);
             WorkbookUtils.setCellValue(cell, reportDataCell.getValue());
             setCellFormat(cell, reportDataCell.getFormat());
         } else {
             cellType = CellType.FORMULA;
-            final Cell cell = row.createCell(cellIndex, cellType);
+            final Cell cell = row.createCell(columnIndex, cellType);
             String formulaString = reportDataCell.getValue().toString();
             for (Map.Entry<String, Integer> entry : reportData.getTargetIndexes().entrySet()) {
                 formulaString = formulaString.replaceAll(entry.getKey(), super.getCellReferenceForTargetId(row, entry.getKey()).formatAsString());
@@ -167,6 +196,8 @@ class ReportDataRawInjector extends ReportDataInjector {
             cell.setCellFormula(formulaString);
             setCellFormat(cell, reportDataCell.getFormat());
         }
+
+        createColumnsToMerge(sheet, row, columnIndex, reportDataCell.getColumnWidth());
     }
 
     private void createSpecialRows(Sheet sheet) {
@@ -177,10 +208,13 @@ class ReportDataRawInjector extends ReportDataInjector {
                 specialRow.setIndex(reportData.getDataStartRow() + reportData.getRowsCount() + i);
             }
             for (final ReportDataSpecialRowCell specialCell : specialRow.getSpecialCells()) {
-                if(sheet.getRow(specialRow.getIndex()) == null){
-                    sheet.createRow(specialRow.getIndex());
+                Row row = sheet.getRow(specialRow.getIndex());
+                if(row == null){
+                    row = sheet.createRow(specialRow.getIndex());
                 }
-                final Cell cell = sheet.getRow(specialRow.getIndex()).createCell(reportData.getColumnIndexForTarget(specialCell.getTargetId()));
+                final Integer columnIndexForTarget = reportData.getColumnIndexForTarget(specialCell.getTargetId());
+                Cell cell = row.createCell(columnIndexForTarget);
+                createColumnsToMerge(sheet, row, columnIndexForTarget, specialCell.getColumnWidth());
                 final ValueType valueType = specialCell.getValueType();
                 if(!ValueType.FORMULA.equals(valueType)){
                     WorkbookUtils.setCellValue(cell, specialCell.getValue());

@@ -40,4 +40,16 @@ public @interface SpecialRowCell {
      * @return {@link String}
      */
     String format() default "";
+
+    /**
+     * This value indicates the number of merged cells.
+     * A count of merged cells needs to be grater o equals than 1.
+     * If the value is greater than 1 means that the column will merge
+     * cells of his right. Example:
+     * position = 1 (first column), columnWidth = 2. In this case
+     * the row will have the cells A1 and B1 merged in only one cell
+     * which will be placed into A1 cell.
+     * @return int
+     */
+    int columnWidth() default 1;
 }

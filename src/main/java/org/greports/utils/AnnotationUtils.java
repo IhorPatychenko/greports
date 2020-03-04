@@ -315,6 +315,11 @@ public class AnnotationUtils {
             public boolean autoSizeColumn() {
                 return columnGetter.autoSizeColumn();
             }
+
+            @Override
+            public int columnWidth() {
+                return columnGetter.columnWidth();
+            }
         };
     }
 
@@ -375,6 +380,11 @@ public class AnnotationUtils {
             @Override
             public boolean autoSizeColumn() {
                 return cellGetter.autoSizeColumn();
+            }
+
+            @Override
+            public int columnWidth() {
+                return cellGetter.columnWidth();
             }
         };
     }
@@ -440,6 +450,11 @@ public class AnnotationUtils {
             public boolean autoSizeColumn() {
                 return columnSetter.autoSizeColumn();
             }
+
+            @Override
+            public int columnWidth() {
+                return columnSetter.columnWidth();
+            }
         };
     }
 
@@ -472,7 +487,7 @@ public class AnnotationUtils {
     public static Function<Pair<Method, Column>, Void> getHeadersFunction(List<ReportHeaderCell> cells, Translator translator, Float positionIncrement) {
         return pair -> {
             Column column = pair.getRight();
-            cells.add(new ReportHeaderCell(column.position() + positionIncrement, translator.translate(column.title()), column.id(), column.autoSizeColumn()));
+            cells.add(new ReportHeaderCell(column.position() + positionIncrement, translator.translate(column.title()), column.id(), column.autoSizeColumn(), column.columnWidth()));
             return null;
         };
     }

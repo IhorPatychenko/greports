@@ -9,13 +9,19 @@ public class ReportDataCell extends ReportCell {
     private final Object value;
     private final String format;
     private final ValueType valueType;
+    private final int columnWidth;
 
-    public ReportDataCell(Float position, boolean physicalPosition, String format, Object value, ValueType valueType) {
+    public ReportDataCell(final Float position, final boolean physicalPosition, final String format, final Object value, final ValueType valueType) {
+        this(position, physicalPosition, format, value, valueType, 1);
+    }
+
+    public ReportDataCell(final Float position, final boolean physicalPosition, final String format, final Object value, final ValueType valueType, final int columnWidth) {
         super(position, null);
         this.physicalPosition = physicalPosition;
         this.format = format;
         this.value = value;
         this.valueType = valueType;
+        this.columnWidth = columnWidth;
     }
 
     public boolean isPhysicalPosition() {
@@ -34,4 +40,7 @@ public class ReportDataCell extends ReportCell {
         return valueType;
     }
 
+    public int getColumnWidth() {
+        return columnWidth;
+    }
 }
