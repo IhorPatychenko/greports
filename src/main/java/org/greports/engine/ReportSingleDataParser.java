@@ -5,17 +5,14 @@ import org.apache.log4j.Level;
 import org.greports.annotations.Cell;
 import org.greports.annotations.Configuration;
 import org.greports.content.ReportData;
-import org.greports.content.column.ReportDataCell;
-import org.greports.content.row.ReportDataRow;
+import org.greports.content.cell.DataCell;
+import org.greports.content.row.DataRow;
 import org.greports.exceptions.ReportEngineReflectionException;
 import org.greports.exceptions.ReportEngineRuntimeException;
-import org.greports.positioning.TranslationsParser;
 import org.greports.services.LoggerService;
 import org.greports.utils.AnnotationUtils;
 import org.greports.utils.ConverterUtils;
 import org.greports.utils.Pair;
-import org.greports.utils.Translator;
-import org.greports.utils.Utils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -48,7 +45,7 @@ public class ReportSingleDataParser extends ReportParser {
 
     private <T> void parseData(final T object, final Class<T> clazz) throws ReportEngineReflectionException {
         reportData.setDataStartRow(reportData.getConfiguration().dataStartRowIndex());
-        Map<Integer, ReportDataRow> rows = new HashMap<>();
+        Map<Integer, DataRow> rows = new HashMap<>();
 
         Map<Cell, Method> cellMap = new LinkedHashMap<>();
         Function<Pair<Cell, Method>, Void> cellFunction = AnnotationUtils.getCellsAndMethodsFunction(cellMap);
@@ -58,9 +55,9 @@ public class ReportSingleDataParser extends ReportParser {
             final Method method = entry.getValue();
             Integer rowIndex = reportData.getConfiguration().dataStartRowIndex() + cell.row();
             if(!rows.containsKey(rowIndex)){
-                rows.put(rowIndex, new ReportDataRow(rowIndex));
+                rows.put(rowIndex, new DataRow(rowIndex));
             }
-            final ReportDataRow dataRow = rows.get(rowIndex);
+            final DataRow dataRow = rows.get(rowIndex);
             method.setAccessible(true);
             try {
                 Object cellValue = object != null ? method.invoke(object ) : null;
@@ -69,7 +66,7 @@ public class ReportSingleDataParser extends ReportParser {
                 } else if(cell.getterConverter().length == 1){
                     cellValue = ConverterUtils.convertValue(cellValue, cell.getterConverter()[0]);
                 }
-                ReportDataCell reportDataCell = new ReportDataCell(
+                DataCell dataCell = new DataCell(
                         (float) cell.column(),
                         true,
                         cell.format(),
@@ -77,14 +74,14 @@ public class ReportSingleDataParser extends ReportParser {
                         cell.valueType(),
                         cell.columnWidth()
                 );
-                dataRow.addCell(reportDataCell);
+                dataRow.addCell(dataCell);
             } catch (IllegalAccessException e) {
                 throw new ReportEngineReflectionException("Error invoking the method with no access", e, clazz);
             } catch (InvocationTargetException e) {
                 throw new ReportEngineReflectionException("Error invoking the method", e, clazz);
             }
         }
-        for (final Map.Entry<Integer, ReportDataRow> dataRowEntry : rows.entrySet()) {
+        for (final Map.Entry<Integer, DataRow> dataRowEntry : rows.entrySet()) {
             reportData.addRow(dataRowEntry.getValue());
         }
     }

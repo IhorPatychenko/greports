@@ -3,19 +3,19 @@ package org.greports.engine;
 import com.google.common.base.Stopwatch;
 import org.apache.log4j.Level;
 import org.greports.content.ReportData;
-import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.greports.services.LoggerService;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
+import java.util.List;
 
 public class ReportGeneratorResult {
 
     private final boolean loggerEnabled;
     private LoggerService loggerService;
+    private ReportResultChanger resultChanger = new ReportResultChanger(this);
 
     public ReportGeneratorResult() {
         this(false, Level.ALL);
@@ -26,10 +26,18 @@ public class ReportGeneratorResult {
         loggerService = new LoggerService(ReportGeneratorResult.class, loggerEnabled, level);
     }
 
-    private final Collection<ReportData> reportData = new ArrayList<>();
+    private final List<ReportData> reportData = new ArrayList<>();
 
-    void addData(ReportData data){
+    protected void addData(ReportData data){
         reportData.add(data);
+    }
+
+    protected List<ReportData> getReportData() {
+        return reportData;
+    }
+
+    public ReportResultChanger getResultChanger() {
+        return resultChanger;
     }
 
     public void writeToFile(String filePath) throws IOException {

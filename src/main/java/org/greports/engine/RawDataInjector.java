@@ -3,11 +3,11 @@ package org.greports.engine;
 import com.google.common.base.Stopwatch;
 import org.greports.content.ReportData;
 import org.greports.content.ReportHeader;
-import org.greports.content.column.ReportDataCell;
-import org.greports.content.cell.ReportDataSpecialRowCell;
-import org.greports.content.cell.ReportHeaderCell;
-import org.greports.content.row.ReportDataRow;
-import org.greports.content.row.ReportDataSpecialRow;
+import org.greports.content.cell.DataCell;
+import org.greports.content.cell.SpecialDataCell;
+import org.greports.content.cell.HeaderCell;
+import org.greports.content.row.DataRow;
+import org.greports.content.row.SpecialDataRow;
 import org.apache.commons.collections4.map.HashedMap;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellRangeAddress;
@@ -42,15 +42,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
-class ReportDataRawInjector extends ReportDataInjector {
+class RawDataInjector extends DataInjector {
 
     private final ReportData reportData;
     private Map<Pair<ReportStyle<?>, String>, XSSFCellStyle> _stylesCache = new HashedMap<>();
 
-    public ReportDataRawInjector(XSSFWorkbook currentWorkbook, ReportData reportData, boolean loggerEnabled) {
+    public RawDataInjector(XSSFWorkbook currentWorkbook, ReportData reportData, boolean loggerEnabled) {
         super(currentWorkbook, reportData, loggerEnabled);
         this.reportData = reportData;
     }
@@ -108,10 +106,10 @@ class ReportDataRawInjector extends ReportDataInjector {
     private void createHeader(Sheet sheet) {
         if(reportData.isCreateHeader()){
             final ReportHeader header = reportData.getHeader();
-            final Row headerRow = sheet.createRow(reportData.getHeaderRowIndex());
+            final Row headerRow = sheet.createRow(header.getRowIndex());
             int mergeCount = 0;
             for (int i = 0; i < header.getCells().size(); i++) {
-                final ReportHeaderCell headerCell = header.getCells().get(i);
+                final HeaderCell headerCell = header.getCells().get(i);
                 createHeaderCell(sheet, headerRow, headerCell, i + mergeCount, headerCell.getColumnWidth());
                 if(headerCell.getColumnWidth() > 1){
                     mergeCount += headerCell.getColumnWidth() - 1;
@@ -126,41 +124,41 @@ class ReportDataRawInjector extends ReportDataInjector {
 
     private void createDataRows(Sheet sheet){
         // First create cells with data
-        for (int i = 0; i < reportData.getRows().size(); i++) {
-            final ReportDataRow reportDataRow = reportData.getRow(i);
+        for (int i = 0; i < reportData.getDataRows().size(); i++) {
+            final DataRow dataRow = reportData.getDataRow(i);
             final Row row = sheet.createRow(reportData.getDataStartRow() + i);
             int mergedCellsCount = 0;
-            for (int y = 0; y < reportDataRow.getCells().size(); y++) {
-                final ReportDataCell reportDataCell = reportDataRow.getColumn(y);
-                if(!reportDataCell.getValueType().equals(ValueType.FORMULA)){
-                    createCell(sheet, row, reportDataCell, reportDataCell.isPhysicalPosition() ? reportDataCell.getPosition().intValue() : y + mergedCellsCount);
-                    if(reportDataCell.getColumnWidth() > 1){
-                        mergedCellsCount += reportDataCell.getColumnWidth() - 1;
+            for (int y = 0; y < dataRow.getCells().size(); y++) {
+                final DataCell dataCell = dataRow.getCell(y);
+                if(!dataCell.getValueType().equals(ValueType.FORMULA)){
+                    createCell(sheet, row, dataCell, dataCell.isPhysicalPosition() ? dataCell.getPosition().intValue() : y + mergedCellsCount);
+                    if(dataCell.getColumnWidth() > 1){
+                        mergedCellsCount += dataCell.getColumnWidth() - 1;
                     }
                 }
             }
         }
         // After create cells with formulas to can evaluate them
-        for (int i = 0; i < reportData.getRows().size(); i++) {
-            final ReportDataRow reportDataRow = reportData.getRow(i);
+        for (int i = 0; i < reportData.getDataRows().size(); i++) {
+            final DataRow dataRow = reportData.getDataRow(i);
             final Row row = sheet.getRow(reportData.getDataStartRow() + i);
             int mergedCellsCount = 0;
-            for (int y = 0; y < reportDataRow.getCells().size(); y++) {
-                final ReportDataCell reportDataCell = reportDataRow.getColumn(y);
-                if(reportDataCell.getValueType().equals(ValueType.FORMULA)){
-                    createCell(sheet, row, reportDataCell, reportDataCell.isPhysicalPosition() ? reportDataCell.getPosition().intValue() : y + mergedCellsCount);
-                    if(reportDataCell.getColumnWidth() > 1){
-                        mergedCellsCount += reportDataCell.getColumnWidth() - 1;
+            for (int y = 0; y < dataRow.getCells().size(); y++) {
+                final DataCell dataCell = dataRow.getCell(y);
+                if(dataCell.getValueType().equals(ValueType.FORMULA)){
+                    createCell(sheet, row, dataCell, dataCell.isPhysicalPosition() ? dataCell.getPosition().intValue() : y + mergedCellsCount);
+                    if(dataCell.getColumnWidth() > 1){
+                        mergedCellsCount += dataCell.getColumnWidth() - 1;
                     }
                 }
             }
         }
     }
 
-    private void createHeaderCell(final Sheet sheet, final Row row, final ReportHeaderCell headerCell, final int cellIndex, final int columnWidth){
+    private void createHeaderCell(final Sheet sheet, final Row row, final HeaderCell headerCell, final int cellIndex, final int columnWidth){
         final Cell cell = row.createCell(cellIndex);
         createColumnsToMerge(sheet, row, cellIndex, columnWidth);
-        WorkbookUtils.setCellValue(cell, headerCell.getTitle());
+        WorkbookUtils.setCellValue(cell, headerCell.getValue());
     }
 
     private void createColumnsToMerge(final Sheet sheet, final Row row, final int cellIndex, final int columnWidth) {
@@ -172,45 +170,45 @@ class ReportDataRawInjector extends ReportDataInjector {
         }
     }
 
-    private void createCell(Sheet sheet, Row row, ReportDataCell reportDataCell, int columnIndex){
+    private void createCell(Sheet sheet, Row row, DataCell dataCell, int columnIndex){
         CellType cellType = CellType.BLANK;
-        final ValueType valueType = reportDataCell.getValueType();
+        final ValueType valueType = dataCell.getValueType();
         if(!ValueType.FORMULA.equals(valueType)){
-            if(reportDataCell.getValue() instanceof Number){
+            if(dataCell.getValue() instanceof Number){
                 cellType = CellType.NUMERIC;
-            } else if(reportDataCell.getValue() instanceof String){
+            } else if(dataCell.getValue() instanceof String){
                 cellType = CellType.STRING;
-            } else if(reportDataCell.getValue() instanceof Boolean) {
+            } else if(dataCell.getValue() instanceof Boolean) {
                 cellType = CellType.BOOLEAN;
             }
             final Cell cell = row.createCell(columnIndex, cellType);
-            WorkbookUtils.setCellValue(cell, reportDataCell.getValue());
-            setCellFormat(cell, reportDataCell.getFormat());
+            WorkbookUtils.setCellValue(cell, dataCell.getValue());
+            setCellFormat(cell, dataCell.getFormat());
         } else {
             cellType = CellType.FORMULA;
             final Cell cell = row.createCell(columnIndex, cellType);
-            String formulaString = reportDataCell.getValue().toString();
+            String formulaString = dataCell.getValue().toString();
             for (Map.Entry<String, Integer> entry : reportData.getTargetIndexes().entrySet()) {
                 formulaString = formulaString.replaceAll(entry.getKey(), super.getCellReferenceForTargetId(row, entry.getKey()).formatAsString());
             }
             cell.setCellFormula(formulaString);
-            setCellFormat(cell, reportDataCell.getFormat());
+            setCellFormat(cell, dataCell.getFormat());
         }
 
-        createColumnsToMerge(sheet, row, columnIndex, reportDataCell.getColumnWidth());
+        createColumnsToMerge(sheet, row, columnIndex, dataCell.getColumnWidth());
     }
 
     private void createSpecialRows(Sheet sheet) {
-        final List<ReportDataSpecialRow> specialRows = reportData.getSpecialRows();
+        final List<SpecialDataRow> specialRows = reportData.getSpecialRows();
         for (int i = 0; i < specialRows.size(); i++) {
-            ReportDataSpecialRow specialRow = specialRows.get(i);
-            if(specialRow.getIndex() == Integer.MAX_VALUE) {
-                specialRow.setIndex(reportData.getDataStartRow() + reportData.getRowsCount() + i);
+            SpecialDataRow specialRow = specialRows.get(i);
+            if(specialRow.getRowIndex() == Integer.MAX_VALUE) {
+                specialRow.setRowIndex(reportData.getDataStartRow() + reportData.getRowsCount() + i);
             }
-            for (final ReportDataSpecialRowCell specialCell : specialRow.getSpecialCells()) {
-                Row row = sheet.getRow(specialRow.getIndex());
+            for (final SpecialDataCell specialCell : specialRow.getSpecialCells()) {
+                Row row = sheet.getRow(specialRow.getRowIndex());
                 if(row == null){
-                    row = sheet.createRow(specialRow.getIndex());
+                    row = sheet.createRow(specialRow.getRowIndex());
                 }
                 final Integer columnIndexForTarget = reportData.getColumnIndexForTarget(specialCell.getTargetId());
                 Cell cell = row.createCell(columnIndexForTarget);

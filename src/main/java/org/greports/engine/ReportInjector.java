@@ -26,9 +26,9 @@ public class ReportInjector {
             for (ReportData data : reportData) {
                 if (data.isReportWithTemplate()) {
                     currentWorkbook = (XSSFWorkbook) WorkbookFactory.create(data.getTemplateURL().openStream());
-                    new ReportDataTemplateInjector(currentWorkbook, data, loggerEnabled).inject();
+                    new TemplateDataInjector(currentWorkbook, data, loggerEnabled).inject();
                 } else {
-                    new ReportDataRawInjector(currentWorkbook, data, loggerEnabled).inject();
+                    new RawDataInjector(currentWorkbook, data, loggerEnabled).inject();
                 }
             }
         } catch (InvalidFormatException e) {

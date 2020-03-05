@@ -13,7 +13,7 @@ public class ReportConfigurator {
     private String sheetName;
     private Map<Class<?>, String> formats = new HashMap<>();
 
-    public ReportGenerator getReportGenerator() {
+    protected ReportGenerator getReportGenerator() {
         return reportGenerator;
     }
 

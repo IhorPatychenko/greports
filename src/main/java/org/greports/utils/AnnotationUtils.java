@@ -14,7 +14,7 @@ import org.greports.annotations.SpecialColumn;
 import org.greports.annotations.Subreport;
 import org.greports.annotations.SubreportGetter;
 import org.greports.annotations.SubreportSetter;
-import org.greports.content.cell.ReportHeaderCell;
+import org.greports.content.cell.HeaderCell;
 import org.greports.engine.ReportBlock;
 import org.greports.engine.ValueType;
 import org.greports.exceptions.ReportEngineReflectionException;
@@ -484,10 +484,10 @@ public class AnnotationUtils {
         };
     }
 
-    public static Function<Pair<Method, Column>, Void> getHeadersFunction(List<ReportHeaderCell> cells, Translator translator, Float positionIncrement) {
+    public static Function<Pair<Method, Column>, Void> getHeadersFunction(List<HeaderCell> cells, Translator translator, Float positionIncrement) {
         return pair -> {
             Column column = pair.getRight();
-            cells.add(new ReportHeaderCell(column.position() + positionIncrement, translator.translate(column.title()), column.id(), column.autoSizeColumn(), column.columnWidth()));
+            cells.add(new HeaderCell(column.position() + positionIncrement, translator.translate(column.title()), column.id(), column.autoSizeColumn(), column.columnWidth()));
             return null;
         };
     }

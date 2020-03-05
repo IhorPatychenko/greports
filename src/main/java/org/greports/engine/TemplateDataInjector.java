@@ -2,8 +2,8 @@ package org.greports.engine;
 
 import org.greports.content.ReportData;
 import org.greports.content.ReportHeader;
-import org.greports.content.column.ReportDataCell;
-import org.greports.content.row.ReportDataRow;
+import org.greports.content.cell.DataCell;
+import org.greports.content.row.DataRow;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.AreaReference;
 import org.apache.poi.ss.util.CellReference;
@@ -16,11 +16,11 @@ import org.openxmlformats.schemas.spreadsheetml.x2006.main.CTTable;
 import java.util.HashMap;
 import java.util.Map;
 
-public class ReportDataTemplateInjector extends ReportDataInjector {
+public class TemplateDataInjector extends DataInjector {
 
     private final Map<Integer, XSSFCellStyle> _stylesCache = new HashMap<>();
 
-    public ReportDataTemplateInjector(XSSFWorkbook targetWorkbook, ReportData data, boolean loggerEnabled) {
+    public TemplateDataInjector(XSSFWorkbook targetWorkbook, ReportData data, boolean loggerEnabled) {
         super(targetWorkbook, data, loggerEnabled);
     }
 
@@ -40,9 +40,9 @@ public class ReportDataTemplateInjector extends ReportDataInjector {
     private void createHeader(Sheet sheet) {
         if(reportData.isCreateHeader()){
             final ReportHeader header = reportData.getHeader();
-            final Row targetHeaderRow = sheet.getRow(reportData.getHeaderRowIndex());
+            final Row targetHeaderRow = sheet.getRow(header.getRowIndex());
             for (int i = 0; i < header.getCells().size(); i++) {
-                WorkbookUtils.setCellValue(targetHeaderRow.getCell(i), header.getCells().get(i).getTitle());
+                WorkbookUtils.setCellValue(targetHeaderRow.getCell(i), header.getCells().get(i).getValue());
             }
         }
     }
@@ -64,12 +64,12 @@ public class ReportDataTemplateInjector extends ReportDataInjector {
 
     private void createDataRows(Sheet sheet) {
         final Row sourceRow = sheet.getRow(reportData.getDataStartRow());
-        for (int i = 0; i < reportData.getRows().size(); i++) {
+        for (int i = 0; i < reportData.getDataRows().size(); i++) {
             final Row targetRow = sheet.createRow(reportData.getDataStartRow() + i + 1);
-            final ReportDataRow dataRow = reportData.getRows().get(i);
+            final DataRow dataRow = reportData.getDataRows().get(i);
             for (int cellIndex = 0; cellIndex < dataRow.getCells().size(); cellIndex++) {
-                final ReportDataCell reportDataCell = dataRow.getCells().get(cellIndex);
-                cloneCell(sourceRow, targetRow, reportDataCell.getValue(), cellIndex);
+                final DataCell dataCell = dataRow.getCells().get(cellIndex);
+                cloneCell(sourceRow, targetRow, dataCell.getValue(), cellIndex);
             }
         }
         sheet.shiftRows(reportData.getDataStartRow() + 1, reportData.getDataStartRow() + reportData.getRowsCount() + 1, -1);

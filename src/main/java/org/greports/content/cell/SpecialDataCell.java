@@ -2,18 +2,18 @@ package org.greports.content.cell;
 
 import org.greports.engine.ValueType;
 
-public class ReportDataSpecialRowCell {
+public class SpecialDataCell implements ReportCell, Cloneable {
     private final ValueType valueType;
-    private final Object value;
+    private Object value;
     private final String format;
     private final String targetId;
     private final int columnWidth;
 
-    public ReportDataSpecialRowCell(final ValueType valueType, final Object value, final String format, final String targetId) {
+    public SpecialDataCell(final ValueType valueType, final Object value, final String format, final String targetId) {
         this(valueType, value, format, targetId, 1);
     }
 
-    public ReportDataSpecialRowCell(final ValueType valueType, final Object value, final String format, final String targetId, final int columnWidth) {
+    public SpecialDataCell(final ValueType valueType, final Object value, final String format, final String targetId, final int columnWidth) {
         this.valueType = valueType;
         this.value = value;
         this.format = format;
@@ -39,5 +39,19 @@ public class ReportDataSpecialRowCell {
 
     public int getColumnWidth() {
         return columnWidth;
+    }
+
+    @Override
+    public void setValue(final Object newValue) {
+        this.value = newValue;
+    }
+
+    @Override
+    public Object clone() {
+        Object clone = this;
+        try {
+            clone = super.clone();
+        } catch (CloneNotSupportedException ignored) {}
+        return clone;
     }
 }

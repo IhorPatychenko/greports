@@ -1,10 +1,12 @@
 package org.greports.content;
 
 import org.greports.annotations.Configuration;
-import org.greports.content.cell.ReportCell;
-import org.greports.content.cell.ReportHeaderCell;
-import org.greports.content.row.ReportDataRow;
-import org.greports.content.row.ReportDataSpecialRow;
+import org.greports.content.cell.AbstractReportCell;
+import org.greports.content.cell.HeaderCell;
+import org.greports.content.row.DataRow;
+import org.greports.content.row.SpecialDataRow;
+import org.greports.content.row.ReportRow;
+import org.greports.exceptions.ReportEngineRuntimeException;
 import org.greports.styles.ReportDataStyles;
 
 import java.net.URL;
@@ -14,8 +16,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
-public class ReportData {
+public class ReportData implements Cloneable {
 
     private final String reportName;
     private Configuration configuration;
@@ -23,10 +26,9 @@ public class ReportData {
     private final URL templateURL;
     private ReportHeader header;
     private boolean createHeader;
-    private int headerStartRow;
     private int dataStartRow;
-    private final List<ReportDataSpecialRow> specialRows = new ArrayList<>();
-    private final List<ReportDataRow> rows = new ArrayList<>();
+    private List<SpecialDataRow> specialRows = new ArrayList<>();
+    private List<DataRow> dataRows = new ArrayList<>();
     private final ReportDataStyles reportDataStyles = new ReportDataStyles();
     private final Map<String, Integer> targetIndexes = new HashMap<>();
 
@@ -61,16 +63,28 @@ public class ReportData {
         return !Objects.equals(templateURL, null);
     }
 
-    public List<ReportDataRow> getRows() {
-        return rows;
+    public List<DataRow> getDataRows() {
+        return dataRows;
     }
 
-    public ReportDataRow getRow(int index) {
-        return rows.get(index);
+    public DataRow getDataRow(int index) {
+        return dataRows.get(index);
+    }
+
+    public ReportRow getPhysicalRow(int rowIndex) {
+        List<ReportRow> rows = new ArrayList<>();
+        rows.add(header);
+        rows.addAll(dataRows);
+        rows.addAll(specialRows);
+        final List<ReportRow> sorted = rows.stream().sorted(Comparator.comparing(ReportRow::getRowIndex)).collect(Collectors.toList());
+        if(sorted.size() > rowIndex){
+            return sorted.get(rowIndex);
+        }
+        throw new ReportEngineRuntimeException(String.format("Not existing row with rowIndex %d", rowIndex), this.getClass());
     }
 
     public int getRowsCount(){
-        return rows.size();
+        return dataRows.size();
     }
 
     public ReportHeader setHeader(ReportHeader header) {
@@ -82,8 +96,8 @@ public class ReportData {
         return header;
     }
 
-    public void addRow(ReportDataRow row) {
-        this.rows.add(row);
+    public void addRow(DataRow row) {
+        this.dataRows.add(row);
     }
 
     public void setCreateHeader(boolean createHeader) {
@@ -92,14 +106,6 @@ public class ReportData {
 
     public boolean isCreateHeader() {
         return createHeader;
-    }
-
-    public int getHeaderRowIndex() {
-        return headerStartRow;
-    }
-
-    public void setHeaderStartRow(int headerStartRow) {
-        this.headerStartRow = headerStartRow;
     }
 
     public int getDataStartRow() {
@@ -118,7 +124,7 @@ public class ReportData {
         List<Integer> autosizedColumns = new ArrayList<>();
         int mergedCount = 0;
         for (int i = 0; header != null && i < header.getCells().size(); i++) {
-            final ReportHeaderCell headerCell = header.getCells().get(i);
+            final HeaderCell headerCell = header.getCells().get(i);
             if(headerCell.isAutoSizeColumn()){
                 autosizedColumns.add(i + mergedCount);
             }
@@ -133,12 +139,12 @@ public class ReportData {
         return reportDataStyles;
     }
 
-    public List<ReportDataSpecialRow> getSpecialRows() {
+    public List<SpecialDataRow> getSpecialRows() {
         return specialRows;
     }
 
-    public void addSpecialRow(ReportDataSpecialRow reportDataSpecialRow) {
-        specialRows.add(reportDataSpecialRow);
+    public void addSpecialRow(SpecialDataRow specialDataRow) {
+        specialRows.add(specialDataRow);
     }
 
     public Integer getColumnIndexForTarget(String target) {
@@ -156,11 +162,11 @@ public class ReportData {
             mergeStyles(other);
         }
 
-        header.getCells().sort(Comparator.comparing(ReportCell::getPosition));
-        rows.forEach(row -> row.getCells().sort(Comparator.comparing(ReportCell::getPosition)));
+        header.getCells().sort(Comparator.comparing(AbstractReportCell::getPosition));
+        dataRows.forEach(row -> row.getCells().sort(Comparator.comparing(AbstractReportCell::getPosition)));
 
         for (int i = 0; i < header.getCells().size(); i++) {
-            ReportHeaderCell headerCell = header.getCell(i);
+            HeaderCell headerCell = header.getCell(i);
             if(!headerCell.getId().equals("")){
                 targetIndexes.put(headerCell.getId(), i);
             }
@@ -172,12 +178,21 @@ public class ReportData {
     }
 
     private void mergeRows(ReportData other) {
-        for (int i = 0; i < rows.size(); i++) {
-            getRow(i).addCells(other.getRow(i).getCells());
+        for (int i = 0; i < dataRows.size(); i++) {
+            getDataRow(i).addCells(other.getDataRow(i).getCells());
         }
     }
 
     private void mergeStyles(ReportData other) {
         reportDataStyles.mergeStyles(other.reportDataStyles);
+    }
+
+    @Override
+    public Object clone() throws CloneNotSupportedException {
+        final ReportData clone = (ReportData) super.clone();
+        clone.header = (ReportHeader) this.header.clone();
+        clone.dataRows = dataRows.stream().map(row -> (DataRow) row.clone()).collect(Collectors.toList());
+        clone.specialRows = specialRows.stream().map(row -> (SpecialDataRow) row.clone()).collect(Collectors.toList());
+        return clone;
     }
 }

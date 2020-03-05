@@ -1,41 +1,59 @@
 package org.greports.content;
 
-import org.greports.content.cell.ReportHeaderCell;
+import org.greports.content.cell.HeaderCell;
+import org.greports.content.row.ReportRow;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-public class ReportHeader {
+public class ReportHeader implements ReportRow, Cloneable {
 
-    private final List<ReportHeaderCell> cells = new ArrayList<>();
+    private List<HeaderCell> cells = new ArrayList<>();
     private final boolean columnFilter;
+    private final int rowIndex;
 
-    public ReportHeader(){
-        this(false);
-    }
-
-    public ReportHeader(boolean addFilter) {
+    public ReportHeader(final boolean addFilter, final int rowIndex) {
         this.columnFilter = addFilter;
+        this.rowIndex = rowIndex;
     }
 
-    public List<ReportHeaderCell> getCells() {
+    public List<HeaderCell> getCells() {
         return cells;
     }
 
-    public ReportHeaderCell getCell(int index){
+    public HeaderCell getCell(int index){
         return cells.get(index);
     }
 
-    public void addCell(ReportHeaderCell cell) {
+    @Override
+    public Integer getRowIndex() {
+        return rowIndex;
+    }
+
+    public void addCell(HeaderCell cell) {
         this.cells.add(cell);
     }
 
-    public void addCells(Collection<ReportHeaderCell> cells) {
+    public void addCells(Collection<HeaderCell> cells) {
         this.cells.addAll(cells);
     }
 
     public boolean isColumnFilter() {
         return columnFilter;
+    }
+
+    @Override
+    public Object clone() {
+        ReportHeader clone = this;
+        try {
+            clone = (ReportHeader) super.clone();
+            List<HeaderCell> newCells = new ArrayList<>();
+            for (final HeaderCell cell : cells) {
+                newCells.add((HeaderCell) cell.clone());
+            }
+            clone.cells = newCells;
+        } catch (CloneNotSupportedException ignored) {}
+        return clone;
     }
 }
