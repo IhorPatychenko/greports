@@ -1,14 +1,15 @@
-package org.greports.content;
+package org.greports.engine;
 
 import org.greports.annotations.Configuration;
+import org.greports.content.ReportHeader;
 import org.greports.content.cell.AbstractReportCell;
 import org.greports.content.cell.HeaderCell;
 import org.greports.content.row.DataRow;
-import org.greports.content.row.SpecialDataRow;
 import org.greports.content.row.ReportRow;
-import org.greports.exceptions.ReportEngineRuntimeException;
+import org.greports.content.row.SpecialDataRow;
 import org.greports.styles.ReportDataStyles;
 
+import java.io.Serializable;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -18,12 +19,12 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-public class ReportData implements Cloneable {
+public class ReportData implements Cloneable, Serializable {
 
-    private final String reportName;
-    private Configuration configuration;
-    private String sheetName;
-    private final URL templateURL;
+    private static final long serialVersionUID = 7890759064532349923L;
+    private String reportName;
+    private ReportConfiguration configuration;
+    private URL templateURL;
     private ReportHeader header;
     private boolean createHeader;
     private int dataStartRow;
@@ -32,10 +33,13 @@ public class ReportData implements Cloneable {
     private final ReportDataStyles reportDataStyles = new ReportDataStyles();
     private final Map<String, Integer> targetIndexes = new HashMap<>();
 
-    public ReportData(String reportName, Configuration configuration, URL templateURL) {
-        this.reportName = reportName;
+    public ReportData(final ReportConfiguration configuration) {
         this.configuration = configuration;
-        this.sheetName = !configuration.sheetName().isEmpty() ? configuration.sheetName() : null;
+    }
+
+    ReportData(final String reportName, final Configuration configuration, final URL templateURL) {
+        this.reportName = reportName;
+        this.configuration = new ReportConfiguration(configuration);
         this.templateURL = templateURL;
     }
 
@@ -43,16 +47,16 @@ public class ReportData implements Cloneable {
         return reportName;
     }
 
-    public Configuration getConfiguration() {
+    public ReportConfiguration getConfiguration() {
         return configuration;
     }
 
     public String getSheetName() {
-        return sheetName;
+        return !configuration.getSheetName().isEmpty() ? configuration.getSheetName() : null;
     }
 
     public void setSheetName(final String sheetName) {
-        this.sheetName = sheetName;
+        this.configuration.setSheetName(sheetName);
     }
 
     public URL getTemplateURL() {
@@ -67,11 +71,11 @@ public class ReportData implements Cloneable {
         return dataRows;
     }
 
-    public DataRow getDataRow(int index) {
+    public DataRow getDataRow(final int index) {
         return dataRows.get(index);
     }
 
-    public ReportRow getPhysicalRow(int rowIndex) {
+    public ReportRow getPhysicalRow(final int rowIndex) {
         List<ReportRow> rows = new ArrayList<>();
         rows.add(header);
         rows.addAll(dataRows);
@@ -80,7 +84,12 @@ public class ReportData implements Cloneable {
         if(sorted.size() > rowIndex){
             return sorted.get(rowIndex);
         }
-        throw new ReportEngineRuntimeException(String.format("Not existing row with rowIndex %d", rowIndex), this.getClass());
+        return null;
+    }
+
+    public boolean isCellExist(final int rowIndex, final int columnIndex) {
+        ReportRow physicalRow = getPhysicalRow(rowIndex);
+        return physicalRow != null && physicalRow.getCells().size() > columnIndex;
     }
 
     public int getRowsCount(){
@@ -191,6 +200,7 @@ public class ReportData implements Cloneable {
     public Object clone() throws CloneNotSupportedException {
         final ReportData clone = (ReportData) super.clone();
         clone.header = (ReportHeader) this.header.clone();
+        clone.configuration = (ReportConfiguration) this.configuration.clone();
         clone.dataRows = dataRows.stream().map(row -> (DataRow) row.clone()).collect(Collectors.toList());
         clone.specialRows = specialRows.stream().map(row -> (SpecialDataRow) row.clone()).collect(Collectors.toList());
         return clone;

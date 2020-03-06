@@ -8,8 +8,10 @@ import org.greports.styles.stylesbuilders.RectangleRangedStylesBuilder;
 import org.greports.styles.stylesbuilders.VerticalRangedStylesBuilder;
 
 import java.awt.*;
+import java.io.Serializable;
 
-public class ReportDataStyles {
+public class ReportDataStyles implements Serializable {
+    private static final long serialVersionUID = 3171712599995917074L;
 
     private VerticalRangedStylesBuilder rowStyles;
     private HorizontalRangedStylesBuilder columnStyles;

@@ -3,12 +3,14 @@ package org.greports.content;
 import org.greports.content.cell.HeaderCell;
 import org.greports.content.row.ReportRow;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-public class ReportHeader implements ReportRow, Cloneable {
+public class ReportHeader implements ReportRow<HeaderCell>, Cloneable, Serializable {
 
+    private static final long serialVersionUID = -927334852923873496L;
     private List<HeaderCell> cells = new ArrayList<>();
     private final boolean columnFilter;
     private final int rowIndex;
@@ -16,19 +18,6 @@ public class ReportHeader implements ReportRow, Cloneable {
     public ReportHeader(final boolean addFilter, final int rowIndex) {
         this.columnFilter = addFilter;
         this.rowIndex = rowIndex;
-    }
-
-    public List<HeaderCell> getCells() {
-        return cells;
-    }
-
-    public HeaderCell getCell(int index){
-        return cells.get(index);
-    }
-
-    @Override
-    public Integer getRowIndex() {
-        return rowIndex;
     }
 
     public void addCell(HeaderCell cell) {
@@ -41,6 +30,21 @@ public class ReportHeader implements ReportRow, Cloneable {
 
     public boolean isColumnFilter() {
         return columnFilter;
+    }
+
+    @Override
+    public List<HeaderCell> getCells() {
+        return cells;
+    }
+
+    @Override
+    public HeaderCell getCell(int index){
+        return cells.get(index);
+    }
+
+    @Override
+    public Integer getRowIndex() {
+        return rowIndex;
     }
 
     @Override

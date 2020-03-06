@@ -18,5 +18,13 @@ public @interface SubreportGetter {
      */
     String[] reportName();
 
+    /**
+     * Start position of columns in the subreport.
+     * The position will be added to the position of internal columns
+     * inside the subreport. These one will be ordered from lowest
+     * to highest position index.
+     *
+     * @return float
+     */
     float position();
 }

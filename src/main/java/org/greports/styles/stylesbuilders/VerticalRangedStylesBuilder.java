@@ -3,7 +3,10 @@ package org.greports.styles.stylesbuilders;
 import org.greports.positioning.VerticalRange;
 import org.greports.styles.VerticalRangedStyle;
 
-public class VerticalRangedStylesBuilder extends AbstractReportStylesBuilder<VerticalRangedStylesBuilder, VerticalRange, VerticalRangedStyleBuilder, VerticalRangedStyle> {
+import java.io.Serializable;
+
+public class VerticalRangedStylesBuilder extends AbstractReportStylesBuilder<VerticalRangedStylesBuilder, VerticalRange, VerticalRangedStyleBuilder, VerticalRangedStyle> implements Serializable {
+    private static final long serialVersionUID = 4292781963605597619L;
 
     public VerticalRangedStylesBuilder(StylePriority priority) {
         super(priority);

@@ -1,15 +1,13 @@
 package org.greports.engine;
 
 import com.google.common.base.Stopwatch;
-import org.greports.content.ReportData;
-import org.greports.content.ReportHeader;
-import org.greports.content.cell.DataCell;
-import org.greports.content.cell.SpecialDataCell;
-import org.greports.content.cell.HeaderCell;
-import org.greports.content.row.DataRow;
-import org.greports.content.row.SpecialDataRow;
 import org.apache.commons.collections4.map.HashedMap;
-import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellType;
+import org.apache.poi.ss.usermodel.FillPatternType;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.ss.util.CellReference;
 import org.apache.poi.xssf.usermodel.XSSFCellStyle;
@@ -18,6 +16,12 @@ import org.apache.poi.xssf.usermodel.XSSFFont;
 import org.apache.poi.xssf.usermodel.XSSFFormulaEvaluator;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.apache.poi.xssf.usermodel.extensions.XSSFCellBorder;
+import org.greports.content.ReportHeader;
+import org.greports.content.cell.DataCell;
+import org.greports.content.cell.HeaderCell;
+import org.greports.content.cell.SpecialDataCell;
+import org.greports.content.row.DataRow;
+import org.greports.content.row.SpecialDataRow;
 import org.greports.positioning.HorizontalRange;
 import org.greports.positioning.Position;
 import org.greports.positioning.RectangleRange;
@@ -26,9 +30,9 @@ import org.greports.styles.HorizontalRangedStyle;
 import org.greports.styles.PositionedStyle;
 import org.greports.styles.RectangleRangedStyle;
 import org.greports.styles.ReportStyle;
-import org.greports.styles.stylesbuilders.AbstractReportStylesBuilder;
 import org.greports.styles.VerticalRangedStyle;
 import org.greports.styles.interfaces.StripedRows;
+import org.greports.styles.stylesbuilders.AbstractReportStylesBuilder;
 import org.greports.styles.stylesbuilders.HorizontalRangedStylesBuilder;
 import org.greports.styles.stylesbuilders.PositionedStylesBuilder;
 import org.greports.styles.stylesbuilders.RectangleRangedStylesBuilder;
@@ -36,7 +40,7 @@ import org.greports.styles.stylesbuilders.VerticalRangedStylesBuilder;
 import org.greports.utils.Pair;
 import org.greports.utils.Utils;
 
-import java.awt.Color;
+import java.awt.*;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -64,7 +68,7 @@ class RawDataInjector extends DataInjector {
     private Sheet getSheet(Workbook workbook, ReportData reportData){
         if(reportData.getSheetName() == null){
             return workbook.createSheet();
-        } else if(reportData.getConfiguration().useExistingSheet() && reportData.getSheetName() != null){
+        } else if(reportData.getConfiguration().isUseExistingSheet() && reportData.getSheetName() != null){
             return workbook.getSheet(reportData.getSheetName());
         } else {
             return workbook.createSheet(reportData.getSheetName());

@@ -5,6 +5,7 @@ import org.greports.styles.ReportStyle;
 import org.greports.styles.VerticalRangedStyle;
 
 public class VerticalRangedStyleBuilder extends AbstractReportStyleBuilder<VerticalRangedStyle, VerticalRange, VerticalRangedStyleBuilder> {
+    private static final long serialVersionUID = 5407622152704200794L;
 
     private Float rowHeight;
 

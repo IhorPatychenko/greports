@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class DataRow implements ReportRow, Cloneable {
+public class DataRow implements ReportRow<DataCell>, Cloneable {
 
     private List<DataCell> cells = new ArrayList<>();
     private final Integer rowIndex;
@@ -19,10 +19,6 @@ public class DataRow implements ReportRow, Cloneable {
         return rowIndex;
     }
 
-    public List<DataCell> getCells() {
-        return cells;
-    }
-
     public void addCell(DataCell cell){
         this.cells.add(cell);
     }
@@ -33,6 +29,11 @@ public class DataRow implements ReportRow, Cloneable {
 
     public DataCell getCell(int index) {
         return this.cells.get(index);
+    }
+
+    @Override
+    public List<DataCell> getCells() {
+        return cells;
     }
 
     @Override

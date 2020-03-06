@@ -2,20 +2,21 @@ package org.greports.engine;
 
 import com.google.common.base.Stopwatch;
 import org.apache.log4j.Level;
-import org.greports.content.ReportData;
+import org.greports.exceptions.ReportEngineRuntimeException;
 import org.greports.services.LoggerService;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ReportGeneratorResult {
+public class ReportGeneratorResult implements Serializable {
+    private static final long serialVersionUID = 7222501944914859749L;
 
     private final boolean loggerEnabled;
-    private LoggerService loggerService;
-    private ReportResultChanger resultChanger = new ReportResultChanger(this);
+    private transient LoggerService loggerService;
 
     public ReportGeneratorResult() {
         this(false, Level.ALL);
@@ -36,8 +37,19 @@ public class ReportGeneratorResult {
         return reportData;
     }
 
-    public ReportResultChanger getResultChanger() {
-        return resultChanger;
+    private ReportData getReportDataBySheetName(final String sheetName) {
+        return reportData.stream()
+                .filter(rd -> rd.getSheetName().equals(sheetName))
+                .findFirst()
+                .orElse(null);
+    }
+
+    public ReportResultChanger getResultChanger(String sheetName) {
+        ReportData reportDataBySheetName = getReportDataBySheetName(sheetName);
+        if(reportDataBySheetName == null){
+            throw new ReportEngineRuntimeException(String.format("Sheet with name %s does not exist", sheetName), this.getClass());
+        }
+        return new ReportResultChanger(reportDataBySheetName, this);
     }
 
     public void writeToFile(String filePath) throws IOException {

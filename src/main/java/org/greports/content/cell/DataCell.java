@@ -2,10 +2,12 @@ package org.greports.content.cell;
 
 import org.greports.engine.ValueType;
 
+/**
+ * This class represents a cell which contains an input data.
+ */
 public class DataCell extends AbstractReportCell {
 
     private final boolean physicalPosition;
-    private final String format;
     private final ValueType valueType;
     private final int columnWidth;
 
@@ -14,19 +16,14 @@ public class DataCell extends AbstractReportCell {
     }
 
     public DataCell(final Float position, final boolean physicalPosition, final String format, final Object value, final ValueType valueType, final int columnWidth) {
-        super(position, value);
+        super(position, value, format);
         this.physicalPosition = physicalPosition;
-        this.format = format;
         this.valueType = valueType;
         this.columnWidth = columnWidth;
     }
 
     public boolean isPhysicalPosition() {
         return physicalPosition;
-    }
-
-    public String getFormat() {
-        return format;
     }
 
     public ValueType getValueType() {

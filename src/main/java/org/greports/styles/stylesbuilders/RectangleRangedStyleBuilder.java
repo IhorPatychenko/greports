@@ -6,6 +6,7 @@ import org.greports.styles.RectangleRangedStyle;
 import org.greports.styles.ReportStyle;
 
 public class RectangleRangedStyleBuilder extends AbstractReportStyleBuilder<RectangleRangedStyle, RectangleRange, RectangleRangedStyleBuilder> {
+    private static final long serialVersionUID = 6761881839573020152L;
 
     public RectangleRangedStyleBuilder(final HorizontalRangedStyleBuilder horizontalRangedStyleBuilder, final Integer rowIndex) {
         super(new RectangleRange(new VerticalRange(rowIndex, rowIndex), horizontalRangedStyleBuilder.tuple), horizontalRangedStyleBuilder.clonePreviousStyle);

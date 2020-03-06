@@ -7,9 +7,11 @@ import org.apache.poi.ss.usermodel.HorizontalAlignment;
 import org.apache.poi.ss.usermodel.VerticalAlignment;
 import org.greports.styles.interfaces.StripedRows.StripedRowsIndex;
 
-import java.awt.Color;
+import java.awt.*;
+import java.io.Serializable;
 
-public class ReportStyle<T> {
+public class ReportStyle<T extends Serializable> implements Serializable {
+    private static final long serialVersionUID = 704161250828995451L;
 
     private final T range;
     private Color foregroundColor;

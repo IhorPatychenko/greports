@@ -1,6 +1,5 @@
 package org.greports.interfaces;
 
-import org.greports.exceptions.ReportEngineRuntimeException;
 import org.greports.utils.Pair;
 
 import java.util.List;

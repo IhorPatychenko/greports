@@ -39,9 +39,12 @@ public @interface ColumnGetter {
     String title() default "";
 
     /**
-     * A {@link Converter} which will be used if case
-     * the conversion is needed. The array should contain only one converter or be empty.
-     * @return {@link Converter}
+     * An array of {@link Converter} to be applied when the column value is
+     * being obtained. The array cannot contain more than 1 converter
+     * because its not possible to know which one needs to be used to
+     * convert the column value.
+     *
+     * @return Converter[]
      */
     Converter[] typeConverter() default {};
 

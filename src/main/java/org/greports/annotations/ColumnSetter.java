@@ -44,11 +44,15 @@ public @interface ColumnSetter {
     ColumnValidator[] columnValidators() default {};
 
     /**
-     * A {@link Converter} which will be used if case
-     * the conversion is needed. The array should contain only one converter or be empty.
-     * @return {@link Converter}
+     * An array of {@link Converter} to be applied when the data is
+     * being loaded. The engine will lookup for a {@link Converter}
+     * which fits with a data type coming from excel. If any of these
+     * are valid to make the data conversion, the loaded value will be returned.
+     *
+     * @return Converter[]
      */
     Converter[] typeConverters() default {};
+
 
     /**
      * Column title. This text string will be used to search for

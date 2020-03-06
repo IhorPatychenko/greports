@@ -1,6 +1,9 @@
 package org.greports.positioning;
 
-public class Position extends Tuple<Integer, Integer> {
+import java.io.Serializable;
+
+public class Position extends Tuple<Integer, Integer> implements Serializable {
+    private static final long serialVersionUID = 1633158484373979912L;
 
     public Position(Integer row, Integer column) {
         super(row, column);

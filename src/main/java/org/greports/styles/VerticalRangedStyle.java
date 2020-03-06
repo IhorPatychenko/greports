@@ -3,6 +3,7 @@ package org.greports.styles;
 import org.greports.positioning.VerticalRange;
 
 public class VerticalRangedStyle extends ReportStyle<VerticalRange> {
+    private static final long serialVersionUID = -7534724944790840026L;
 
     private Float rowHeight;
 

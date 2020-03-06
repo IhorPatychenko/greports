@@ -5,6 +5,7 @@ import org.greports.styles.PositionedStyle;
 import org.greports.styles.ReportStyle;
 
 public class PositionedStyleBuilder extends AbstractReportStyleBuilder<PositionedStyle, Position, PositionedStyleBuilder> {
+    private static final long serialVersionUID = 2793213216575883324L;
 
     PositionedStyleBuilder(final Position position, final boolean clonePreviousStyle) {
         super(position, clonePreviousStyle);

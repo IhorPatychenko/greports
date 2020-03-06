@@ -2,7 +2,10 @@ package org.greports.content.row;
 
 import org.greports.content.cell.ReportCell;
 
-public interface ReportRow {
-    ReportCell getCell(int index);
+import java.util.List;
+
+public interface ReportRow<T extends ReportCell> {
+    T getCell(int index);
+    List<T> getCells();
     Integer getRowIndex();
 }

@@ -44,8 +44,24 @@ public @interface Column {
      */
     ColumnValidator[] columnValidators() default {};
 
+    /**
+     * An array of {@link Converter} to be applied when the column value is
+     * being obtained. The array cannot contain more than 1 converter
+     * because its not possible to know which one needs to be used to
+     * convert the column value.
+     *
+     * @return Converter[]
+     */
     Converter[] getterConverter() default {};
 
+    /**
+     * An array of {@link Converter} to be applied when the data is
+     * being loaded. The engine will lookup for a {@link Converter}
+     * which fits with a data type coming from excel. If any of these
+     * are valid to make the data conversion, the loaded value will be returned.
+     *
+     * @return Converter[]
+     */
     Converter[] setterConverters() default {};
 
     /**

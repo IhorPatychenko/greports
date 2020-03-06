@@ -7,12 +7,13 @@ import org.apache.poi.ss.usermodel.HorizontalAlignment;
 import org.apache.poi.ss.usermodel.VerticalAlignment;
 import org.greports.styles.ReportStyle;
 
-import java.awt.Color;
+import java.awt.*;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.stream.Collectors;
 
-public abstract class AbstractReportStylesBuilder<T, E, R extends AbstractReportStyleBuilder<U, E, R>, U extends ReportStyle<E>> {
+public abstract class AbstractReportStylesBuilder<T, E extends Serializable, R extends AbstractReportStyleBuilder<U, E, R>, U extends ReportStyle<E>> {
 
     public enum StylePriority {
         PRIORITY1, PRIORITY2, PRIORITY3, PRIORITY4

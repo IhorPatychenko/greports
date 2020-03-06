@@ -10,7 +10,11 @@ public class HeaderCell extends AbstractReportCell {
     }
 
     public HeaderCell(Float position, String title, String id, boolean autoSizeColumn, int columnWidth) {
-        super(position, title);
+        this(position, title, "@", id, autoSizeColumn, columnWidth);
+    }
+
+    public HeaderCell(Float position, String title, String format, String id, boolean autoSizeColumn, int columnWidth) {
+        super(position, title, format);
         this.id = id;
         this.autoSizeColumn = autoSizeColumn;
         this.columnWidth = columnWidth;

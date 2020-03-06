@@ -7,7 +7,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Annotation that is used to indicate that a class is part of a report.
+ * Annotation used to indicate that a class is part of a report.
  */
 @Inherited
 @Retention(RetentionPolicy.RUNTIME)

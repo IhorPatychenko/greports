@@ -1,6 +1,5 @@
 package org.greports.engine;
 
-import org.greports.content.ReportData;
 import org.greports.exceptions.ReportEngineReflectionException;
 import org.greports.styles.ReportDataStyles;
 import org.greports.styles.interfaces.StripedRows;

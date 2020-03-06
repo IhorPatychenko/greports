@@ -1,7 +1,6 @@
 package org.greports.engine;
 
 import org.apache.log4j.Level;
-import org.greports.content.ReportData;
 import org.greports.exceptions.ReportEngineReflectionException;
 import org.greports.exceptions.ReportEngineRuntimeException;
 import org.greports.utils.Pair;
@@ -37,6 +36,14 @@ public class ReportGenerator {
     public <T> ReportGenerator parseSingleObject(final T object, final String reportName, Class<T> clazz) throws ReportEngineReflectionException {
         final ReportData data = reportSingleDataParser.parse(object, reportName, clazz).getData();
         reportGeneratorResult.addData(data);
+        return this;
+    }
+
+    public ReportGenerator parseReport(final ReportData reportData) {
+        if(reportData == null) {
+            throw new ReportEngineRuntimeException("reportData cannot be null", this.getClass());
+        }
+        reportGeneratorResult.addData(reportData);
         return this;
     }
 

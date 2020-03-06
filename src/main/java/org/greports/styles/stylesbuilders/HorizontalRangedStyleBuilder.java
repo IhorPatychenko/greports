@@ -5,6 +5,7 @@ import org.greports.styles.HorizontalRangedStyle;
 import org.greports.styles.ReportStyle;
 
 public class HorizontalRangedStyleBuilder extends AbstractReportStyleBuilder<HorizontalRangedStyle, HorizontalRange, HorizontalRangedStyleBuilder> {
+    private static final long serialVersionUID = 2630614818385151543L;
 
     private Integer columnWidth;
 

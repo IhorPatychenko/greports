@@ -1,27 +1,7 @@
 package org.greports.content.cell;
 
-public abstract class ReportCell {
-    private final Float position;
-    private String title;
-
-    public ReportCell(Float position) {
-        this.position = position;
-    }
-
-    public ReportCell(Float position, String title) {
-        this(position);
-        this.title = title;
-    }
-
-    public Float getPosition() {
-        return position;
-    }
-
-    public String getTitle() {
-        return title;
-    }
-
-    protected void setTitle(String newTitle) {
-        this.title = newTitle;
-    }
+public interface ReportCell extends Cloneable {
+    void setValue(final Object newValue);
+    void setFormat(final String newFormat);
+    Object clone() throws CloneNotSupportedException;
 }

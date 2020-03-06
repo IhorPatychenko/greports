@@ -4,7 +4,6 @@ import com.google.common.base.Stopwatch;
 import org.apache.log4j.Level;
 import org.greports.annotations.Cell;
 import org.greports.annotations.Configuration;
-import org.greports.content.ReportData;
 import org.greports.content.cell.DataCell;
 import org.greports.content.row.DataRow;
 import org.greports.exceptions.ReportEngineReflectionException;
@@ -44,7 +43,7 @@ public class ReportSingleDataParser extends ReportParser {
     }
 
     private <T> void parseData(final T object, final Class<T> clazz) throws ReportEngineReflectionException {
-        reportData.setDataStartRow(reportData.getConfiguration().dataStartRowIndex());
+        reportData.setDataStartRow(reportData.getConfiguration().getDataStartRowIndex());
         Map<Integer, DataRow> rows = new HashMap<>();
 
         Map<Cell, Method> cellMap = new LinkedHashMap<>();
@@ -53,7 +52,7 @@ public class ReportSingleDataParser extends ReportParser {
         for (final Map.Entry<Cell, Method> entry : cellMap.entrySet()) {
             final Cell cell = entry.getKey();
             final Method method = entry.getValue();
-            Integer rowIndex = reportData.getConfiguration().dataStartRowIndex() + cell.row();
+            Integer rowIndex = reportData.getConfiguration().getDataStartRowIndex() + cell.row();
             if(!rows.containsKey(rowIndex)){
                 rows.put(rowIndex, new DataRow(rowIndex));
             }

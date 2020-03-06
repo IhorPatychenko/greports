@@ -5,7 +5,7 @@ import org.greports.engine.ValueType;
 public class SpecialDataCell implements ReportCell, Cloneable {
     private final ValueType valueType;
     private Object value;
-    private final String format;
+    private String format;
     private final String targetId;
     private final int columnWidth;
 
@@ -44,6 +44,11 @@ public class SpecialDataCell implements ReportCell, Cloneable {
     @Override
     public void setValue(final Object newValue) {
         this.value = newValue;
+    }
+
+    @Override
+    public void setFormat(final String newFormat) {
+        this.format = newFormat;
     }
 
     @Override

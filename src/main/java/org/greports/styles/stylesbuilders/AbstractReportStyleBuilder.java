@@ -7,10 +7,12 @@ import org.apache.poi.ss.usermodel.HorizontalAlignment;
 import org.apache.poi.ss.usermodel.VerticalAlignment;
 import org.greports.styles.ReportStyle;
 
-import java.awt.Color;
+import java.awt.*;
+import java.io.Serializable;
 
-abstract class AbstractReportStyleBuilder<T extends ReportStyle<E>, E, R extends AbstractReportStyleBuilder<T, E, R>> {
+public abstract class AbstractReportStyleBuilder<T extends ReportStyle<E>, E extends Serializable, R extends AbstractReportStyleBuilder<T, E, R>> implements Serializable {
 
+    private static final long serialVersionUID = 7168319249010545243L;
     protected Color foregroundColor;
     protected Color fontColor;
     protected Short fontSize;

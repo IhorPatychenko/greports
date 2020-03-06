@@ -3,7 +3,10 @@ package org.greports.styles.stylesbuilders;
 import org.greports.positioning.RectangleRange;
 import org.greports.styles.RectangleRangedStyle;
 
-public class RectangleRangedStylesBuilder extends AbstractReportStylesBuilder<RectangleRangedStylesBuilder, RectangleRange, RectangleRangedStyleBuilder, RectangleRangedStyle> {
+import java.io.Serializable;
+
+public class RectangleRangedStylesBuilder extends AbstractReportStylesBuilder<RectangleRangedStylesBuilder, RectangleRange, RectangleRangedStyleBuilder, RectangleRangedStyle> implements Serializable {
+    private static final long serialVersionUID = -5263382542729729149L;
 
     public RectangleRangedStylesBuilder(final StylePriority priority) {
         super(priority);
