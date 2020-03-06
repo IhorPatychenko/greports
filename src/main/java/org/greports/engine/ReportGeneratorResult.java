@@ -52,15 +52,49 @@ public class ReportGeneratorResult implements Serializable {
         return new ReportResultChanger(reportDataBySheetName, this);
     }
 
+    /**
+     * Deprecated. Use {@link ReportGeneratorResult#writeToPath(String)} instead.
+     *
+     * @param filePath File path
+     * @throws IOException exception opening the stream to write to
+     */
+    @Deprecated
     public void writeToFile(String filePath) throws IOException {
+        writeToPath(filePath);
+    }
+
+    /**
+     * @param filePath File path
+     * @throws IOException exception opening the stream to write to
+     */
+    public void writeToPath(String filePath) throws IOException {
         writeToFile(new File(filePath));
     }
 
+    /**
+     * @param file File to write to.
+     * @throws IOException exception opening the stream to write to
+     */
     public void writeToFile(File file) throws IOException {
         writeToFile(new FileOutputStream(file));
     }
 
-    public void writeToFile(FileOutputStream fileOutputStream) throws IOException {
+    /**
+     * Deprecated. Use {@link ReportGeneratorResult#writeToOutputStream(FileOutputStream)} instead.
+     *
+     * @param outputStream Output stream
+     * @throws IOException exception opening the stream to write to
+     */
+    @Deprecated
+    public void writeToFile(FileOutputStream outputStream) throws IOException {
+        writeToOutputStream(outputStream);
+    }
+
+    /**
+     * @param outputStream Output stream
+     * @throws IOException exception opening the stream to write to
+     */
+    public void writeToOutputStream(FileOutputStream outputStream) throws IOException {
         Stopwatch injectStopwatch = Stopwatch.createStarted();
         ReportInjector reportInjector = new ReportInjector(reportData, loggerEnabled);
         loggerService.info("Data inject started...");
@@ -69,7 +103,7 @@ public class ReportGeneratorResult implements Serializable {
 
         loggerService.info("Write to file started...");
         final Stopwatch writeToStreamStopwatch = Stopwatch.createStarted();
-        reportInjector.writeToFileOutputStream(fileOutputStream);
+        reportInjector.writeToFileOutputStream(outputStream);
         loggerService.info("Write to file successfully finished. Write time: " + writeToStreamStopwatch.stop());
     }
 }
