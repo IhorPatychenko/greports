@@ -3,6 +3,8 @@ package org.greports.services;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
+import java.io.Serializable;
+
 public class LoggerService {
 
     private Logger logger;
