@@ -37,6 +37,7 @@ import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
@@ -187,7 +188,7 @@ final class ReportDataParser extends ReportParser {
                     if(returnType.isArray()){
                         subreportsList.add(new ArrayList<>(Arrays.asList((Object[]) invokeResult)));
                     } else {
-                        subreportsList.add((List) invokeResult);
+                        subreportsList.add((List<?>) invokeResult);
                     }
                 }
 
@@ -314,7 +315,10 @@ final class ReportDataParser extends ReportParser {
                 for (int i = 0; i < list.size(); i++) {
                     final T entry = list.get(i);
                     final ConditionalRowStyles conditionalRowStyles = (ConditionalRowStyles) entry;
-                    final Predicate<Integer> predicate = conditionalRowStyles.isStyled().get(reportData.getReportName());
+                    final Optional<Map<String, Predicate<Integer>>> styledOptional = Optional.ofNullable(conditionalRowStyles.isStyled());
+                    final Predicate<Integer> predicate = styledOptional
+                            .orElseThrow(() -> new ReportEngineRuntimeException("The returned map cannot be null", this.getClass()))
+                            .getOrDefault(reportData.getReportName(), null);
                     if(predicate != null && predicate.test(i)){
                         final List<HorizontalRangedStyleBuilder> horizontalRangedStyleBuilders = conditionalRowStyles.getIndexBasedStyle().getOrDefault(reportData.getReportName(), new ArrayList<>());
                         for (final HorizontalRangedStyleBuilder styleBuilder : horizontalRangedStyleBuilders) {

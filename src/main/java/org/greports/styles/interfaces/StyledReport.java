@@ -9,23 +9,23 @@ import java.util.Map;
 
 public interface StyledReport {
     /**
-     * Method returns a map containing report names as keys and ReportStylesBuilder as values
-     * used to apply generated org.greports.styles to specified rows range
+     * Method returns a map containing report names as keys and {@link VerticalRangedStylesBuilder} as values
+     * used to apply generated styles to specified rows range
      */
     Map<String, VerticalRangedStylesBuilder> getRangedRowStyles();
     /**
-     * Method returns a map containing report names as keys and ReportStylesBuilder as values
-     * used to apply generated org.greports.styles to specified columns range
+     * Method returns a map containing report names as keys and {@link HorizontalRangedStylesBuilder} as values
+     * used to apply generated styles to specified columns range
      */
     Map<String, HorizontalRangedStylesBuilder> getRangedColumnStyles();
     /**
-     * Method returns a map containing report names as keys and ReportStylesBuilder as values
-     * used to apply generated org.greports.styles to specified positioned cells
+     * Method returns a map containing report names as keys and {@link PositionedStylesBuilder} as values
+     * used to apply generated styles to specified positioned cells
      */
     Map<String, PositionedStylesBuilder> getPositionedStyles();
     /**
-     * Method returns a map containing report names as keys and ReportStylesBuilder as values
-     * used to apply generated org.greports.styles to specified rectangle range areas
+     * Method returns a map containing report names as keys and {@link RectangleRangedStylesBuilder} as values
+     * used to apply generated styles to specified rectangle range areas
      */
     Map<String, RectangleRangedStylesBuilder> getRectangleRangedStyles();
 }

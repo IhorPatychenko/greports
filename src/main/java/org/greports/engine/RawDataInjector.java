@@ -444,6 +444,10 @@ class RawDataInjector extends DataInjector {
                     cellStyle.setVerticalAlignment(style.getVerticalAlignment());
                 }
 
+                if(style instanceof HorizontalRangedStyle && ((HorizontalRangedStyle) style).getWrapText()) {
+                    cellStyle.setWrapText(((HorizontalRangedStyle) style).getWrapText());
+                }
+
                 _stylesCache.put(styleKey, cellStyle);
             } else {
                 cellStyle = _stylesCache.get(styleKey);

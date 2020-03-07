@@ -8,6 +8,7 @@ public class HorizontalRangedStyleBuilder extends AbstractReportStyleBuilder<Hor
     private static final long serialVersionUID = 2630614818385151543L;
 
     private Integer columnWidth;
+    protected Boolean wrapText;
 
     public HorizontalRangedStyleBuilder(final HorizontalRange horizontalRange, final boolean clonePreviousStyle) {
         super(horizontalRange, clonePreviousStyle);
@@ -29,8 +30,9 @@ public class HorizontalRangedStyleBuilder extends AbstractReportStyleBuilder<Hor
 
     @Override
     protected HorizontalRangedStyle setCustomStyles(final ReportStyle<HorizontalRange> style) {
-        final HorizontalRangedStyle rangedStyle = (HorizontalRangedStyle) style;
-        rangedStyle.setColumnWidth(this.columnWidth);
-        return rangedStyle;
+        final HorizontalRangedStyle horizontalRangedStyle = (HorizontalRangedStyle) style;
+        horizontalRangedStyle.setColumnWidth(this.columnWidth)
+                .setWrapText(this.wrapText);
+        return horizontalRangedStyle;
     }
 }

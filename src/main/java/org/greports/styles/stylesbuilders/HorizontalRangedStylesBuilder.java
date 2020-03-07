@@ -12,8 +12,13 @@ public class HorizontalRangedStylesBuilder extends AbstractReportStylesBuilder<H
         super(priority);
     }
 
-    public HorizontalRangedStylesBuilder setColumnWidth(Integer columnWidth) {
+    public HorizontalRangedStylesBuilder setColumnWidth(final Integer columnWidth) {
         this.styleBuilder.setColumnWidth(columnWidth);
+        return this;
+    }
+
+    public HorizontalRangedStylesBuilder setWrapText(final Boolean wrapText){
+        this.styleBuilder.wrapText = wrapText;
         return this;
     }
 
