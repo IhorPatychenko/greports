@@ -32,18 +32,19 @@ public class ReportStyle<T extends Serializable> implements Serializable {
     private StripedRowsIndex stripedRowsIndex;
     private Color stripedRowsColor;
     private boolean clonePreviousStyle;
+    private Color leftBorderColor;
+    private Color rightBorderColor;
+    private Color topBorderColor;
+    private Color bottomBorderColor;
+    private Boolean hidden;
+    private Short indentation;
+    private Boolean locked;
+    private Boolean quotePrefixed;
+    private Short rotation;
+    private Boolean shrinkToFit;
 
     protected ReportStyle(T tuple){
         this.range = tuple;
-    }
-
-    public boolean isClonePreviousStyle() {
-        return clonePreviousStyle;
-    }
-
-    public ReportStyle<T> setClonePreviousStyle(final boolean clonePreviousStyle) {
-        this.clonePreviousStyle = clonePreviousStyle;
-        return this;
     }
 
     public Color getForegroundColor() {
@@ -77,7 +78,7 @@ public class ReportStyle<T extends Serializable> implements Serializable {
         return fontSize;
     }
 
-    public ReportStyle<T> setFontSize(final Short fontSize) {
+    public ReportStyle<T> setFontSize(Short fontSize) {
         this.fontSize = fontSize;
         return this;
     }
@@ -145,15 +146,6 @@ public class ReportStyle<T extends Serializable> implements Serializable {
         return this;
     }
 
-    public BorderStyle getBorderRight() {
-        return borderRight;
-    }
-
-    public ReportStyle<T> setBorderRight(BorderStyle borderRight) {
-        this.borderRight = borderRight;
-        return this;
-    }
-
     public BorderStyle getBorderBottom() {
         return borderBottom;
     }
@@ -169,6 +161,24 @@ public class ReportStyle<T extends Serializable> implements Serializable {
 
     public ReportStyle<T> setBorderLeft(BorderStyle borderLeft) {
         this.borderLeft = borderLeft;
+        return this;
+    }
+
+    public BorderStyle getBorderRight() {
+        return borderRight;
+    }
+
+    public ReportStyle<T> setBorderRight(BorderStyle borderRight) {
+        this.borderRight = borderRight;
+        return this;
+    }
+
+    public Color getBorderColor() {
+        return borderColor;
+    }
+
+    public ReportStyle<T> setBorderColor(Color borderColor) {
+        this.borderColor = borderColor;
         return this;
     }
 
@@ -190,12 +200,102 @@ public class ReportStyle<T extends Serializable> implements Serializable {
         return this;
     }
 
-    public Color getBorderColor() {
-        return borderColor;
+    public boolean isClonePreviousStyle() {
+        return clonePreviousStyle;
     }
 
-    public ReportStyle<T> setBorderColor(Color borderColor) {
-        this.borderColor = borderColor;
+    public ReportStyle<T> setClonePreviousStyle(boolean clonePreviousStyle) {
+        this.clonePreviousStyle = clonePreviousStyle;
+        return this;
+    }
+
+    public Color getLeftBorderColor() {
+        return leftBorderColor;
+    }
+
+    public ReportStyle<T> setLeftBorderColor(Color leftBorderColor) {
+        this.leftBorderColor = leftBorderColor;
+        return this;
+    }
+
+    public Color getRightBorderColor() {
+        return rightBorderColor;
+    }
+
+    public ReportStyle<T> setRightBorderColor(Color rightBorderColor) {
+        this.rightBorderColor = rightBorderColor;
+        return this;
+    }
+
+    public Color getTopBorderColor() {
+        return topBorderColor;
+    }
+
+    public ReportStyle<T> setTopBorderColor(Color topBorderColor) {
+        this.topBorderColor = topBorderColor;
+        return this;
+    }
+
+    public Color getBottomBorderColor() {
+        return bottomBorderColor;
+    }
+
+    public ReportStyle<T> setBottomBorderColor(Color bottomBorderColor) {
+        this.bottomBorderColor = bottomBorderColor;
+        return this;
+    }
+
+    public Boolean getHidden() {
+        return hidden;
+    }
+
+    public ReportStyle<T> setHidden(Boolean hidden) {
+        this.hidden = hidden;
+        return this;
+    }
+
+    public Short getIndentation() {
+        return indentation;
+    }
+
+    public ReportStyle<T> setIndentation(Short indentation) {
+        this.indentation = indentation;
+        return this;
+    }
+
+    public Boolean getLocked() {
+        return locked;
+    }
+
+    public ReportStyle<T> setLocked(Boolean locked) {
+        this.locked = locked;
+        return this;
+    }
+
+    public Boolean getQuotePrefixed() {
+        return quotePrefixed;
+    }
+
+    public ReportStyle<T> setQuotePrefixed(Boolean quotePrefixed) {
+        this.quotePrefixed = quotePrefixed;
+        return this;
+    }
+
+    public Short getRotation() {
+        return rotation;
+    }
+
+    public ReportStyle<T> setRotation(Short rotation) {
+        this.rotation = rotation;
+        return this;
+    }
+
+    public Boolean getShrinkToFit() {
+        return shrinkToFit;
+    }
+
+    public ReportStyle<T> setShrinkToFit(Boolean shrinkToFit) {
+        this.shrinkToFit = shrinkToFit;
         return this;
     }
 

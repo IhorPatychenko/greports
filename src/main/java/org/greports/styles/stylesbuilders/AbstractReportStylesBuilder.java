@@ -106,8 +106,58 @@ public abstract class AbstractReportStylesBuilder<T, E extends Serializable, R e
         return getThis();
     }
 
+    public T setLeftBorderColor(Color color) {
+        this.styleBuilder.setLeftBorderColor(color);
+        return getThis();
+    }
+
+    public T setRightBorderColor(Color color) {
+        this.styleBuilder.setRightBorderColor(color);
+        return getThis();
+    }
+
+    public T setTopBorderColor(Color color) {
+        this.styleBuilder.setTopBorderColor(color);
+        return getThis();
+    }
+
+    public T setBottomBorderColor(Color color) {
+        this.styleBuilder.setBottomBorderColor(color);
+        return getThis();
+    }
+
     public T setBorderColor(Color color) {
         this.styleBuilder.setBorderColor(color);
+        return getThis();
+    }
+
+    public T setHidden(Boolean hidden) {
+        this.styleBuilder.setHidden(hidden);
+        return getThis();
+    }
+
+    public T setIndentation(Short indentation) {
+        this.styleBuilder.setIndentation(indentation);
+        return getThis();
+    }
+
+    public T setLocked(Boolean locked) {
+        this.styleBuilder.setLocked(locked);
+        return getThis();
+    }
+
+    public T setQuotePrefixed(Boolean quotePrefixed) {
+        this.styleBuilder.setQuotePrefixed(quotePrefixed);
+        return getThis();
+    }
+
+    public T setRotation(Short rotation) {
+        this.styleBuilder.setRotation(rotation);
+        return getThis();
+    }
+
+    public T setShrinkToFit(Boolean shrinkToFit) {
+        this.styleBuilder.setShrinkToFit(shrinkToFit);
         return getThis();
     }
 

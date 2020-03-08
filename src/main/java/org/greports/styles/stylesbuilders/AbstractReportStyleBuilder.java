@@ -27,6 +27,16 @@ public abstract class AbstractReportStyleBuilder<T extends ReportStyle<E>, E ext
     protected BorderStyle borderRight;
     protected BorderStyle borderBottom;
     protected BorderStyle borderLeft;
+    private Color leftBorderColor;
+    private Color rightBorderColor;
+    private Color topBorderColor;
+    private Color bottomBorderColor;
+    private Boolean hidden;
+    private Short indentation;
+    private Boolean locked;
+    private Boolean quotePrefixed;
+    private Short rotation;
+    private Boolean shrinkToFit;
     protected Color borderColor;
     protected E tuple;
     protected final boolean clonePreviousStyle;
@@ -118,6 +128,56 @@ public abstract class AbstractReportStyleBuilder<T extends ReportStyle<E>, E ext
         return getThis();
     }
 
+    public R setLeftBorderColor(Color color) {
+        this.leftBorderColor = color;
+        return getThis();
+    }
+
+    public R setRightBorderColor(Color color) {
+        this.rightBorderColor = color;
+        return getThis();
+    }
+
+    public R setTopBorderColor(Color color) {
+        this.topBorderColor = color;
+        return getThis();
+    }
+
+    public R setBottomBorderColor(Color color) {
+        this.bottomBorderColor = color;
+        return getThis();
+    }
+
+    public R setHidden(Boolean hidden) {
+        this.hidden = hidden;
+        return getThis();
+    }
+
+    public R setIndentation(Short indentation) {
+        this.indentation = indentation;
+        return getThis();
+    }
+
+    public R setLocked(Boolean locked) {
+        this.locked = locked;
+        return getThis();
+    }
+
+    public R setQuotePrefixed(Boolean quotePrefixed) {
+        this.quotePrefixed = quotePrefixed;
+        return getThis();
+    }
+
+    public R setRotation(Short rotation) {
+        this.rotation = rotation;
+        return getThis();
+    }
+
+    public R setShrinkToFit(Boolean shrinkToFit) {
+        this.shrinkToFit = shrinkToFit;
+        return getThis();
+    }
+
     public R setBorderColor(Color color) {
         this.borderColor = color;
         return getThis();
@@ -140,6 +200,16 @@ public abstract class AbstractReportStyleBuilder<T extends ReportStyle<E>, E ext
             .setBorderBottom(borderBottom)
             .setBorderLeft(borderLeft)
             .setBorderRight(borderRight)
+            .setHidden(hidden)
+            .setIndentation(indentation)
+            .setLocked(locked)
+            .setQuotePrefixed(quotePrefixed)
+            .setRotation(rotation)
+            .setShrinkToFit(shrinkToFit)
+            .setLeftBorderColor(leftBorderColor)
+            .setRightBorderColor(rightBorderColor)
+            .setTopBorderColor(topBorderColor)
+            .setBottomBorderColor(bottomBorderColor)
             .setBorderColor(borderColor);
         return setCustomStyles(reportStyle);
     }

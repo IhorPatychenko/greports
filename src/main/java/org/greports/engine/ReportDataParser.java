@@ -248,12 +248,12 @@ final class ReportDataParser extends ReportParser {
                         value = method.invoke(listElement);
                     }
                     reportData.getDataRows().get(i).addCell(new DataCell(
-                            specialColumn.getPosition(),
-                            false,
-                            specialColumn.getFormat(),
-                            value,
-                            specialColumn.getValueType(),
-                            specialColumn.getColumnWidth()
+                        specialColumn.getPosition(),
+                        false,
+                        specialColumn.getFormat(),
+                        value,
+                        specialColumn.getValueType(),
+                        specialColumn.getColumnWidth()
                     ));
                 } catch (IllegalAccessException e) {
                     throw new ReportEngineReflectionException("Error invoking the method with no access", e, clazz);
@@ -279,10 +279,10 @@ final class ReportDataParser extends ReportParser {
                 } else if(CollectedValues.class.isAssignableFrom(clazz)){
                     try {
                         final T newInstance = ReflectionUtils.newInstance(clazz);
-                        final CollectedValues instance = (CollectedValues) newInstance;
+                        final CollectedValues instance = (CollectedValues<?,?>) newInstance;
                         final List<Object> list = new ArrayList<>();
                         for (final T t : collection) {
-                            final CollectedValues values = (CollectedValues) t;
+                            final CollectedValues<?,?> values = (CollectedValues<?,?>) t;
                             list.add(values.getCollectedValue().get(Pair.of(reportData.getReportName(), specialRowCell.getValue())));
                         }
                         final Object value = instance.getCollectedValuesResult(list);
