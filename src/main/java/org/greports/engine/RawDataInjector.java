@@ -352,13 +352,13 @@ class RawDataInjector extends DataInjector {
         if(Objects.isNull(range.getStart())) {
             range.setStart(sheet.getLastRowNum());
         } else if(range.getStart() < 0) {
-            range.setStart(sheet.getLastRowNum() + range.getStart() + 1);
+            range.setStart(sheet.getLastRowNum() + range.getStart());
         }
 
         if(Objects.isNull(range.getEnd())) {
             range.setEnd(sheet.getLastRowNum());
         } else if(range.getEnd() < 0) {
-            range.setEnd(sheet.getLastRowNum() + range.getEnd() + 1);
+            range.setEnd(sheet.getLastRowNum() + range.getEnd());
         }
     }
 
