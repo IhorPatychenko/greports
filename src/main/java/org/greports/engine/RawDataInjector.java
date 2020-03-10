@@ -358,7 +358,7 @@ class RawDataInjector extends DataInjector {
         if(Objects.isNull(range.getEnd())) {
             range.setEnd(sheet.getLastRowNum());
         } else if(range.getEnd() < 0) {
-            range.setEnd(sheet.getLastRowNum() + range.getEnd());
+            range.setEnd(sheet.getLastRowNum() + range.getEnd() + 1);
         }
     }
 
