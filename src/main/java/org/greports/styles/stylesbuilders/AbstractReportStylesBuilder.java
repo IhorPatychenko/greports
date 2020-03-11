@@ -161,10 +161,6 @@ public abstract class AbstractReportStylesBuilder<T, E extends Serializable, R e
         return getThis();
     }
 
-    public T newStyle(E tuple) {
-        return newStyle(tuple, false);
-    }
-
     public T newStyle(final E tuple, final boolean clonePreviousStyle) {
         this.styleBuilder = getStyleBuilder(tuple, clonePreviousStyle);
         this.styleBuilders.add(styleBuilder);
