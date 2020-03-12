@@ -173,7 +173,8 @@ final class ReportDataParser extends ReportParser {
                     GroupedRows groupedRows = (GroupedRows) list.get(i);
                     if(groupedRows.isGroupStartRow().get(reportData.getReportName()).test(i)){
                         groupStart = i;
-                    } else if(groupedRows.isGroupEndRow().get(reportData.getReportName()).test(i)) {
+                    }
+                    if(groupedRows.isGroupEndRow().get(reportData.getReportName()).test(i)) {
                         group = Pair.of(groupStart, i);
                         reportData.addGroupedRow(group);
                     }
