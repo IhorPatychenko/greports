@@ -13,7 +13,9 @@ import org.greports.content.row.DataRow;
 import org.greports.content.row.SpecialDataRow;
 import org.greports.exceptions.ReportEngineReflectionException;
 import org.greports.exceptions.ReportEngineRuntimeException;
+import org.greports.interfaces.CollectedFormulaValues;
 import org.greports.interfaces.CollectedValues;
+import org.greports.interfaces.GroupedRows;
 import org.greports.positioning.TranslationsParser;
 import org.greports.services.LoggerService;
 import org.greports.styles.interfaces.ConditionalRowStyles;
@@ -33,7 +35,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -55,7 +57,7 @@ final class ReportDataParser extends ReportParser {
         loggerService = LoggerService.forClass(ReportDataParser.class, loggerEnabled, level);
     }
 
-    protected <T> ReportDataParser parse(Collection<T> collection, final String reportName, Class<T> clazz, ReportConfigurator configurator) throws ReportEngineReflectionException, ReportEngineRuntimeException {
+    protected <T> ReportDataParser parse(List<T> collection, final String reportName, Class<T> clazz, ReportConfigurator configurator) throws ReportEngineReflectionException, ReportEngineRuntimeException {
         loggerService.info("Parsing started...");
         loggerService.info(String.format("Parsing report for class \"%s\" with name \"%s\"...", clazz.getSimpleName(), reportName));
         Stopwatch timer = Stopwatch.createStarted();
@@ -66,7 +68,7 @@ final class ReportDataParser extends ReportParser {
         return parser;
     }
 
-    private <T> ReportDataParser parse(Collection<T> collection, final String reportName, Class<T> clazz, Float positionIncrement, ReportConfigurator configurator) throws ReportEngineReflectionException, ReportEngineRuntimeException {
+    private <T> ReportDataParser parse(List<T> collection, final String reportName, Class<T> clazz, Float positionIncrement, ReportConfigurator configurator) throws ReportEngineReflectionException, ReportEngineRuntimeException {
         final Configuration configuration = AnnotationUtils.getReportConfiguration(clazz, reportName);
         reportData = new ReportData(reportName, configuration, !configuration.templatePath().equals("") ? getClass().getClassLoader().getResource(configuration.templatePath()) : null);
         final Map<String, Object> translations = new TranslationsParser(reportData.getConfiguration().getTranslationsDir()).parse(Utils.getLocale(reportData.getConfiguration().getLocale()));
@@ -75,6 +77,7 @@ final class ReportDataParser extends ReportParser {
         reportConfigurator = configurator;
         parseReportHeader(clazz, positionIncrement);
         parseRowsData(collection, clazz, positionIncrement);
+        parseGroupRows(collection, clazz);
         parseSpecialColumns(collection, clazz);
         parseSpecialRows(collection, clazz);
         parseStyles(collection, clazz);
@@ -106,7 +109,7 @@ final class ReportDataParser extends ReportParser {
                 .addCells(cells);
     }
 
-    private <T> void parseRowsData(Collection<T> collection, Class<T> clazz, Float positionIncrement) throws ReportEngineReflectionException {
+    private <T> void parseRowsData(List<T> collection, Class<T> clazz, Float positionIncrement) throws ReportEngineReflectionException {
         reportData.setDataStartRow(reportData.getConfiguration().getDataStartRowIndex());
 
         Map<Method, Column> columnsMap = new LinkedHashMap<>();
@@ -159,7 +162,29 @@ final class ReportDataParser extends ReportParser {
         }
     }
 
-    private <T> void parseSubreports(Collection<T> collection, Class<T> clazz) throws ReportEngineReflectionException {
+    private <T> void parseGroupRows(final List<T> list, final Class<T> clazz) throws ReportEngineReflectionException {
+        if(GroupedRows.class.isAssignableFrom(clazz)){
+            try {
+                final GroupedRows newInstance = (GroupedRows) ReflectionUtils.newInstance(clazz);
+                reportData.setGroupedRowsDefaultCollapsed(newInstance.isDefaultCollapsed().get(reportData.getReportName()).getAsBoolean());
+                Pair<Integer, Integer> group;
+                Integer groupStart = null;
+                for(int i = 0; i < list.size(); i++) {
+                    GroupedRows groupedRows = (GroupedRows) list.get(i);
+                    if(groupedRows.isGroupStartRow().get(reportData.getReportName()).test(i)){
+                        groupStart = i;
+                    } else if(groupedRows.isGroupEndRow().get(reportData.getReportName()).test(i)) {
+                        group = Pair.of(groupStart, i);
+                        reportData.addGroupedRow(group);
+                    }
+                }
+            } catch (ReflectiveOperationException e) {
+                throw new ReportEngineReflectionException("Error instantiating an object. The class should have an empty constructor without parameters", e, clazz);
+            }
+        }
+    }
+
+    private <T> void parseSubreports(List<T> collection, Class<T> clazz) throws ReportEngineReflectionException {
         final ReportDataParser reportDataParser = new ReportDataParser(this.loggerService.isEnabled(), this.loggerService.getLevel());
         Map<Method, Subreport> subreportMap = new LinkedHashMap<>();
         Function<Pair<Method, Subreport>, Void> subreportFunction = AnnotationUtils.getSubreportsFunction(subreportMap);
@@ -196,7 +221,7 @@ final class ReportDataParser extends ReportParser {
                     float positionalIncrement = subreportPositionalIncrement;
                     final int subreportsInEveryList = subreportsList.get(0).size();
                     for (int i = 0; i < subreportsInEveryList; i++) {
-                        final Collection<Object> subreportData = new ArrayList<>();
+                        final List<Object> subreportData = new ArrayList<>();
                         for (final List<?> list : subreportsList) {
                             subreportData.add(list.get(i));
                         }
@@ -206,7 +231,7 @@ final class ReportDataParser extends ReportParser {
                 }
             } else {
                 float subreportPositionalIncrement = AnnotationUtils.getSubreportLastColumn(componentType, reportData.getReportName()).position() + SUBREPORT_POSITIONAL_INCREMENT;
-                final Collection<Object> subreportData = new ArrayList<>();
+                final List<Object> subreportData = new ArrayList<>();
                 for (T collectionEntry : collection) {
                     final Object invokeResult = subreportInvokeMethod(method, collectionEntry);
                     subreportData.add(invokeResult);
@@ -217,7 +242,7 @@ final class ReportDataParser extends ReportParser {
     }
 
     @SuppressWarnings("unchecked")
-    private void parseSubreportData(final ReportDataParser reportDataParser, final Class<?> returnType, final Collection subreportData, float positionalIncrement) throws ReportEngineReflectionException {
+    private void parseSubreportData(final ReportDataParser reportDataParser, final Class<?> returnType, final List subreportData, float positionalIncrement) throws ReportEngineReflectionException {
         final ReportData data = reportDataParser.parse(subreportData, reportData.getReportName(), returnType, positionalIncrement, reportConfigurator.getReportGenerator().getConfigurator(returnType, reportData.getReportName())).getData();
         subreportsData.add(data);
     }
@@ -232,7 +257,7 @@ final class ReportDataParser extends ReportParser {
         }
     }
 
-    private <T> void parseSpecialColumns(Collection<T> collection, Class<T> clazz) throws ReportEngineReflectionException {
+    private <T> void parseSpecialColumns(List<T> collection, Class<T> clazz) throws ReportEngineReflectionException {
         List<T> list = new ArrayList<>(collection);
         for (ReportSpecialColumn specialColumn : reportData.getConfiguration().getSpecialColumns()) {
             Method method = null;
@@ -264,11 +289,11 @@ final class ReportDataParser extends ReportParser {
         }
     }
 
-    private <T> void parseSpecialRows(Collection<T> collection, Class<T> clazz) throws ReportEngineReflectionException {
+    private <T> void parseSpecialRows(List<T> collection, Class<T> clazz) throws ReportEngineReflectionException {
         for(ReportSpecialRow specialRow : reportData.getConfiguration().getSpecialRows()){
             final SpecialDataRow specialDataRow = new SpecialDataRow(specialRow.getRowIndex());
             for (final ReportSpecialRowCell specialRowCell : specialRow.getCells()) {
-                if(!specialRowCell.getValueType().equals(ValueType.COLLECTED_VALUE)) {
+                if(!specialRowCell.getValueType().equals(ValueType.COLLECTED_VALUE) && !specialRowCell.getValueType().equals(ValueType.COLLECTED_FORMULA_VALUE)) {
                     specialDataRow.addCell(new SpecialDataCell(
                         specialRowCell.getValueType(),
                         specialRowCell.getValue(),
@@ -276,32 +301,57 @@ final class ReportDataParser extends ReportParser {
                         specialRowCell.getTargetId(),
                         specialRowCell.getColumnWidth()
                     ));
-                } else if(CollectedValues.class.isAssignableFrom(clazz)){
+                } else if(specialRowCell.getValueType().equals(ValueType.COLLECTED_VALUE) && CollectedValues.class.isAssignableFrom(clazz)){
                     try {
                         final T newInstance = ReflectionUtils.newInstance(clazz);
-                        final CollectedValues instance = (CollectedValues<?,?>) newInstance;
-                        final List<Object> list = new ArrayList<>();
-                        for (final T t : collection) {
-                            final CollectedValues<?,?> values = (CollectedValues<?,?>) t;
-                            list.add(values.getCollectedValue().get(Pair.of(reportData.getReportName(), specialRowCell.getValue())));
+                        Pair<String, String> pair = Pair.of(reportData.getReportName(), specialRowCell.getValue());
+                        if(CollectedValues.class.isAssignableFrom(clazz)){
+                            final List<Object> list = new ArrayList<>();
+                            for (final T t : collection) {
+                                final CollectedValues<?,?> values = (CollectedValues<?,?>) t;
+                                if(values.isCollectedValue().get(pair).getAsBoolean()){
+                                    list.add(values.getCollectedValue().get(pair));
+                                }
+                            }
+                            final Object value = ((CollectedValues) newInstance).getCollectedValuesResult(list);
+                            specialDataRow.addCell(new SpecialDataCell(
+                                specialRowCell.getValueType(),
+                                value,
+                                specialRowCell.getFormat(),
+                                specialRowCell.getTargetId()
+                            ));
                         }
-                        final Object value = instance.getCollectedValuesResult(list);
-                        specialDataRow.addCell(new SpecialDataCell(
-                            specialRowCell.getValueType(),
-                            value,
-                            specialRowCell.getFormat(),
-                            specialRowCell.getTargetId()
-                        ));
                     } catch (ReflectiveOperationException e) {
                         throw new ReportEngineReflectionException("Error instantiating an object. The class should have an empty constructor without parameters", e, clazz);
                     }
+                } else if(specialRowCell.getValueType().equals(ValueType.COLLECTED_FORMULA_VALUE) && CollectedFormulaValues.class.isAssignableFrom(clazz)) {
+                    Pair<String, String> pair = Pair.of(reportData.getReportName(), specialRowCell.getTargetId());
+                    Map<String, List<Integer>> valuesById = new HashMap<>();
+                    List<T> list = new ArrayList<>(collection);
+                    for (int i = 0; i < list.size(); i++) {
+                        CollectedFormulaValues collectedFormulaValues = (CollectedFormulaValues) list.get(i);
+                        if(collectedFormulaValues.isCollectedFormulaValue().get(pair).getAsBoolean()){
+                            if(!valuesById.containsKey(pair.getRight())){
+                                valuesById.put(pair.getRight(), new ArrayList<>());
+                            }
+                            valuesById.get(pair.getRight()).add(i);
+                        }
+                    }
+                    SpecialDataCell specialDataCell = new SpecialDataCell(
+                        specialRowCell.getValueType(),
+                        specialRowCell.getValue(),
+                        specialRowCell.getFormat(),
+                        specialRowCell.getTargetId()
+                    ).setExtraData(valuesById);
+
+                    specialDataRow.addCell(specialDataCell);
                 }
             }
             reportData.addSpecialRow(specialDataRow);
         }
     }
 
-    private <T> void parseStyles(Collection<T> collection, Class<T> clazz) throws ReportEngineReflectionException {
+    private <T> void parseStyles(List<T> collection, Class<T> clazz) throws ReportEngineReflectionException {
         super.parseStyles(reportData, clazz);
         try {
             final T newInstance = ReflectionUtils.newInstance(clazz);

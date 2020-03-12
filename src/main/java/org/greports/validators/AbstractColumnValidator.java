@@ -7,4 +7,6 @@ public abstract class AbstractColumnValidator extends AbstractValidator {
     }
 
     public abstract int getErrorRowIndex(final Object object);
+
+    public abstract Object getErrorValue();
 }

@@ -19,5 +19,10 @@ public enum ValueType {
      * Used in {@link org.greports.interfaces.CollectedValues} interface to collect all values from
      * all collection entries.
      */
-    COLLECTED_VALUE
+    COLLECTED_VALUE,
+    /**
+     * Used in {@link org.greports.interfaces.CollectedFormulaValues} interface to collect all values from
+     * all entries and put them as entries of the formula provided.
+     */
+    COLLECTED_FORMULA_VALUE
 }
