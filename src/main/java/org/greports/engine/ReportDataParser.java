@@ -166,17 +166,19 @@ final class ReportDataParser extends ReportParser {
         if(GroupedRows.class.isAssignableFrom(clazz)){
             try {
                 final GroupedRows newInstance = (GroupedRows) ReflectionUtils.newInstance(clazz);
-                reportData.setGroupedRowsDefaultCollapsed(newInstance.isDefaultCollapsed().get(reportData.getReportName()).getAsBoolean());
-                Pair<Integer, Integer> group;
-                Integer groupStart = null;
-                for(int i = 0; i < list.size(); i++) {
-                    GroupedRows groupedRows = (GroupedRows) list.get(i);
-                    if(groupedRows.isGroupStartRow().get(reportData.getReportName()).test(i)){
-                        groupStart = i;
-                    }
-                    if(groupedRows.isGroupEndRow().get(reportData.getReportName()).test(i)) {
-                        group = Pair.of(groupStart, i);
-                        reportData.addGroupedRow(group);
+                if(newInstance.isDefaultCollapsed().containsKey(reportData.getReportName())){
+                    reportData.setGroupedRowsDefaultCollapsed(newInstance.isDefaultCollapsed().get(reportData.getReportName()).getAsBoolean());
+                    Pair<Integer, Integer> group;
+                    Integer groupStart = null;
+                    for(int i = 0; i < list.size(); i++) {
+                        GroupedRows groupedRows = (GroupedRows) list.get(i);
+                        if(groupedRows.isGroupStartRow().get(reportData.getReportName()).test(i)){
+                            groupStart = i;
+                        }
+                        if(groupedRows.isGroupEndRow().get(reportData.getReportName()).test(i)) {
+                            group = Pair.of(groupStart, i);
+                            reportData.addGroupedRow(group);
+                        }
                     }
                 }
             } catch (ReflectiveOperationException e) {
