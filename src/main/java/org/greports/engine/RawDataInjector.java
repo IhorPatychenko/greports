@@ -316,11 +316,13 @@ class RawDataInjector extends DataInjector {
             checkRange(range, sheet);
             for (int i = range.getStart(); i <= range.getEnd(); i++) {
                 final Row row = sheet.getRow(i);
-                for (int y = 0; y < row.getLastCellNum(); y++) {
-                    cellApplyStyles(row.getCell(y), style);
-                }
-                if(style.getRowHeight() != null) {
-                    row.setHeightInPoints(style.getRowHeight());
+                if(row != null) {
+                    for (int y = 0; y < row.getLastCellNum(); y++) {
+                        cellApplyStyles(row.getCell(y), style);
+                    }
+                    if(style.getRowHeight() != null) {
+                        row.setHeightInPoints(style.getRowHeight());
+                    }
                 }
             }
         }
@@ -331,10 +333,12 @@ class RawDataInjector extends DataInjector {
         for (HorizontalRangedStyle style : styles) {
             for (int i = 0; i <= sheet.getLastRowNum(); i++) {
                 final Row row = sheet.getRow(i);
-                final HorizontalRange range = style.getRange();
-                checkRange(range, reportData);
-                for (int y = range.getStart(); y <= range.getEnd(); y++) {
-                    cellApplyStyles(row.getCell(y), style);
+                if(row != null) {
+                    final HorizontalRange range = style.getRange();
+                    checkRange(range, reportData);
+                    for (int y = range.getStart(); y <= range.getEnd(); y++) {
+                        cellApplyStyles(row.getCell(y), style);
+                    }
                 }
             }
             if(style.getColumnWidth() != null) {
@@ -349,7 +353,11 @@ class RawDataInjector extends DataInjector {
         final Collection<PositionedStyle> styles = positionedStyles.getStyles();
         for (PositionedStyle style : styles) {
             checkPosition(style.getRange(), sheet, reportData);
-            cellApplyStyles(sheet.getRow(style.getRange().getRow()).getCell(style.getRange().getColumn()), style);
+            final Row row = sheet.getRow(style.getRange().getRow());
+            if(row != null && row.getCell(style.getRange().getColumn()) != null) {
+                cellApplyStyles(row.getCell(style.getRange().getColumn()), style);
+            }
+
         }
     }
 
@@ -362,8 +370,11 @@ class RawDataInjector extends DataInjector {
             final HorizontalRange horizontalRange = range.getHorizontalRange();
             checkRange(horizontalRange, reportData);
             for (int i = verticalRange.getStart(); i <= verticalRange.getEnd(); i++) {
-                for (int y = horizontalRange.getStart(); y <= horizontalRange.getEnd(); y++) {
-                    cellApplyStyles(sheet.getRow(i).getCell(y), rangedStyle);
+                final Row row = sheet.getRow(i);
+                if(row != null){
+                    for (int y = horizontalRange.getStart(); y <= horizontalRange.getEnd(); y++) {
+                        cellApplyStyles(row.getCell(y), rangedStyle);
+                    }
                 }
             }
         }
