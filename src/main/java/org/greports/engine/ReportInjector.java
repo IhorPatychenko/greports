@@ -7,15 +7,15 @@ import org.greports.exceptions.ReportEngineRuntimeException;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.Collection;
+import java.util.List;
 
 public class ReportInjector {
 
     private XSSFWorkbook currentWorkbook = new XSSFWorkbook();
-    private final Collection<ReportData> reportData;
+    private final List<ReportData> reportData;
     private boolean loggerEnabled;
 
-    public ReportInjector(Collection<ReportData> reportData, boolean loggerEnabled) {
+    public ReportInjector(List<ReportData> reportData, boolean loggerEnabled) {
         this.reportData = reportData;
         this.loggerEnabled = loggerEnabled;
     }

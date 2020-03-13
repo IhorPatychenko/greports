@@ -10,7 +10,7 @@ import org.greports.styles.ReportStyle;
 import java.awt.*;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Collection;
+import java.util.List;
 import java.util.stream.Collectors;
 
 public abstract class AbstractReportStylesBuilder<T, E extends Serializable, R extends AbstractReportStyleBuilder<U, E, R>, U extends ReportStyle<E>> {
@@ -20,7 +20,7 @@ public abstract class AbstractReportStylesBuilder<T, E extends Serializable, R e
     }
 
     private final StylePriority priority;
-    protected final Collection<R> styleBuilders = new ArrayList<>();
+    protected final List<R> styleBuilders = new ArrayList<>();
     protected R styleBuilder;
 
     public AbstractReportStylesBuilder(StylePriority priority) {
@@ -171,11 +171,11 @@ public abstract class AbstractReportStylesBuilder<T, E extends Serializable, R e
         return getThis();
     }
 
-    public Collection<R> getStylesBuilders() {
+    public List<R> getStylesBuilders() {
         return this.styleBuilders;
     }
 
-    public Collection<U> getStyles(){
+    public List<U> getStyles(){
         return this.styleBuilders.stream().map(AbstractReportStyleBuilder::buildStyle).collect(Collectors.toList());
     }
 

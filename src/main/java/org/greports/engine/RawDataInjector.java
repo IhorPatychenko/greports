@@ -41,7 +41,6 @@ import org.greports.utils.Pair;
 import org.greports.utils.Utils;
 
 import java.awt.*;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -275,7 +274,7 @@ class RawDataInjector extends DataInjector {
     }
 
     private void applyRowStyles(Sheet sheet, VerticalRangedStylesBuilder rowStyles) {
-        final Collection<VerticalRangedStyle> styles = rowStyles.getStyles();
+        final List<VerticalRangedStyle> styles = rowStyles.getStyles();
         for (VerticalRangedStyle style : styles) {
             final VerticalRange range = style.getRange();
             checkRange(range, sheet);
@@ -292,7 +291,7 @@ class RawDataInjector extends DataInjector {
     }
 
     private void applyColumnStyles(Sheet sheet, HorizontalRangedStylesBuilder columnStyles, ReportData reportData) {
-        final Collection<HorizontalRangedStyle> styles = columnStyles.getStyles();
+        final List<HorizontalRangedStyle> styles = columnStyles.getStyles();
         for (HorizontalRangedStyle style : styles) {
             for (int i = 0; i <= sheet.getLastRowNum(); i++) {
                 final Row row = sheet.getRow(i);
@@ -311,7 +310,7 @@ class RawDataInjector extends DataInjector {
     }
 
     private void applyPositionedStyles(Sheet sheet, PositionedStylesBuilder positionedStyles, ReportData reportData) {
-        final Collection<PositionedStyle> styles = positionedStyles.getStyles();
+        final List<PositionedStyle> styles = positionedStyles.getStyles();
         for (PositionedStyle style : styles) {
             checkPosition(style.getRange(), sheet, reportData);
             cellApplyStyles(sheet.getRow(style.getRange().getRow()).getCell(style.getRange().getColumn()), style);
@@ -319,7 +318,7 @@ class RawDataInjector extends DataInjector {
     }
 
     private void applyRangedStyles(Sheet sheet, RectangleRangedStylesBuilder rectangleRangedStyles, ReportData reportData) {
-        final Collection<RectangleRangedStyle> rangedStyles = rectangleRangedStyles.getStyles();
+        final List<RectangleRangedStyle> rangedStyles = rectangleRangedStyles.getStyles();
         for (RectangleRangedStyle rangedStyle : rangedStyles) {
             final RectangleRange range = rangedStyle.getRange();
             final VerticalRange verticalRange = range.getVerticalRange();

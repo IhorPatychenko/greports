@@ -5,7 +5,6 @@ import org.greports.content.row.ReportRow;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 public class ReportHeader implements ReportRow<HeaderCell>, Cloneable, Serializable {
@@ -24,7 +23,7 @@ public class ReportHeader implements ReportRow<HeaderCell>, Cloneable, Serializa
         this.cells.add(cell);
     }
 
-    public void addCells(Collection<HeaderCell> cells) {
+    public void addCells(List<HeaderCell> cells) {
         this.cells.addAll(cells);
     }
 

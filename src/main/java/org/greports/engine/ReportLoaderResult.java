@@ -55,11 +55,11 @@ public class ReportLoaderResult implements Serializable {
         }
     }
 
-    public <T> Map<Class<?>, List<ReportLoaderError>> getErrors() {
+    public Map<Class<?>, List<ReportLoaderError>> getErrors() {
         return Collections.unmodifiableMap(errors);
     }
 
-    public <T> Map<Class<?>, List<ReportLoaderError>> getErrors(int limit) {
+    public Map<Class<?>, List<ReportLoaderError>> getErrors(int limit) {
         Map<Class<?>, List<ReportLoaderError>> map = new HashMap<>();
         if (limit > 1) {
             for (final Map.Entry<Class<?>, List<ReportLoaderError>> entry : errors.entrySet()) {

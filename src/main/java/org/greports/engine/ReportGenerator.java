@@ -5,8 +5,8 @@ import org.greports.exceptions.ReportEngineReflectionException;
 import org.greports.exceptions.ReportEngineRuntimeException;
 import org.greports.utils.Pair;
 
-import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class ReportGenerator {
@@ -27,7 +27,7 @@ public class ReportGenerator {
         reportGeneratorResult = new ReportGeneratorResult(loggerEnabled, level);
     }
 
-    public <T> ReportGenerator parse(final Collection<T> collection, final String reportName, Class<T> clazz) throws ReportEngineReflectionException {
+    public <T> ReportGenerator parse(final List<T> collection, final String reportName, Class<T> clazz) throws ReportEngineReflectionException {
         final ReportData data = reportDataParser.parse(collection, reportName, clazz, getConfigurator(clazz, reportName)).getData();
         reportGeneratorResult.addData(data);
         return this;
