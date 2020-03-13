@@ -21,14 +21,14 @@ public class ReportLoaderResult implements Serializable {
         results.put(clazz, list);
     }
 
-    protected <T> void addError(Class<T> clazz, Cell cell, String columnTitle, String errorMessage) {
+    protected <T> void addError(Class<T> clazz, Cell cell, String columnTitle, String errorMessage, final Serializable errorValue) {
         errorsCheckClass(clazz);
-        errors.get(clazz).add(new ReportLoaderError(cell, columnTitle, errorMessage));
+        errors.get(clazz).add(new ReportLoaderError(cell, columnTitle, errorMessage, errorValue));
     }
 
-    protected <T> void addError(Class<T> clazz, String sheetName, Integer rowIndex, Integer columnIndex, String columnTitle, String errorMessage) {
+    protected <T> void addError(Class<T> clazz, String sheetName, Integer rowIndex, Integer columnIndex, String columnTitle, String errorMessage, final Serializable errorValue) {
         errorsCheckClass(clazz);
-        errors.get(clazz).add(new ReportLoaderError(sheetName, rowIndex, columnIndex, columnTitle, errorMessage));
+        errors.get(clazz).add(new ReportLoaderError(sheetName, rowIndex, columnIndex, columnTitle, errorMessage, errorValue));
     }
 
     @SuppressWarnings("unchecked")
@@ -55,11 +55,11 @@ public class ReportLoaderResult implements Serializable {
         }
     }
 
-    public Map<Class<?>, List<ReportLoaderError>> getErrors() {
+    public <T> Map<Class<?>, List<ReportLoaderError>> getErrors() {
         return Collections.unmodifiableMap(errors);
     }
 
-    public Map<Class<?>, List<ReportLoaderError>> getErrors(int limit) {
+    public <T> Map<Class<?>, List<ReportLoaderError>> getErrors(int limit) {
         Map<Class<?>, List<ReportLoaderError>> map = new HashMap<>();
         if (limit > 1) {
             for (final Map.Entry<Class<?>, List<ReportLoaderError>> entry : errors.entrySet()) {

@@ -1,10 +1,5 @@
 package org.greports.engine;
 
-import org.greports.annotations.CellValidator;
-import org.greports.annotations.ColumnValidator;
-import org.greports.annotations.Configuration;
-import org.greports.exceptions.ReportEngineReflectionException;
-import org.greports.exceptions.ReportEngineValidationException;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellType;
@@ -13,6 +8,11 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
+import org.greports.annotations.CellValidator;
+import org.greports.annotations.ColumnValidator;
+import org.greports.annotations.Configuration;
+import org.greports.exceptions.ReportEngineReflectionException;
+import org.greports.exceptions.ReportEngineValidationException;
 import org.greports.positioning.TranslationsParser;
 import org.greports.utils.AnnotationUtils;
 import org.greports.utils.ConverterUtils;
@@ -28,6 +28,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Serializable;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -118,8 +119,9 @@ public class ReportLoader {
                         if (block.isColumn()) {
                             method = block.getParentMethod();
                             final Cell cell = row.getCell(block.getStartColumn());
+                            Object value = null;
                             try {
-                                Object value = getCellValue(method, cell);
+                                value = getCellValue(method, cell);
                                 value = ConverterUtils.convertValue(value, block.getSetterConverters(), block.getBlockClass());
                                 instanceSetValue(method, instance, value, block.getCellValidators());
                                 block.addValue(value);
@@ -127,7 +129,7 @@ public class ReportLoader {
                                 if (ReportLoaderErrorTreatment.THROW_ERROR.equals(treatment)) {
                                     throw e;
                                 } else {
-                                    loaderResult.addError(clazz, cell, block.getAsColumn().title(), e.getMessage());
+                                    loaderResult.addError(clazz, cell, block.getAsColumn().title(), e.getMessage(), (Serializable) value);
                                     errorThrown = true;
                                 }
                             }
@@ -154,7 +156,7 @@ public class ReportLoader {
                     try {
                         checkColumnValidations(block.getValues(), block.getColumnValidators());
                     } catch (ReportEngineValidationException e) {
-                        loaderResult.addError(clazz, sheet.getSheetName(), e.getRowIndex() + configuration.dataStartRowIndex(), block.getStartColumn(), block.getAsColumn().title(), e.getMessage());
+                        loaderResult.addError(clazz, sheet.getSheetName(), e.getRowIndex() + configuration.dataStartRowIndex(), block.getStartColumn(), block.getAsColumn().title(), e.getMessage(), (Serializable) e.getErrorValue());
                     }
                 }
             }
@@ -234,7 +236,7 @@ public class ReportLoader {
         if (!validatorInstance.isValid(values)) {
             String errorMessage = translator.translate(errorMessageKey, validatorInstance.getValidatorValue());
             final Integer errorRowIndex = validatorInstance.getErrorRowIndex(values);
-            throw new ReportEngineValidationException(errorMessage, validatorInstance.getClass(), errorRowIndex);
+            throw new ReportEngineValidationException(errorMessage, validatorInstance.getClass(), errorRowIndex, (Serializable) validatorInstance.getErrorValue());
         }
     }
 

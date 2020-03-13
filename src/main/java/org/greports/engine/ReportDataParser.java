@@ -13,7 +13,9 @@ import org.greports.content.row.DataRow;
 import org.greports.content.row.SpecialDataRow;
 import org.greports.exceptions.ReportEngineReflectionException;
 import org.greports.exceptions.ReportEngineRuntimeException;
+import org.greports.interfaces.CollectedFormulaValues;
 import org.greports.interfaces.CollectedValues;
+import org.greports.interfaces.GroupedRows;
 import org.greports.positioning.TranslationsParser;
 import org.greports.services.LoggerService;
 import org.greports.styles.interfaces.ConditionalRowStyles;
@@ -33,6 +35,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -74,6 +77,7 @@ final class ReportDataParser extends ReportParser {
         reportConfigurator = configurator;
         parseReportHeader(clazz, positionIncrement);
         parseRowsData(collection, clazz, positionIncrement);
+        parseGroupRows(collection, clazz);
         parseSpecialColumns(collection, clazz);
         parseSpecialRows(collection, clazz);
         parseStyles(collection, clazz);
@@ -155,6 +159,31 @@ final class ReportDataParser extends ReportParser {
             throw new ReportEngineReflectionException("Error invoking the method with no access", e, clazz);
         } catch (InvocationTargetException e) {
             throw new ReportEngineReflectionException("Error invoking the method", e, clazz);
+        }
+    }
+
+    private <T> void parseGroupRows(final List<T> list, final Class<T> clazz) throws ReportEngineReflectionException {
+        if(GroupedRows.class.isAssignableFrom(clazz)){
+            try {
+                final GroupedRows newInstance = (GroupedRows) ReflectionUtils.newInstance(clazz);
+                if(newInstance.isDefaultCollapsed().containsKey(reportData.getReportName())){
+                    reportData.setGroupedRowsDefaultCollapsed(newInstance.isDefaultCollapsed().get(reportData.getReportName()).getAsBoolean());
+                    Pair<Integer, Integer> group;
+                    Integer groupStart = null;
+                    for(int i = 0; i < list.size(); i++) {
+                        GroupedRows groupedRows = (GroupedRows) list.get(i);
+                        if(groupedRows.isGroupStartRow().get(reportData.getReportName()).test(i)){
+                            groupStart = i;
+                        }
+                        if(groupedRows.isGroupEndRow().get(reportData.getReportName()).test(i)) {
+                            group = Pair.of(groupStart, i);
+                            reportData.addGroupedRow(group);
+                        }
+                    }
+                }
+            } catch (ReflectiveOperationException e) {
+                throw new ReportEngineReflectionException("Error instantiating an object. The class should have an empty constructor without parameters", e, clazz);
+            }
         }
     }
 
@@ -267,7 +296,7 @@ final class ReportDataParser extends ReportParser {
         for(ReportSpecialRow specialRow : reportData.getConfiguration().getSpecialRows()){
             final SpecialDataRow specialDataRow = new SpecialDataRow(specialRow.getRowIndex());
             for (final ReportSpecialRowCell specialRowCell : specialRow.getCells()) {
-                if(!specialRowCell.getValueType().equals(ValueType.COLLECTED_VALUE)) {
+                if(!specialRowCell.getValueType().equals(ValueType.COLLECTED_VALUE) && !specialRowCell.getValueType().equals(ValueType.COLLECTED_FORMULA_VALUE)) {
                     specialDataRow.addCell(new SpecialDataCell(
                         specialRowCell.getValueType(),
                         specialRowCell.getValue(),
@@ -275,25 +304,50 @@ final class ReportDataParser extends ReportParser {
                         specialRowCell.getTargetId(),
                         specialRowCell.getColumnWidth()
                     ));
-                } else if(CollectedValues.class.isAssignableFrom(clazz)){
+                } else if(specialRowCell.getValueType().equals(ValueType.COLLECTED_VALUE) && CollectedValues.class.isAssignableFrom(clazz)){
                     try {
                         final T newInstance = ReflectionUtils.newInstance(clazz);
-                        final CollectedValues instance = (CollectedValues<?,?>) newInstance;
-                        final List<Object> list = new ArrayList<>();
-                        for (final T t : collection) {
-                            final CollectedValues<?,?> values = (CollectedValues<?,?>) t;
-                            list.add(values.getCollectedValue().get(Pair.of(reportData.getReportName(), specialRowCell.getValue())));
+                        Pair<String, String> pair = Pair.of(reportData.getReportName(), specialRowCell.getValue());
+                        if(CollectedValues.class.isAssignableFrom(clazz)){
+                            final List<Object> list = new ArrayList<>();
+                            for (final T t : collection) {
+                                final CollectedValues<?,?> values = (CollectedValues<?,?>) t;
+                                if(values.isCollectedValue().get(pair).getAsBoolean()){
+                                    list.add(values.getCollectedValue().get(pair));
+                                }
+                            }
+                            final Object value = ((CollectedValues) newInstance).getCollectedValuesResult(list);
+                            specialDataRow.addCell(new SpecialDataCell(
+                                specialRowCell.getValueType(),
+                                value,
+                                specialRowCell.getFormat(),
+                                specialRowCell.getTargetId()
+                            ));
                         }
-                        final Object value = instance.getCollectedValuesResult(list);
-                        specialDataRow.addCell(new SpecialDataCell(
-                            specialRowCell.getValueType(),
-                            value,
-                            specialRowCell.getFormat(),
-                            specialRowCell.getTargetId()
-                        ));
                     } catch (ReflectiveOperationException e) {
                         throw new ReportEngineReflectionException("Error instantiating an object. The class should have an empty constructor without parameters", e, clazz);
                     }
+                } else if(specialRowCell.getValueType().equals(ValueType.COLLECTED_FORMULA_VALUE) && CollectedFormulaValues.class.isAssignableFrom(clazz)) {
+                    Pair<String, String> pair = Pair.of(reportData.getReportName(), specialRowCell.getTargetId());
+                    Map<String, List<Integer>> valuesById = new HashMap<>();
+                    List<T> list = new ArrayList<>(collection);
+                    for (int i = 0; i < list.size(); i++) {
+                        CollectedFormulaValues collectedFormulaValues = (CollectedFormulaValues) list.get(i);
+                        if(collectedFormulaValues.isCollectedFormulaValue().get(pair).getAsBoolean()){
+                            if(!valuesById.containsKey(pair.getRight())){
+                                valuesById.put(pair.getRight(), new ArrayList<>());
+                            }
+                            valuesById.get(pair.getRight()).add(i);
+                        }
+                    }
+                    SpecialDataCell specialDataCell = new SpecialDataCell(
+                        specialRowCell.getValueType(),
+                        specialRowCell.getValue(),
+                        specialRowCell.getFormat(),
+                        specialRowCell.getTargetId()
+                    ).setExtraData(valuesById);
+
+                    specialDataRow.addCell(specialDataCell);
                 }
             }
             reportData.addSpecialRow(specialDataRow);

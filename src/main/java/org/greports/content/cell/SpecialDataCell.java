@@ -8,6 +8,7 @@ public class SpecialDataCell implements ReportCell, Cloneable {
     private String format;
     private final String targetId;
     private final int columnWidth;
+    private Object extraData;
 
     public SpecialDataCell(final ValueType valueType, final Object value, final String format, final String targetId) {
         this(valueType, value, format, targetId, 1);
@@ -58,5 +59,14 @@ public class SpecialDataCell implements ReportCell, Cloneable {
             clone = super.clone();
         } catch (CloneNotSupportedException ignored) {}
         return clone;
+    }
+
+    public Object getExtraData() {
+        return extraData;
+    }
+
+    public SpecialDataCell setExtraData(final Object extraData) {
+        this.extraData = extraData;
+        return this;
     }
 }

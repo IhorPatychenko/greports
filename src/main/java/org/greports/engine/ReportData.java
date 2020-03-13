@@ -8,6 +8,7 @@ import org.greports.content.row.DataRow;
 import org.greports.content.row.ReportRow;
 import org.greports.content.row.SpecialDataRow;
 import org.greports.styles.ReportDataStyles;
+import org.greports.utils.Pair;
 
 import java.io.Serializable;
 import java.net.URL;
@@ -20,18 +21,20 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 public class ReportData implements Cloneable, Serializable {
-
     private static final long serialVersionUID = 7890759064532349923L;
+
+    private final ReportDataStyles reportDataStyles = new ReportDataStyles();
+    private final Map<String, Integer> targetIndexes = new HashMap<>();
     private String reportName;
     private ReportConfiguration configuration;
     private URL templateURL;
     private ReportHeader header;
     private boolean createHeader;
     private int dataStartRow;
+    private List<Pair<Integer, Integer>> groupedRows = new ArrayList<>();
+    private boolean groupedRowsDefaultCollapsed;
     private List<SpecialDataRow> specialRows = new ArrayList<>();
     private List<DataRow> dataRows = new ArrayList<>();
-    private final ReportDataStyles reportDataStyles = new ReportDataStyles();
-    private final Map<String, Integer> targetIndexes = new HashMap<>();
 
     public ReportData(final ReportConfiguration configuration) {
         this.configuration = configuration;
@@ -43,48 +46,8 @@ public class ReportData implements Cloneable, Serializable {
         this.templateURL = templateURL;
     }
 
-    public String getReportName() {
-        return reportName;
-    }
-
-    public ReportConfiguration getConfiguration() {
-        return configuration;
-    }
-
-    public String getSheetName() {
-        return !configuration.getSheetName().isEmpty() ? configuration.getSheetName() : null;
-    }
-
-    public void setSheetName(final String sheetName) {
-        this.configuration.setSheetName(sheetName);
-    }
-
-    public URL getTemplateURL() {
-        return templateURL;
-    }
-
     public boolean isReportWithTemplate(){
         return !Objects.equals(templateURL, null);
-    }
-
-    public List<DataRow> getDataRows() {
-        return dataRows;
-    }
-
-    public DataRow getDataRow(final int index) {
-        return dataRows.get(index);
-    }
-
-    public ReportRow getPhysicalRow(final int rowIndex) {
-        List<ReportRow> rows = new ArrayList<>();
-        rows.add(header);
-        rows.addAll(dataRows);
-        rows.addAll(specialRows);
-        final List<ReportRow> sorted = rows.stream().sorted(Comparator.comparing(ReportRow::getRowIndex)).collect(Collectors.toList());
-        if(sorted.size() > rowIndex){
-            return sorted.get(rowIndex);
-        }
-        return null;
     }
 
     public boolean isCellExist(final int rowIndex, final int columnIndex) {
@@ -92,76 +55,41 @@ public class ReportData implements Cloneable, Serializable {
         return physicalRow != null && physicalRow.getCells().size() > columnIndex;
     }
 
-    public int getRowsCount(){
-        return dataRows.size();
-    }
-
-    public ReportHeader setHeader(ReportHeader header) {
-        this.header = header;
-        return this.header;
-    }
-
-    public ReportHeader getHeader() {
-        return header;
-    }
-
     public void addRow(DataRow row) {
         this.dataRows.add(row);
-    }
-
-    public void setCreateHeader(boolean createHeader) {
-        this.createHeader = createHeader;
     }
 
     public boolean isCreateHeader() {
         return createHeader;
     }
 
-    public int getDataStartRow() {
-        return dataStartRow;
+    public boolean getGroupedRowsDefaultCollapsed() {
+        return groupedRowsDefaultCollapsed;
     }
 
-    public void setDataStartRow(int dataStartRow) {
-        this.dataStartRow = dataStartRow;
+    public void setCreateHeader(boolean createHeader) {
+        this.createHeader = createHeader;
     }
 
-    public int getColumnsCount() {
-        return header.getCells().size();
+    public ReportData addGroupedRow(final Pair<Integer, Integer> groupedRows) {
+        this.groupedRows.add(groupedRows);
+        return this;
     }
 
-    public List<Integer> getAutoSizedColumns() {
-        List<Integer> autosizedColumns = new ArrayList<>();
-        int mergedCount = 0;
-        for (int i = 0; header != null && i < header.getCells().size(); i++) {
-            final HeaderCell headerCell = header.getCells().get(i);
-            if(headerCell.isAutoSizeColumn()){
-                autosizedColumns.add(i + mergedCount);
-            }
-            if(headerCell.getColumnWidth() > 1){
-                mergedCount += headerCell.getColumnWidth() - 1;
-            }
-        }
-        return autosizedColumns;
+    public List<Pair<Integer, Integer>> getGroupedRows() {
+        return groupedRows;
     }
 
-    public ReportDataStyles getStyles() {
-        return reportDataStyles;
+    public void setGroupedRowsDefaultCollapsed(final boolean groupedRowsDefaultCollapsed) {
+        this.groupedRowsDefaultCollapsed = groupedRowsDefaultCollapsed;
     }
 
-    public List<SpecialDataRow> getSpecialRows() {
-        return specialRows;
+    public boolean isGroupedRowsDefaultCollapsed() {
+        return groupedRowsDefaultCollapsed;
     }
 
     public void addSpecialRow(SpecialDataRow specialDataRow) {
         specialRows.add(specialDataRow);
-    }
-
-    public Integer getColumnIndexForTarget(String target) {
-        return targetIndexes.get(target);
-    }
-
-    public Map<String, Integer> getTargetIndexes() {
-        return targetIndexes;
     }
 
     public void mergeReportData(List<ReportData> subreportsData) {
@@ -204,5 +132,101 @@ public class ReportData implements Cloneable, Serializable {
         clone.dataRows = dataRows.stream().map(row -> (DataRow) row.clone()).collect(Collectors.toList());
         clone.specialRows = specialRows.stream().map(row -> (SpecialDataRow) row.clone()).collect(Collectors.toList());
         return clone;
+    }
+
+    public String getReportName() {
+        return reportName;
+    }
+
+    public ReportConfiguration getConfiguration() {
+        return configuration;
+    }
+
+    public String getSheetName() {
+        return !configuration.getSheetName().isEmpty() ? configuration.getSheetName() : null;
+    }
+
+    public void setSheetName(final String sheetName) {
+        this.configuration.setSheetName(sheetName);
+    }
+
+    public URL getTemplateURL() {
+        return templateURL;
+    }
+
+    public List<DataRow> getDataRows() {
+        return dataRows;
+    }
+
+    public DataRow getDataRow(final int index) {
+        return dataRows.get(index);
+    }
+
+    public ReportRow getPhysicalRow(final int rowIndex) {
+        List<ReportRow> rows = new ArrayList<>();
+        rows.add(header);
+        rows.addAll(dataRows);
+        rows.addAll(specialRows);
+        final List<ReportRow> sorted = rows.stream().sorted(Comparator.comparing(ReportRow::getRowIndex)).collect(Collectors.toList());
+        if(sorted.size() > rowIndex){
+            return sorted.get(rowIndex);
+        }
+        return null;
+    }
+
+    public int getRowsCount(){
+        return dataRows.size();
+    }
+
+    public ReportHeader getHeader() {
+        return header;
+    }
+
+    public int getDataStartRow() {
+        return dataStartRow;
+    }
+
+    public void setDataStartRow(int dataStartRow) {
+        this.dataStartRow = dataStartRow;
+    }
+
+    public int getColumnsCount() {
+        return header.getCells().size();
+    }
+
+    public List<Integer> getAutoSizedColumns() {
+        List<Integer> autosizedColumns = new ArrayList<>();
+        int mergedCount = 0;
+        for (int i = 0; header != null && i < header.getCells().size(); i++) {
+            final HeaderCell headerCell = header.getCells().get(i);
+            if(headerCell.isAutoSizeColumn()){
+                autosizedColumns.add(i + mergedCount);
+            }
+            if(headerCell.getColumnWidth() > 1){
+                mergedCount += headerCell.getColumnWidth() - 1;
+            }
+        }
+        return autosizedColumns;
+    }
+
+    public ReportDataStyles getStyles() {
+        return reportDataStyles;
+    }
+
+    public List<SpecialDataRow> getSpecialRows() {
+        return specialRows;
+    }
+
+    public Integer getColumnIndexForTarget(String target) {
+        return targetIndexes.get(target);
+    }
+
+    public Map<String, Integer> getTargetIndexes() {
+        return targetIndexes;
+    }
+
+    public ReportHeader setHeader(ReportHeader header) {
+        this.header = header;
+        return this.header;
     }
 }

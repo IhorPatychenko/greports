@@ -31,4 +31,9 @@ public class UniqueValueValidator extends AbstractColumnValidator {
         }
         return list.size() - 1;
     }
+
+    @Override
+    public Object getErrorValue() {
+        return null;
+    }
 }

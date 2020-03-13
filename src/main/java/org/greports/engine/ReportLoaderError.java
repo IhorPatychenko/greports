@@ -17,17 +17,19 @@ public class ReportLoaderError implements Serializable {
     private String columnReference;
     private final String columnTitle;
     private final String errorMsg;
+    private final transient Serializable errorValue;
 
-    public ReportLoaderError(String sheetName, Integer rowIndex, Integer columnIndex, String columnTitle, String errorMsg) {
+    public ReportLoaderError(String sheetName, Integer rowIndex, Integer columnIndex, String columnTitle, String errorMsg, Serializable errorValue) {
         this.sheetName = sheetName;
         this.rowIndex = rowIndex;
         this.columnIndex = columnIndex;
         this.columnTitle = columnTitle;
         this.errorMsg = errorMsg;
+        this.errorValue = errorValue;
     }
 
-    public ReportLoaderError(Cell cell, String columnTitle, String errorMsg) {
-        this(cell.getSheet().getSheetName(), cell.getRowIndex(), cell.getColumnIndex(), columnTitle, errorMsg);
+    public ReportLoaderError(Cell cell, String columnTitle, String errorMsg, final Serializable errorValue) {
+        this(cell.getSheet().getSheetName(), cell.getRowIndex(), cell.getColumnIndex(), columnTitle, errorMsg, errorValue);
         final CellReference cellReference = new CellReference(cell);
         this.cellReference = cellReference.formatAsString();
         this.rowReference = cellReference.getCellRefParts()[1];
@@ -64,5 +66,9 @@ public class ReportLoaderError implements Serializable {
 
     public String getColumnTitle() {
         return columnTitle;
+    }
+
+    public Object getErrorValue() {
+        return errorValue;
     }
 }
