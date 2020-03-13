@@ -41,6 +41,7 @@ import org.greports.utils.Pair;
 import org.greports.utils.Utils;
 
 import java.awt.*;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -90,6 +91,11 @@ class RawDataInjector extends DataInjector {
         final Stopwatch specialRowsStopwatch = Stopwatch.createStarted();
         createSpecialRows(sheet);
         loggerService.trace("Special rows created. Time: " + specialRowsStopwatch.stop());
+
+        loggerService.trace("Creating row's groups...");
+        final Stopwatch rowsGroup = Stopwatch.createStarted();
+        createRowsGroups(sheet);
+        loggerService.trace("Row's groups created. Time: " + rowsGroup.stop());
 
         loggerService.trace("Adding striped row styles...");
         final Stopwatch stripedRowsStopwatch = Stopwatch.createStarted();
@@ -218,25 +224,54 @@ class RawDataInjector extends DataInjector {
                 Cell cell = row.createCell(columnIndexForTarget);
                 createColumnsToMerge(sheet, row, columnIndexForTarget, specialCell.getColumnWidth());
                 final ValueType valueType = specialCell.getValueType();
-                if(!ValueType.FORMULA.equals(valueType)) {
+                if(!ValueType.FORMULA.equals(valueType) && !ValueType.COLLECTED_FORMULA_VALUE.equals(valueType)) {
                     WorkbookUtils.setCellValue(cell, specialCell.getValue());
                 } else {
                     String formulaString = specialCell.getValue().toString();
-                    if(sheet.getLastRowNum() > reportData.getDataStartRow()) {
-                        for (Map.Entry<String, Integer> entry : reportData.getTargetIndexes().entrySet()) {
-                            CellReference firstCellReference = super.getCellReferenceForTargetId(sheet.getRow(reportData.getDataStartRow()), specialCell.getTargetId());
-                            CellReference lastCellReference = super.getCellReferenceForTargetId(sheet.getRow(reportData.getDataStartRow() + reportData.getRowsCount() - 1), specialCell.getTargetId());
-                            formulaString = formulaString.replaceAll(entry.getKey(), firstCellReference.formatAsString() + ":" + lastCellReference.formatAsString());
+                    if(ValueType.FORMULA.equals(valueType)){
+
+                        if(sheet.getLastRowNum() > reportData.getDataStartRow()) {
+                            for (Map.Entry<String, Integer> entry : reportData.getTargetIndexes().entrySet()) {
+                                CellReference firstCellReference = super.getCellReferenceForTargetId(sheet.getRow(reportData.getDataStartRow()), specialCell.getTargetId());
+                                CellReference lastCellReference = super.getCellReferenceForTargetId(sheet.getRow(reportData.getDataStartRow() + reportData.getRowsCount() - 1), specialCell.getTargetId());
+                                formulaString = formulaString.replaceAll(entry.getKey(), firstCellReference.formatAsString() + ":" + lastCellReference.formatAsString());
+                            }
                         }
-                    }
-                    if(sheet.getLastRowNum() > reportData.getDataStartRow()) {
-                        cell.setCellFormula(formulaString);
+                        if(sheet.getLastRowNum() > reportData.getDataStartRow()) {
+                            cell.setCellFormula(formulaString);
+                        }
+                    } else {
+                        Map<String, List<Integer>> extraData = (Map<String, List<Integer>>) specialCell.getExtraData();
+                        if(extraData != null) {
+                            for(final Map.Entry<String, List<Integer>> entry : extraData.entrySet()) {
+                                String id = entry.getKey();
+                                List<Integer> rowIndexes = entry.getValue();
+                                List<String> cellReferences = new ArrayList<>();
+                                for(final Integer rowIndex : rowIndexes) {
+                                    CellReference cellReference = super.getCellReferenceForTargetId(sheet.getRow(reportData.getDataStartRow() + rowIndex), specialCell.getTargetId());
+                                    cellReferences.add(cellReference.formatAsString() + ":" + cellReference.formatAsString());
+                                }
+                                String joinedReferences = String.join(",", cellReferences);
+                                formulaString = formulaString.replaceAll(id, joinedReferences);
+                                cell.setCellFormula(formulaString);
+                            }
+                        }
                     }
                 }
                 setCellFormat(cell, specialCell.getFormat());
             }
         }
         XSSFFormulaEvaluator.evaluateAllFormulaCells(currentWorkbook);
+    }
+
+    private void createRowsGroups(final Sheet sheet) {
+        List<Pair<Integer, Integer>> groupedRows = reportData.getGroupedRows();
+        for(final Pair<Integer, Integer> groupedRow : groupedRows) {
+            int startGroup = reportData.getDataStartRow() + groupedRow.getLeft();
+            int endGroup = reportData.getDataStartRow() + groupedRow.getRight();
+            sheet.groupRow(startGroup, endGroup);
+            sheet.setRowGroupCollapsed(startGroup, reportData.isGroupedRowsDefaultCollapsed());
+        }
     }
 
     private void addStripedRows(Sheet sheet) {
@@ -281,11 +316,13 @@ class RawDataInjector extends DataInjector {
             checkRange(range, sheet);
             for (int i = range.getStart(); i <= range.getEnd(); i++) {
                 final Row row = sheet.getRow(i);
-                for (int y = 0; y < row.getLastCellNum(); y++) {
-                    cellApplyStyles(row.getCell(y), style);
-                }
-                if(style.getRowHeight() != null) {
-                    row.setHeightInPoints(style.getRowHeight());
+                if(row != null) {
+                    for (int y = 0; y < row.getLastCellNum(); y++) {
+                        cellApplyStyles(row.getCell(y), style);
+                    }
+                    if(style.getRowHeight() != null) {
+                        row.setHeightInPoints(style.getRowHeight());
+                    }
                 }
             }
         }
@@ -296,10 +333,12 @@ class RawDataInjector extends DataInjector {
         for (HorizontalRangedStyle style : styles) {
             for (int i = 0; i <= sheet.getLastRowNum(); i++) {
                 final Row row = sheet.getRow(i);
-                final HorizontalRange range = style.getRange();
-                checkRange(range, reportData);
-                for (int y = range.getStart(); y <= range.getEnd(); y++) {
-                    cellApplyStyles(row.getCell(y), style);
+                if(row != null) {
+                    final HorizontalRange range = style.getRange();
+                    checkRange(range, reportData);
+                    for (int y = range.getStart(); y <= range.getEnd(); y++) {
+                        cellApplyStyles(row.getCell(y), style);
+                    }
                 }
             }
             if(style.getColumnWidth() != null) {
@@ -314,7 +353,11 @@ class RawDataInjector extends DataInjector {
         final Collection<PositionedStyle> styles = positionedStyles.getStyles();
         for (PositionedStyle style : styles) {
             checkPosition(style.getRange(), sheet, reportData);
-            cellApplyStyles(sheet.getRow(style.getRange().getRow()).getCell(style.getRange().getColumn()), style);
+            final Row row = sheet.getRow(style.getRange().getRow());
+            if(row != null && row.getCell(style.getRange().getColumn()) != null) {
+                cellApplyStyles(row.getCell(style.getRange().getColumn()), style);
+            }
+
         }
     }
 
@@ -327,8 +370,11 @@ class RawDataInjector extends DataInjector {
             final HorizontalRange horizontalRange = range.getHorizontalRange();
             checkRange(horizontalRange, reportData);
             for (int i = verticalRange.getStart(); i <= verticalRange.getEnd(); i++) {
-                for (int y = horizontalRange.getStart(); y <= horizontalRange.getEnd(); y++) {
-                    cellApplyStyles(sheet.getRow(i).getCell(y), rangedStyle);
+                final Row row = sheet.getRow(i);
+                if(row != null){
+                    for (int y = horizontalRange.getStart(); y <= horizontalRange.getEnd(); y++) {
+                        cellApplyStyles(row.getCell(y), rangedStyle);
+                    }
                 }
             }
         }
@@ -352,7 +398,7 @@ class RawDataInjector extends DataInjector {
         if(Objects.isNull(range.getStart())) {
             range.setStart(sheet.getLastRowNum());
         } else if(range.getStart() < 0) {
-            range.setStart(sheet.getLastRowNum() + range.getStart() + 1);
+            range.setStart(sheet.getLastRowNum() + range.getStart());
         }
 
         if(Objects.isNull(range.getEnd())) {
@@ -487,8 +533,8 @@ class RawDataInjector extends DataInjector {
                     cellStyle.setShrinkToFit(style.getShrinkToFit());
                 }
 
-                if(style instanceof HorizontalRangedStyle && ((HorizontalRangedStyle) style).getWrapText()) {
-                    cellStyle.setWrapText(((HorizontalRangedStyle) style).getWrapText());
+                if(style instanceof HorizontalRangedStyle && Boolean.TRUE.equals(((HorizontalRangedStyle) style).getWrapText())) {
+                    cellStyle.setWrapText(true);
                 }
 
                 _stylesCache.put(styleKey, cellStyle);
