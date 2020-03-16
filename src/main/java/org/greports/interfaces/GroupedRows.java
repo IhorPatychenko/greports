@@ -7,5 +7,5 @@ import java.util.function.Predicate;
 public interface GroupedRows {
     Map<String, Predicate<Integer>> isGroupStartRow();
     Map<String, Predicate<Integer>> isGroupEndRow();
-    Map<String, BooleanSupplier> isDefaultCollapsed();
+    Map<String, BooleanSupplier> isRowCollapsedByDefault();
 }

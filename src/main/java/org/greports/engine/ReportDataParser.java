@@ -15,6 +15,7 @@ import org.greports.exceptions.ReportEngineReflectionException;
 import org.greports.exceptions.ReportEngineRuntimeException;
 import org.greports.interfaces.CollectedFormulaValues;
 import org.greports.interfaces.CollectedValues;
+import org.greports.interfaces.GroupedColumns;
 import org.greports.interfaces.GroupedRows;
 import org.greports.positioning.TranslationsParser;
 import org.greports.services.LoggerService;
@@ -78,6 +79,7 @@ final class ReportDataParser extends ReportParser {
         parseReportHeader(clazz, positionIncrement);
         parseRowsData(collection, clazz, positionIncrement);
         parseGroupRows(collection, clazz);
+        parseGroupColumns(clazz);
         parseSpecialColumns(collection, clazz);
         parseSpecialRows(collection, clazz);
         parseStyles(collection, clazz);
@@ -166,8 +168,8 @@ final class ReportDataParser extends ReportParser {
         if(GroupedRows.class.isAssignableFrom(clazz)){
             try {
                 final GroupedRows newInstance = (GroupedRows) ReflectionUtils.newInstance(clazz);
-                if(newInstance.isDefaultCollapsed().containsKey(reportData.getReportName())){
-                    reportData.setGroupedRowsDefaultCollapsed(newInstance.isDefaultCollapsed().get(reportData.getReportName()).getAsBoolean());
+                if(newInstance.isRowCollapsedByDefault() != null && newInstance.isRowCollapsedByDefault().containsKey(reportData.getReportName())){
+                    reportData.setGroupedRowsDefaultCollapsed(newInstance.isRowCollapsedByDefault().get(reportData.getReportName()).getAsBoolean());
                     Pair<Integer, Integer> group;
                     Integer groupStart = null;
                     for(int i = 0; i < list.size(); i++) {
@@ -180,6 +182,21 @@ final class ReportDataParser extends ReportParser {
                             reportData.addGroupedRow(group);
                         }
                     }
+                }
+            } catch (ReflectiveOperationException e) {
+                throw new ReportEngineReflectionException("Error instantiating an object. The class should have an empty constructor without parameters", e, clazz);
+            }
+        }
+    }
+
+
+    private <T> void parseGroupColumns(final Class<T> clazz) throws ReportEngineReflectionException {
+        if(GroupedColumns.class.isAssignableFrom(clazz)){
+            try {
+                final GroupedColumns newInstance = (GroupedColumns) ReflectionUtils.newInstance(clazz);
+                if(newInstance.isColumnsCollapsedByDefault() != null && newInstance.isColumnsCollapsedByDefault().containsKey(reportData.getReportName())) {
+                    final List<Pair<Integer, Integer>> list = newInstance.getColumnGroupRanges().getOrDefault(reportData.getReportName(), new ArrayList<>());
+                    reportData.setGroupedColumns(list);
                 }
             } catch (ReflectiveOperationException e) {
                 throw new ReportEngineReflectionException("Error instantiating an object. The class should have an empty constructor without parameters", e, clazz);

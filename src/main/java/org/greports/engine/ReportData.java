@@ -33,6 +33,8 @@ public class ReportData implements Cloneable, Serializable {
     private int dataStartRow;
     private List<Pair<Integer, Integer>> groupedRows = new ArrayList<>();
     private boolean groupedRowsDefaultCollapsed;
+    private List<Pair<Integer, Integer>> groupedColumns = new ArrayList<>();
+    private boolean groupedColumnsDefaultCollapsed;
     private List<SpecialDataRow> specialRows = new ArrayList<>();
     private List<DataRow> dataRows = new ArrayList<>();
 
@@ -86,6 +88,22 @@ public class ReportData implements Cloneable, Serializable {
 
     public boolean isGroupedRowsDefaultCollapsed() {
         return groupedRowsDefaultCollapsed;
+    }
+
+    public boolean isGroupedColumnsDefaultCollapsed() {
+        return groupedColumnsDefaultCollapsed;
+    }
+
+    public void setGroupedColumnsDefaultCollapsed(final boolean groupedColumnsDefaultCollapsed) {
+        this.groupedColumnsDefaultCollapsed = groupedColumnsDefaultCollapsed;
+    }
+
+    public void setGroupedColumns(final List<Pair<Integer, Integer>> groupedColumns) {
+        this.groupedColumns = groupedColumns;
+    }
+
+    public List<Pair<Integer, Integer>> getGroupedColumns() {
+        return groupedColumns;
     }
 
     public void addSpecialRow(SpecialDataRow specialDataRow) {

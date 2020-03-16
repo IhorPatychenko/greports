@@ -97,6 +97,11 @@ class RawDataInjector extends DataInjector {
         createRowsGroups(sheet);
         loggerService.trace("Row's groups created. Time: " + rowsGroup.stop());
 
+        loggerService.trace("Creating row's groups...");
+        final Stopwatch columnsGroup = Stopwatch.createStarted();
+        createColumnsGroups(sheet);
+        loggerService.trace("Column's groups created. Time: " + columnsGroup.stop());
+
         loggerService.trace("Adding striped row styles...");
         final Stopwatch stripedRowsStopwatch = Stopwatch.createStarted();
         addStripedRows(sheet);
@@ -271,6 +276,14 @@ class RawDataInjector extends DataInjector {
             int endGroup = reportData.getDataStartRow() + groupedRow.getRight();
             sheet.groupRow(startGroup, endGroup);
             sheet.setRowGroupCollapsed(startGroup, reportData.isGroupedRowsDefaultCollapsed());
+        }
+    }
+
+    private void createColumnsGroups(final Sheet sheet) {
+        final List<Pair<Integer, Integer>> groupedColumns = reportData.getGroupedColumns();
+        for(final Pair<Integer, Integer> groupedColumn : groupedColumns) {
+            sheet.groupColumn(groupedColumn.getLeft(), groupedColumn.getRight());
+            sheet.setColumnGroupCollapsed(groupedColumn.getLeft(), reportData.isGroupedColumnsDefaultCollapsed());
         }
     }
 
