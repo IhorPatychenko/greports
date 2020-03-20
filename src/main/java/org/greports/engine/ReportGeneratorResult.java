@@ -13,10 +13,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ReportGeneratorResult implements Serializable {
-    private static final long serialVersionUID = 7222501944914859749L;
+    private static final long serialVersionUID = 8220764494072805634L;
 
     private final boolean loggerEnabled;
     private transient LoggerService loggerService;
+    private final List<ReportData> reportData = new ArrayList<>();
+    private final transient ReportInjector reportInjector;
+    private final List<String> deleteSheets = new ArrayList<>();
 
     public ReportGeneratorResult() {
         this(false, Level.ALL);
@@ -25,9 +28,8 @@ public class ReportGeneratorResult implements Serializable {
     public ReportGeneratorResult(boolean loggerEnabled, Level level) {
         this.loggerEnabled = loggerEnabled;
         loggerService = new LoggerService(ReportGeneratorResult.class, loggerEnabled, level);
+        reportInjector = new ReportInjector(reportData, deleteSheets, loggerEnabled);
     }
-
-    private final List<ReportData> reportData = new ArrayList<>();
 
     protected void addData(ReportData data){
         reportData.add(data);
@@ -44,12 +46,20 @@ public class ReportGeneratorResult implements Serializable {
                 .orElse(null);
     }
 
-    public ReportResultChanger getResultChanger(String sheetName) {
+    public ReportResultChanger getResultChanger(final String sheetName) {
         ReportData reportDataBySheetName = getReportDataBySheetName(sheetName);
         if(reportDataBySheetName == null){
             throw new ReportEngineRuntimeException(String.format("Sheet with name %s does not exist", sheetName), this.getClass());
         }
         return new ReportResultChanger(reportDataBySheetName, this);
+    }
+
+    public ReportGeneratorResult deleteSheet(final String sheetName) {
+        if(sheetName == null){
+            throw new ReportEngineRuntimeException("The parameter sheetName cannot be null", this.getClass());
+        }
+        deleteSheets.add(sheetName);
+        return this;
     }
 
     /**
@@ -96,7 +106,6 @@ public class ReportGeneratorResult implements Serializable {
      */
     public void writeToOutputStream(FileOutputStream outputStream) throws IOException {
         Stopwatch injectStopwatch = Stopwatch.createStarted();
-        ReportInjector reportInjector = new ReportInjector(reportData, loggerEnabled);
         loggerService.info("Data inject started...");
         reportInjector.inject();
         loggerService.info("Data inject successfully finished. Inject time: " + injectStopwatch.stop());

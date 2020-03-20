@@ -247,4 +247,17 @@ public class ReportData implements Cloneable, Serializable {
         this.header = header;
         return this.header;
     }
+
+    public void applyConfigurator(final ReportConfigurator configurator) {
+        // Override sheet name
+        if(configurator.getSheetName() != null) this.setSheetName(configurator.getSheetName());
+
+        // Override titles
+        for (final Map.Entry<Integer, String> entry : configurator.getOverriddenTitles().entrySet()) {
+            this.getHeader().getCell(entry.getKey()).setValue(entry.getValue());
+        }
+
+        // Override template URL
+        if(configurator.getTemplateUrl() != null) this.templateURL = configurator.getTemplateUrl();
+    }
 }

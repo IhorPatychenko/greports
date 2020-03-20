@@ -3,17 +3,19 @@ package org.greports.engine;
 import org.greports.exceptions.ReportEngineRuntimeException;
 
 import java.io.Serializable;
+import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 
 public class ReportConfigurator implements Serializable {
 
     private static final long serialVersionUID = 396420494885876888L;
-    private ReportGenerator reportGenerator;
+    private transient ReportGenerator reportGenerator;
 
     private Map<Integer, String> overriddenTitles = new HashMap<>();
     private String sheetName;
     private Map<Class<?>, String> formats = new HashMap<>();
+    private URL templateUrl;
 
     protected ReportGenerator getReportGenerator() {
         return reportGenerator;
@@ -47,6 +49,15 @@ public class ReportConfigurator implements Serializable {
 
     public String getSheetName() {
         return sheetName;
+    }
+
+    public ReportConfigurator setTemplateUrl(final URL templateUrl) {
+        this.templateUrl = templateUrl;
+        return this;
+    }
+
+    public URL getTemplateUrl() {
+        return templateUrl;
     }
 
     public ReportConfigurator setFormatForClass(final Class<?> clazz, final String format) {

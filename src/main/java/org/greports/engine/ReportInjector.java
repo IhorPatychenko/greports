@@ -14,10 +14,12 @@ public class ReportInjector {
     private XSSFWorkbook currentWorkbook = new XSSFWorkbook();
     private final List<ReportData> reportData;
     private boolean loggerEnabled;
+    private final List<String> deleteSheet;
 
-    public ReportInjector(List<ReportData> reportData, boolean loggerEnabled) {
+    public ReportInjector(List<ReportData> reportData, final List<String> deleteSheet, boolean loggerEnabled) {
         this.reportData = reportData;
         this.loggerEnabled = loggerEnabled;
+        this.deleteSheet = deleteSheet;
     }
 
     public void inject() {
@@ -31,6 +33,9 @@ public class ReportInjector {
                 } else {
                     new RawDataInjector(currentWorkbook, data, loggerEnabled).inject();
                 }
+            }
+            for(final String deleteSheet : deleteSheet) {
+                currentWorkbook.removeSheetAt(currentWorkbook.getSheetIndex(deleteSheet));
             }
         } catch (InvalidFormatException e) {
             throw new ReportEngineRuntimeException("Error creating a workbook", e, ReportInjector.class);

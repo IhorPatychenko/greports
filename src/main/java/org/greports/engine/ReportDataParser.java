@@ -63,8 +63,7 @@ final class ReportDataParser extends ReportParser {
         loggerService.info(String.format("Parsing report for class \"%s\" with name \"%s\"...", clazz.getSimpleName(), reportName));
         Stopwatch timer = Stopwatch.createStarted();
         final ReportDataParser parser = parse(collection, reportName, clazz, 0f, configurator);
-        overrideSheetName(configurator.getSheetName());
-        overrideSubreportsTitles(configurator.getOverriddenTitles());
+        reportData.applyConfigurator(configurator);
         loggerService.info(String.format("Report with name \"%s\" successfully parsed. Parse time: %s", reportName, timer.stop()));
         return parser;
     }
@@ -400,18 +399,6 @@ final class ReportDataParser extends ReportParser {
             }
         } catch (ReflectiveOperationException e) {
             throw new ReportEngineReflectionException("Error instantiating an object. The class should have an empty constructor without parameters", e, clazz);
-        }
-    }
-
-    private void overrideSheetName(final String sheetName) {
-        if(sheetName != null){
-            reportData.setSheetName(sheetName);
-        }
-    }
-
-    private void overrideSubreportsTitles(final Map<Integer, String> overriddenTitles) {
-        for (final Map.Entry<Integer, String> entry : overriddenTitles.entrySet()) {
-            this.reportData.getHeader().getCell(entry.getKey()).setValue(entry.getValue());
         }
     }
 
