@@ -117,19 +117,23 @@ public class ReportData implements Cloneable, Serializable {
             mergeStyles(other);
         }
 
-        header.getCells().sort(Comparator.comparing(AbstractReportCell::getPosition));
-        dataRows.forEach(row -> row.getCells().sort(Comparator.comparing(AbstractReportCell::getPosition)));
-
         setTargetIds();
     }
 
     public void setTargetIds() {
+        sortData();
+
         for (int i = 0; i < header.getCells().size(); i++) {
             HeaderCell headerCell = header.getCell(i);
             if(!headerCell.getId().equals("")){
                 targetIndexes.put(headerCell.getId(), i);
             }
         }
+    }
+
+    private void sortData() {
+        header.getCells().sort(Comparator.comparing(AbstractReportCell::getPosition));
+        dataRows.forEach(row -> row.getCells().sort(Comparator.comparing(AbstractReportCell::getPosition)));
     }
 
     private void mergeHeaders(ReportData other) {
