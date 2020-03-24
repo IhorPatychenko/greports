@@ -120,6 +120,10 @@ public class ReportData implements Cloneable, Serializable {
         header.getCells().sort(Comparator.comparing(AbstractReportCell::getPosition));
         dataRows.forEach(row -> row.getCells().sort(Comparator.comparing(AbstractReportCell::getPosition)));
 
+        setTargetIds();
+    }
+
+    public void setTargetIds() {
         for (int i = 0; i < header.getCells().size(); i++) {
             HeaderCell headerCell = header.getCell(i);
             if(!headerCell.getId().equals("")){
@@ -235,7 +239,7 @@ public class ReportData implements Cloneable, Serializable {
         return specialRows;
     }
 
-    public Integer getColumnIndexForTarget(String target) {
+    public Integer getColumnIndexForId(String target) {
         return targetIndexes.get(target);
     }
 

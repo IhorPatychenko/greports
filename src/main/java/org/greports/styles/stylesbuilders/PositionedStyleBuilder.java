@@ -11,6 +11,10 @@ public class PositionedStyleBuilder extends AbstractReportStyleBuilder<Positione
         super(position, clonePreviousStyle);
     }
 
+    public PositionedStyleBuilder(final boolean clonePreviousStyle) {
+        super(new Position(null, null), clonePreviousStyle);
+    }
+
     @Override
     protected PositionedStyleBuilder getThis() {
         return this;

@@ -225,7 +225,7 @@ class RawDataInjector extends DataInjector {
                 if(row == null) {
                     row = sheet.createRow(specialRow.getRowIndex());
                 }
-                final Integer columnIndexForTarget = reportData.getColumnIndexForTarget(specialCell.getTargetId());
+                final Integer columnIndexForTarget = reportData.getColumnIndexForId(specialCell.getTargetId());
                 Cell cell = row.createCell(columnIndexForTarget);
                 createColumnsToMerge(sheet, row, columnIndexForTarget, specialCell.getColumnWidth());
                 final ValueType valueType = specialCell.getValueType();

@@ -19,9 +19,11 @@ import org.greports.interfaces.GroupedColumns;
 import org.greports.interfaces.GroupedRows;
 import org.greports.positioning.TranslationsParser;
 import org.greports.services.LoggerService;
+import org.greports.styles.interfaces.ConditionalCellStyles;
 import org.greports.styles.interfaces.ConditionalRowStyles;
 import org.greports.styles.stylesbuilders.AbstractReportStylesBuilder;
 import org.greports.styles.stylesbuilders.HorizontalRangedStyleBuilder;
+import org.greports.styles.stylesbuilders.PositionedStyleBuilder;
 import org.greports.styles.stylesbuilders.RectangleRangedStyleBuilder;
 import org.greports.styles.stylesbuilders.RectangleRangedStylesBuilder;
 import org.greports.utils.AnnotationUtils;
@@ -108,6 +110,8 @@ final class ReportDataParser extends ReportParser {
                         reportData.getConfiguration().isSortableHeader(),
                         reportData.getConfiguration().getHeaderRowIndex()))
                 .addCells(cells);
+
+        reportData.setTargetIds();
     }
 
     private <T> void parseRowsData(List<T> collection, Class<T> clazz, Float positionIncrement) throws ReportEngineReflectionException {
@@ -374,25 +378,49 @@ final class ReportDataParser extends ReportParser {
         super.parseStyles(reportData, clazz);
         try {
             final T newInstance = ReflectionUtils.newInstance(clazz);
-            if(newInstance instanceof ConditionalRowStyles){
+            if(newInstance instanceof ConditionalRowStyles || newInstance instanceof ConditionalCellStyles){
                 final List<T> list = new ArrayList<>(collection);
                 final short startRowIndex = reportData.getConfiguration().getDataStartRowIndex();
                 RectangleRangedStylesBuilder rectangleRangedStylesBuilder = reportData.getStyles().getRectangleRangedStylesBuilder();
                 if(rectangleRangedStylesBuilder == null){
                     rectangleRangedStylesBuilder = reportData.getStyles().createRectangleRangedStylesBuilder(AbstractReportStylesBuilder.StylePriority.PRIORITY4);
                 }
-                for (int i = 0; i < list.size(); i++) {
+                for(int i = 0; i < list.size(); i++) {
                     final T entry = list.get(i);
-                    final ConditionalRowStyles conditionalRowStyles = (ConditionalRowStyles) entry;
-                    final Optional<Map<String, Predicate<Integer>>> styledOptional = Optional.ofNullable(conditionalRowStyles.isStyled());
-                    final Predicate<Integer> predicate = styledOptional
-                            .orElseThrow(() -> new ReportEngineRuntimeException("The returned map cannot be null", this.getClass()))
-                            .getOrDefault(reportData.getReportName(), null);
-                    if(predicate != null && predicate.test(i)){
+                    if(newInstance instanceof ConditionalRowStyles) {
+                        final ConditionalRowStyles conditionalRowStyles = (ConditionalRowStyles) entry;
+                        final Optional<Map<String, Predicate<Integer>>> styledOptional = Optional.ofNullable(conditionalRowStyles.isStyled());
                         final List<HorizontalRangedStyleBuilder> horizontalRangedStyleBuilders = conditionalRowStyles.getIndexBasedStyle().getOrDefault(reportData.getReportName(), new ArrayList<>());
-                        for (final HorizontalRangedStyleBuilder styleBuilder : horizontalRangedStyleBuilders) {
-                            final RectangleRangedStyleBuilder rectangleRangedStyleBuilder = new RectangleRangedStyleBuilder(styleBuilder, startRowIndex + i);
-                            rectangleRangedStylesBuilder.addStyleBuilder(rectangleRangedStyleBuilder);
+                        final Predicate<Integer> predicate = styledOptional
+                                .orElseThrow(() -> new ReportEngineRuntimeException("The returned map cannot be null", this.getClass()))
+                                .getOrDefault(reportData.getReportName(), null);
+                        if(predicate != null && predicate.test(i)) {
+                            for(final HorizontalRangedStyleBuilder styleBuilder : horizontalRangedStyleBuilders) {
+                                final RectangleRangedStyleBuilder rectangleRangedStyleBuilder = new RectangleRangedStyleBuilder(styleBuilder, startRowIndex + i);
+                                rectangleRangedStylesBuilder.addStyleBuilder(rectangleRangedStyleBuilder);
+                            }
+                        }
+                    }
+                    if(newInstance instanceof ConditionalCellStyles){
+                        final ConditionalCellStyles conditionalCellStyles = (ConditionalCellStyles) entry;
+                        final Optional<Map<String, List<Pair<String, Predicate<Integer>>>>> styledOptional = Optional.ofNullable(conditionalCellStyles.isCellStyled());
+                        final List<Pair<String, Predicate<Integer>>> predicatePairs = styledOptional
+                                .orElseThrow(() -> new ReportEngineRuntimeException("The returned map cannot be null", this.getClass()))
+                                .getOrDefault(reportData.getReportName(), null);
+                        final List<Pair<String, PositionedStyleBuilder>> styleBuilders = ((ConditionalCellStyles) entry).getIndexBasedCellStyle().getOrDefault(reportData.getReportName(), null);
+                        for(Pair<String, Predicate<Integer>> predicatePair : predicatePairs) {
+                            if(predicatePair.getRight() != null && predicatePair.getRight().test(i)) {
+                                for(Pair<String, PositionedStyleBuilder> styleBuilderPair : styleBuilders) {
+                                    if(styleBuilderPair.getLeft().equals(predicatePair.getLeft())) {
+                                        final PositionedStyleBuilder positionedStyleBuilder = styleBuilderPair.getRight();
+                                        positionedStyleBuilder.getTuple()
+                                                .setRow(startRowIndex + i)
+                                                .setColumn(reportData.getColumnIndexForId(styleBuilderPair.getLeft()));
+                                        final RectangleRangedStyleBuilder rectangleRangedStyleBuilder = new RectangleRangedStyleBuilder(positionedStyleBuilder);
+                                        rectangleRangedStylesBuilder.addStyleBuilder(rectangleRangedStyleBuilder);
+                                    }
+                                }
+                            }
                         }
                     }
                 }

@@ -17,11 +17,13 @@ public class Position extends Tuple<Integer, Integer> implements Serializable {
         return super.getB();
     }
 
-    public void setRow(Integer row) {
+    public Position setRow(Integer row) {
         super.setA(row);
+        return this;
     }
 
-    public void setColumn(Integer column) {
+    public Position setColumn(Integer column) {
         super.setB(column);
+        return this;
     }
 }

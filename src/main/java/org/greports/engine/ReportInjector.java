@@ -25,7 +25,7 @@ public class ReportInjector {
     public void inject() {
         try {
             for (ReportData data : reportData) {
-                if (data.isReportWithTemplate()) {
+                if (data.isReportWithTemplate() || data.getConfiguration().isUseExistingSheet()) {
                     if(!data.getConfiguration().isUseExistingSheet()) {
                         currentWorkbook = (XSSFWorkbook) WorkbookFactory.create(data.getTemplateURL().openStream());
                     }

@@ -183,6 +183,10 @@ public abstract class AbstractReportStyleBuilder<T extends ReportStyle<E>, E ext
         return getThis();
     }
 
+    public E getTuple() {
+        return this.tuple;
+    }
+
     protected T buildStyle() {
         ReportStyle<E> reportStyle = newStyleInstance()
             .setClonePreviousStyle(clonePreviousStyle)

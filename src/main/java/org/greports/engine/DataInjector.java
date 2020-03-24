@@ -32,7 +32,7 @@ public abstract class DataInjector {
     }
 
     protected CellReference getCellReferenceForTargetId(Row row, String id) {
-        return new CellReference(row.getCell(reportData.getColumnIndexForTarget(id)));
+        return new CellReference(row.getCell(reportData.getColumnIndexForId(id)));
     }
 
     protected void setCellFormat(Cell cell, String format) {
