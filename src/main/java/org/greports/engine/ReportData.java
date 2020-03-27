@@ -188,12 +188,14 @@ public class ReportData implements Cloneable, Serializable {
         return dataRows.get(index);
     }
 
-    public ReportRow getPhysicalRow(final int rowIndex) {
-        List<ReportRow> rows = new ArrayList<>();
-        rows.add(header);
+    public ReportRow<?> getPhysicalRow(final int rowIndex) {
+        List<ReportRow<?>> rows = new ArrayList<>();
+        if(createHeader) {
+            rows.add(header);
+        }
         rows.addAll(dataRows);
         rows.addAll(specialRows);
-        final List<ReportRow> sorted = rows.stream().sorted(Comparator.comparing(ReportRow::getRowIndex)).collect(Collectors.toList());
+        final List<ReportRow<?>> sorted = rows.stream().sorted(Comparator.comparing(ReportRow::getRowIndex)).collect(Collectors.toList());
         if(sorted.size() > rowIndex){
             return sorted.get(rowIndex);
         }
