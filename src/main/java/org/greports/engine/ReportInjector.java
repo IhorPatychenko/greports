@@ -25,12 +25,15 @@ public class ReportInjector {
     public void inject() {
         try {
             for (ReportData data : reportData) {
-                if (data.isReportWithTemplate() || data.getConfiguration().isUseExistingSheet()) {
-                    if(!data.getConfiguration().isUseExistingSheet()) {
+                if(!data.getConfiguration().isForceRawInject()) {
+                    if(data.isReportWithTemplate() || data.getConfiguration().isUseExistingSheet()) {
                         currentWorkbook = (XSSFWorkbook) WorkbookFactory.create(data.getTemplateURL().openStream());
                     }
                     new TemplateDataInjector(currentWorkbook, data, loggerEnabled).inject();
                 } else {
+                    if(data.isReportWithTemplate()) {
+                        currentWorkbook = (XSSFWorkbook) WorkbookFactory.create(data.getTemplateURL().openStream());
+                    }
                     new RawDataInjector(currentWorkbook, data, loggerEnabled).inject();
                 }
             }

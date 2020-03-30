@@ -21,6 +21,7 @@ public class ReportConfiguration implements Cloneable, Serializable {
     private short headerRowIndex = 0;
     private short dataStartRowIndex = 1;
     private boolean useExistingSheet = false;
+    private boolean forceRawInject = false;
     private List<ReportSpecialRow> specialRows = new ArrayList<>();
     private List<ReportSpecialColumn> specialColumns = new ArrayList<>();
 
@@ -35,6 +36,7 @@ public class ReportConfiguration implements Cloneable, Serializable {
         this.headerRowIndex = configuration.headerRowIndex();
         this.dataStartRowIndex = configuration.dataStartRowIndex();
         this.useExistingSheet = configuration.useExistingSheet();
+        this.forceRawInject = configuration.forceRawInject();
         this.specialRows = Arrays.stream(configuration.specialRows()).map(ReportSpecialRow::new).collect(Collectors.toList());
         this.specialColumns = Arrays.stream(configuration.specialColumns()).map(ReportSpecialColumn::new).collect(Collectors.toList());;
     }
@@ -97,6 +99,10 @@ public class ReportConfiguration implements Cloneable, Serializable {
         return useExistingSheet;
     }
 
+    public boolean isForceRawInject() {
+        return forceRawInject;
+    }
+
     public List<ReportSpecialRow> getSpecialRows() {
         return specialRows;
     }
@@ -152,6 +158,11 @@ public class ReportConfiguration implements Cloneable, Serializable {
 
     public ReportConfiguration setUseExistingSheet(final boolean useExistingSheet) {
         this.useExistingSheet = useExistingSheet;
+        return this;
+    }
+
+    public ReportConfiguration setForceRawInject(boolean forceRawInject) {
+        this.forceRawInject = forceRawInject;
         return this;
     }
 

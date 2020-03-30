@@ -4,7 +4,6 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-import java.util.Locale;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.ANNOTATION_TYPE)
@@ -95,6 +94,13 @@ public @interface Configuration {
      * @return boolean
      */
     boolean useExistingSheet() default false;
+
+    /**
+     * Forces raw inject even when template url is provided.
+     *
+     * @return boolean
+     */
+    boolean forceRawInject() default false;
 
     /**
      * An array of {@link SpecialRow}
