@@ -9,7 +9,7 @@ public class DataCell extends AbstractReportCell {
 
     private final boolean physicalPosition;
     private final ValueType valueType;
-    private final int columnWidth;
+    private int columnWidth;
 
     public DataCell(final Float position, final boolean physicalPosition, final String format, final Object value, final ValueType valueType) {
         this(position, physicalPosition, format, value, valueType, 1);
@@ -32,5 +32,9 @@ public class DataCell extends AbstractReportCell {
 
     public int getColumnWidth() {
         return columnWidth;
+    }
+
+    public void setColumnWidth(int columnWidth) {
+        this.columnWidth = columnWidth;
     }
 }
