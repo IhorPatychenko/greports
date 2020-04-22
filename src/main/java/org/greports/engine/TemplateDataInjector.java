@@ -35,6 +35,7 @@ public class TemplateDataInjector extends DataInjector {
         createHeader(sheet);
         createDataRows(sheet);
         reindexTablesRows(sheet);
+        super.adjustColumns(sheet);
 //        evaluateFormulas();
     }
 

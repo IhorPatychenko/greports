@@ -53,12 +53,18 @@ public class ReportData implements Cloneable, Serializable {
     }
 
     public boolean isCellExist(final int rowIndex, final int columnIndex) {
-        ReportRow physicalRow = getPhysicalRow(rowIndex);
+        ReportRow<?> physicalRow = getPhysicalRow(rowIndex);
         return physicalRow != null && physicalRow.getCells().size() > columnIndex;
     }
 
-    public void addRow(DataRow row) {
+    public ReportData addRow(DataRow row) {
         this.dataRows.add(row);
+        return this;
+    }
+
+    public ReportData setDataRows(List<DataRow> rows) {
+        this.dataRows = rows;
+        return this;
     }
 
     public boolean isCreateHeader() {
@@ -69,8 +75,9 @@ public class ReportData implements Cloneable, Serializable {
         return groupedRowsDefaultCollapsed;
     }
 
-    public void setCreateHeader(boolean createHeader) {
+    public ReportData setCreateHeader(boolean createHeader) {
         this.createHeader = createHeader;
+        return this;
     }
 
     public ReportData addGroupedRow(final Pair<Integer, Integer> groupedRows) {
@@ -82,8 +89,9 @@ public class ReportData implements Cloneable, Serializable {
         return groupedRows;
     }
 
-    public void setGroupedRowsDefaultCollapsed(final boolean groupedRowsDefaultCollapsed) {
+    public ReportData setGroupedRowsDefaultCollapsed(final boolean groupedRowsDefaultCollapsed) {
         this.groupedRowsDefaultCollapsed = groupedRowsDefaultCollapsed;
+        return this;
     }
 
     public boolean isGroupedRowsDefaultCollapsed() {
@@ -94,20 +102,23 @@ public class ReportData implements Cloneable, Serializable {
         return groupedColumnsDefaultCollapsed;
     }
 
-    public void setGroupedColumnsDefaultCollapsed(final boolean groupedColumnsDefaultCollapsed) {
+    public ReportData setGroupedColumnsDefaultCollapsed(final boolean groupedColumnsDefaultCollapsed) {
         this.groupedColumnsDefaultCollapsed = groupedColumnsDefaultCollapsed;
+        return this;
     }
 
-    public void setGroupedColumns(final List<Pair<Integer, Integer>> groupedColumns) {
+    public ReportData setGroupedColumns(final List<Pair<Integer, Integer>> groupedColumns) {
         this.groupedColumns = groupedColumns;
+        return this;
     }
 
     public List<Pair<Integer, Integer>> getGroupedColumns() {
         return groupedColumns;
     }
 
-    public void addSpecialRow(SpecialDataRow specialDataRow) {
+    public ReportData addSpecialRow(SpecialDataRow specialDataRow) {
         specialRows.add(specialDataRow);
+        return this;
     }
 
     public void mergeReportData(List<ReportData> subreportsData) {
@@ -172,8 +183,9 @@ public class ReportData implements Cloneable, Serializable {
         return !configuration.getSheetName().isEmpty() ? configuration.getSheetName() : null;
     }
 
-    public void setSheetName(final String sheetName) {
+    public ReportData setSheetName(final String sheetName) {
         this.configuration.setSheetName(sheetName);
+        return this;
     }
 
     public URL getTemplateURL() {
@@ -214,8 +226,9 @@ public class ReportData implements Cloneable, Serializable {
         return dataStartRow;
     }
 
-    public void setDataStartRow(int dataStartRow) {
+    public ReportData setDataStartRow(int dataStartRow) {
         this.dataStartRow = dataStartRow;
+        return this;
     }
 
     public int getColumnsCount() {

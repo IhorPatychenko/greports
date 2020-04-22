@@ -114,7 +114,7 @@ class RawDataInjector extends DataInjector {
 
         loggerService.trace("Adjusting columns...");
         final Stopwatch adjustColumnsStopwatch = Stopwatch.createStarted();
-        adjustColumns(sheet);
+        super.adjustColumns(sheet);
         loggerService.trace("Columns adjusted. Time: " + adjustColumnsStopwatch.stop());
     }
 
@@ -555,12 +555,6 @@ class RawDataInjector extends DataInjector {
                 cellStyle = _stylesCache.get(styleKey);
             }
             cell.setCellStyle(cellStyle);
-        }
-    }
-
-    private void adjustColumns(Sheet sheet) {
-        for (Integer autoSizedColumn : reportData.getAutoSizedColumns()) {
-            sheet.autoSizeColumn(autoSizedColumn);
         }
     }
 }

@@ -50,4 +50,10 @@ public abstract class DataInjector {
         }
     }
 
+    protected void adjustColumns(Sheet sheet) {
+        for (Integer autoSizedColumn : reportData.getAutoSizedColumns()) {
+            sheet.autoSizeColumn(autoSizedColumn);
+        }
+    }
+
 }
