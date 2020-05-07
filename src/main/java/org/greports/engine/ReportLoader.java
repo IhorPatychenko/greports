@@ -3,7 +3,6 @@ package org.greports.engine;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellType;
-import org.apache.poi.ss.usermodel.DateUtil;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -33,6 +32,7 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -185,26 +185,24 @@ public class ReportLoader {
     private Object getCellValue(final Method method, final Cell cell) {
         Class<?> parameterType = method.getParameterTypes()[0];
         if (cell != null) {
-            if (CellType.BOOLEAN.equals(cell.getCellTypeEnum())) {
+            if(parameterType.equals(Boolean.class) || parameterType.getName().equals("boolean")) {
                 return cell.getBooleanCellValue();
-            } else if (CellType.STRING.equals(cell.getCellTypeEnum())) {
-                return cell.getRichStringCellValue().getString();
-            } else if (CellType.NUMERIC.equals(cell.getCellTypeEnum())) {
-                if (DateUtil.isCellDateFormatted(cell)) {
-                    return cell.getDateCellValue();
-                } else if (parameterType.equals(Double.class) || parameterType.getName().equals("double")) {
-                    return cell.getNumericCellValue();
-                } else if (parameterType.equals(Integer.class) || parameterType.getName().equals("int")) {
-                    return new Double(cell.getNumericCellValue()).intValue();
-                } else if (parameterType.equals(Long.class) || parameterType.getName().equals("long")) {
-                    return new Double(cell.getNumericCellValue()).longValue();
-                } else if (parameterType.equals(Float.class) || parameterType.getName().equals("float")) {
-                    return new Double(cell.getNumericCellValue()).floatValue();
-                } else if (parameterType.equals(Short.class) || parameterType.getName().equals("short")) {
-                    return new Double(cell.getNumericCellValue()).shortValue();
-                }
             } else if (CellType.FORMULA.equals(cell.getCellTypeEnum())) {
                 return cell.getCellFormula();
+            } else if(parameterType.equals(String.class)) {
+                return cell.getRichStringCellValue().getString();
+            } else if(parameterType.equals(Date.class)) {
+                return cell.getDateCellValue();
+            } else if (parameterType.equals(Double.class) || parameterType.getName().equals("double")) {
+                return cell.getNumericCellValue();
+            } else if (parameterType.equals(Integer.class) || parameterType.getName().equals("int")) {
+                return new Double(cell.getNumericCellValue()).intValue();
+            } else if (parameterType.equals(Long.class) || parameterType.getName().equals("long")) {
+                return new Double(cell.getNumericCellValue()).longValue();
+            } else if (parameterType.equals(Float.class) || parameterType.getName().equals("float")) {
+                return new Double(cell.getNumericCellValue()).floatValue();
+            } else if (parameterType.equals(Short.class) || parameterType.getName().equals("short")) {
+                return new Double(cell.getNumericCellValue()).shortValue();
             }
         }
         return null;
