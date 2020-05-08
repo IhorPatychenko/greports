@@ -189,8 +189,10 @@ public class ReportLoader {
                 return cell.getBooleanCellValue();
             } else if (CellType.FORMULA.equals(cell.getCellTypeEnum())) {
                 return cell.getCellFormula();
-            } else if(parameterType.equals(String.class)) {
+            } else if(parameterType.equals(String.class) && CellType.STRING.equals(cell.getCellTypeEnum())) {
                 return cell.getRichStringCellValue().getString();
+            } else if(parameterType.equals(String.class) && CellType.NUMERIC.equals(cell.getCellTypeEnum())) {
+                return Double.toString(cell.getNumericCellValue());
             } else if(parameterType.equals(Date.class)) {
                 return cell.getDateCellValue();
             } else if (parameterType.equals(Double.class) || parameterType.getName().equals("double")) {
