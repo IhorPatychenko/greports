@@ -50,6 +50,13 @@ public abstract class DataInjector {
         }
     }
 
+    protected String replaceFormulaIndexes(Row targetRow, String value) {
+        for (Map.Entry<String, Integer> entry : reportData.getTargetIndexes().entrySet()) {
+            value = value.replaceAll(entry.getKey(), this.getCellReferenceForTargetId(targetRow, entry.getKey()).formatAsString());
+        }
+        return value;
+    }
+
     protected void adjustColumns(Sheet sheet) {
         for (Integer autoSizedColumn : reportData.getAutoSizedColumns()) {
             sheet.autoSizeColumn(autoSizedColumn);

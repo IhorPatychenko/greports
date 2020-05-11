@@ -1,5 +1,7 @@
 package org.greports.annotations;
 
+import org.greports.engine.ValueType;
+
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Repeatable;
 import java.lang.annotation.Retention;
@@ -27,4 +29,13 @@ public @interface SubreportSetter {
      * @return float
      */
     float position();
+
+    /**
+     * Column ID which will be used by other column if that one
+     * is of formula type. Also can be used by {@link SpecialColumn} and {@link SpecialRowCell}
+     *
+     * @see ValueType#FORMULA
+     * @return {@link String}
+     */
+    String id() default "";
 }

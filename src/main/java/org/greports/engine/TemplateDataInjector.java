@@ -36,7 +36,6 @@ public class TemplateDataInjector extends DataInjector {
         createDataRows(sheet);
         reindexTablesRows(sheet);
         super.adjustColumns(sheet);
-//        evaluateFormulas();
     }
 
     private void createHeader(Sheet sheet) {
@@ -49,7 +48,7 @@ public class TemplateDataInjector extends DataInjector {
         }
     }
 
-    private void cloneCell(Row sourceRow, Row targetRow, Object value, int cellIndex) {
+    private void cloneCell(Row sourceRow, Row targetRow, DataCell dataCell, int cellIndex) {
         final Cell sourceRowCell = sourceRow.getCell(cellIndex);
         final Cell targetRowCell = targetRow.createCell(cellIndex);
         XSSFCellStyle cellStyle;
@@ -61,7 +60,11 @@ public class TemplateDataInjector extends DataInjector {
             _stylesCache.put(cellIndex, cellStyle);
         }
         targetRowCell.setCellStyle(cellStyle);
-        WorkbookUtils.setCellValue(targetRowCell, value);
+        Object value = dataCell.getValue();
+        if(ValueType.FORMULA.equals(dataCell.getValueType())) {
+            value = replaceFormulaIndexes(targetRow, value.toString());
+        }
+        WorkbookUtils.setCellValue(targetRowCell, value, dataCell.getValueType());
     }
 
     private void createDataRows(Sheet sheet) {
@@ -70,8 +73,7 @@ public class TemplateDataInjector extends DataInjector {
             final Row targetRow = sheet.createRow(reportData.getDataStartRow() + i + 1);
             final DataRow dataRow = reportData.getDataRows().get(i);
             for (int cellIndex = 0; cellIndex < dataRow.getCells().size(); cellIndex++) {
-                final DataCell dataCell = dataRow.getCells().get(cellIndex);
-                cloneCell(sourceRow, targetRow, dataCell.getValue(), cellIndex);
+                cloneCell(sourceRow, targetRow, dataRow.getCells().get(cellIndex), cellIndex);
             }
         }
         sheet.shiftRows(reportData.getDataStartRow() + 1, reportData.getDataStartRow() + reportData.getRowsCount() + 1, -1);

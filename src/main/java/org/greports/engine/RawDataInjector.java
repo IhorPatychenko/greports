@@ -203,9 +203,7 @@ class RawDataInjector extends DataInjector {
             cellType = CellType.FORMULA;
             final Cell cell = row.createCell(columnIndex, cellType);
             String formulaString = dataCell.getValue().toString();
-            for (Map.Entry<String, Integer> entry : reportData.getTargetIndexes().entrySet()) {
-                formulaString = formulaString.replaceAll(entry.getKey(), super.getCellReferenceForTargetId(row, entry.getKey()).formatAsString());
-            }
+            formulaString = replaceFormulaIndexes(row, formulaString);
             cell.setCellFormula(formulaString);
             setCellFormat(cell, dataCell.getFormat());
         }

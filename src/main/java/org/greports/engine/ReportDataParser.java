@@ -46,7 +46,7 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-final class ReportDataParser extends ReportParser {
+public final class ReportDataParser extends ReportParser {
 
     private LoggerService loggerService;
 
@@ -64,44 +64,50 @@ final class ReportDataParser extends ReportParser {
         loggerService.info("Parsing started...");
         loggerService.info(String.format("Parsing report for class \"%s\" with name \"%s\"...", clazz.getSimpleName(), reportName));
         Stopwatch timer = Stopwatch.createStarted();
-        final ReportDataParser parser = parse(collection, reportName, clazz, 0f, configurator);
+        final ReportDataParser parser = parse(collection, reportName, clazz, 0f, configurator, "");
         reportData.applyConfigurator(configurator);
         loggerService.info(String.format("Report with name \"%s\" successfully parsed. Parse time: %s", reportName, timer.stop()));
         return parser;
     }
 
-    private <T> ReportDataParser parse(List<T> collection, final String reportName, Class<T> clazz, Float positionIncrement, ReportConfigurator configurator) throws ReportEngineReflectionException, ReportEngineRuntimeException {
+    private <T> ReportDataParser parse(List<T> collection, final String reportName, Class<T> clazz, Float positionIncrement, ReportConfigurator configurator, String idPrefix) throws ReportEngineReflectionException, ReportEngineRuntimeException {
         final Configuration configuration = AnnotationUtils.getReportConfiguration(clazz, reportName);
         reportData = new ReportData(reportName, configuration, !configuration.templatePath().equals("") ? getClass().getClassLoader().getResource(configuration.templatePath()) : null);
         final Map<String, Object> translations = new TranslationsParser(reportData.getConfiguration().getTranslationsDir()).parse(Utils.getLocale(reportData.getConfiguration().getLocale()));
         translator = new Translator(translations);
         subreportsData = new ArrayList<>();
         reportConfigurator = configurator;
-        parseReportHeader(clazz, positionIncrement);
+        parseReportHeader(clazz, positionIncrement, idPrefix);
         parseRowsData(collection, clazz, positionIncrement);
         parseGroupRows(collection, clazz);
         parseGroupColumns(clazz);
         parseSpecialColumns(collection, clazz);
         parseSpecialRows(collection, clazz);
         parseStyles(collection, clazz);
-        parseSubreports(collection, clazz);
+        parseSubreports(collection, clazz, idPrefix);
         reportData.mergeReportData(subreportsData);
         return this;
     }
 
-    private <T> void parseReportHeader(Class<T> clazz, Float positionIncrement) throws ReportEngineReflectionException {
+    private <T> void parseReportHeader(Class<T> clazz, Float positionIncrement, String idPrefix) throws ReportEngineReflectionException {
         reportData.setCreateHeader(reportData.getConfiguration().isCreateHeader());
         List<HeaderCell> cells = new ArrayList<>();
-        final Function<Pair<Method, Column>, Void> columnFunction = AnnotationUtils.getHeadersFunction(cells, translator, positionIncrement);
+        final Function<Pair<Method, Column>, Void> columnFunction = AnnotationUtils.getHeadersFunction(cells, translator, positionIncrement, idPrefix);
         AnnotationUtils.methodsWithColumnAnnotations(clazz, columnFunction, reportData.getReportName());
 
-        for (ReportSpecialColumn specialColumn : reportData.getConfiguration().getSpecialColumns()) {
+        final List<ReportSpecialColumn> specialColumns = reportData.getConfiguration().getSpecialColumns();
+        for(int i = 0; i < specialColumns.size(); i++) {
+            final ReportSpecialColumn specialColumn = specialColumns.get(i);
+            String generateIdPrefix = Utils.generateId(idPrefix, specialColumn.getTitle());
+            if(!"".equals(idPrefix)) {
+                generateIdPrefix = Utils.generateId(generateIdPrefix, Integer.toString(i));
+            }
             cells.add(new HeaderCell(
-                specialColumn.getPosition(),
-                specialColumn.getTitle(),
-                specialColumn.getId(),
-                specialColumn.isAutoSizeColumn(),
-                specialColumn.getColumnWidth()
+                    specialColumn.getPosition(),
+                    generateIdPrefix,
+                    specialColumn.getId(),
+                    specialColumn.isAutoSizeColumn(),
+                    specialColumn.getColumnWidth()
             ));
         }
 
@@ -207,7 +213,7 @@ final class ReportDataParser extends ReportParser {
         }
     }
 
-    private <T> void parseSubreports(List<T> collection, Class<T> clazz) throws ReportEngineReflectionException {
+    private <T> void parseSubreports(List<T> collection, Class<T> clazz, String idPrefix) throws ReportEngineReflectionException {
         final ReportDataParser reportDataParser = new ReportDataParser(this.loggerService.isEnabled(), this.loggerService.getLevel());
         Map<Method, Subreport> subreportMap = new LinkedHashMap<>();
         Function<Pair<Method, Subreport>, Void> subreportFunction = AnnotationUtils.getSubreportsFunction(subreportMap);
@@ -217,11 +223,10 @@ final class ReportDataParser extends ReportParser {
             final Method method = entry.getKey();
             final Subreport subreport = entry.getValue();
             Class<?> returnType = method.getReturnType();
-            method.setAccessible(true);
             Class<?> componentType = returnType;
+            method.setAccessible(true);
 
             if(ReflectionUtils.isListOrArray(returnType)){
-
                 List<List<?>> subreportsList = new ArrayList<>();
                 if(returnType.isArray()){
                     componentType = returnType.getComponentType();
@@ -248,7 +253,13 @@ final class ReportDataParser extends ReportParser {
                         for (final List<?> list : subreportsList) {
                             subreportData.add(list.get(i));
                         }
-                        parseSubreportData(reportDataParser, componentType, subreportData, positionalIncrement + subreport.position());
+                        parseSubreportData(
+                                reportDataParser,
+                                componentType,
+                                subreportData,
+                                positionalIncrement + subreport.position(),
+                                Utils.generateId(Utils.generateId(idPrefix, subreport.id()), Integer.toString(i))
+                        );
                         positionalIncrement += subreportPositionalIncrement;
                     }
                 }
@@ -259,14 +270,14 @@ final class ReportDataParser extends ReportParser {
                     final Object invokeResult = subreportInvokeMethod(method, collectionEntry);
                     subreportData.add(invokeResult);
                 }
-                parseSubreportData(reportDataParser, returnType, subreportData, subreportPositionalIncrement + subreport.position());
+                parseSubreportData(reportDataParser, returnType, subreportData, subreportPositionalIncrement + subreport.position(), Utils.generateId(idPrefix, subreport.id()));
             }
         }
     }
 
     @SuppressWarnings("unchecked")
-    private void parseSubreportData(final ReportDataParser reportDataParser, final Class<?> returnType, final List subreportData, float positionalIncrement) throws ReportEngineReflectionException {
-        final ReportData data = reportDataParser.parse(subreportData, reportData.getReportName(), returnType, positionalIncrement, reportConfigurator.getReportGenerator().getConfigurator(returnType, reportData.getReportName())).getData();
+    private void parseSubreportData(final ReportDataParser reportDataParser, final Class<?> returnType, final List subreportData, float positionalIncrement, String idfPrefix) throws ReportEngineReflectionException {
+        final ReportData data = reportDataParser.parse(subreportData, reportData.getReportName(), returnType, positionalIncrement, reportConfigurator.getReportGenerator().getConfigurator(returnType, reportData.getReportName()), idfPrefix).getData();
         subreportsData.add(data);
     }
 

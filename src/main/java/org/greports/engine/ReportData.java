@@ -136,7 +136,7 @@ public class ReportData implements Cloneable, Serializable {
 
         for (int i = 0; i < header.getCells().size(); i++) {
             HeaderCell headerCell = header.getCell(i);
-            if(!headerCell.getId().equals("")){
+            if(!"".equals(headerCell.getId())){
                 targetIndexes.put(headerCell.getId(), i);
             }
         }

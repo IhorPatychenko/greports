@@ -2,10 +2,9 @@ package org.greports.utils;
 
 import org.apache.commons.lang3.LocaleUtils;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
+import java.util.StringJoiner;
 
 public class Utils {
 
@@ -28,5 +27,12 @@ public class Utils {
 
     public static Locale getLocale(String localeString) {
         return LocaleUtils.toLocale(localeString);
+    }
+
+    public static String generateId(String idPrefix, String id) {
+        if("".equals(idPrefix)) {
+            return id;
+        }
+        return new StringJoiner("_").add(idPrefix).add(id).toString();
     }
 }

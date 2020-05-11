@@ -231,6 +231,11 @@ public class AnnotationUtils {
             public float position() {
                 return subreportGetter.position();
             }
+
+            @Override
+            public String id() {
+                return subreportGetter.id();
+            }
         };
     }
 
@@ -250,6 +255,11 @@ public class AnnotationUtils {
             @Override
             public float position() {
                 return subreportGetter.position();
+            }
+
+            @Override
+            public String id() {
+                return subreportGetter.id();
             }
         };
     }
@@ -484,10 +494,16 @@ public class AnnotationUtils {
         };
     }
 
-    public static Function<Pair<Method, Column>, Void> getHeadersFunction(List<HeaderCell> cells, Translator translator, Float positionIncrement) {
+    public static Function<Pair<Method, Column>, Void> getHeadersFunction(List<HeaderCell> cells, Translator translator, Float positionIncrement, String idPrefix) {
         return pair -> {
             Column column = pair.getRight();
-            cells.add(new HeaderCell(column.position() + positionIncrement, translator.translate(column.title()), column.id(), column.autoSizeColumn(), column.columnWidth()));
+            cells.add(new HeaderCell(
+                    column.position() + positionIncrement,
+                    translator.translate(column.title()),
+                    Utils.generateId(idPrefix, column.id()),
+                    column.autoSizeColumn(),
+                    column.columnWidth())
+            );
             return null;
         };
     }
