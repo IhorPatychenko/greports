@@ -12,11 +12,12 @@ import java.lang.annotation.Target;
 public @interface SpecialRowCell {
 
     /**
-     * A column target id to place the SpecialRowCell above of below.
+     * A target id used to dynamically generate formulas.
+     * There cannot be 2 o more SpecialRowCells with empty targetId value.
      *
      * @return {@link String}
      */
-    String targetId();
+    String targetId() default "";
 
     /**
      * The {@link ValueType} of the column.
