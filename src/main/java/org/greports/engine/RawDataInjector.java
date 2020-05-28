@@ -69,10 +69,9 @@ class RawDataInjector extends DataInjector {
     private Sheet getSheet(Workbook workbook, ReportData reportData) {
         if(reportData.getSheetName() == null) {
             return workbook.createSheet();
-        } else if(reportData.getConfiguration().isUseExistingSheet() && reportData.getSheetName() != null) {
-            return workbook.getSheet(reportData.getSheetName());
         } else {
-            return workbook.createSheet(reportData.getSheetName());
+            final Sheet sheet = workbook.getSheet(reportData.getSheetName());
+            return sheet != null ? sheet : workbook.createSheet(reportData.getSheetName());
         }
     }
 

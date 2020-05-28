@@ -20,8 +20,7 @@ public class ReportConfiguration implements Cloneable, Serializable {
     private boolean sortableHeader = false;
     private short headerRowIndex = 0;
     private short dataStartRowIndex = 1;
-    private boolean useExistingSheet = false;
-    private boolean forceRawInject = false;
+    private boolean templatedInject = false;
     private List<ReportSpecialRow> specialRows = new ArrayList<>();
     private List<ReportSpecialColumn> specialColumns = new ArrayList<>();
 
@@ -35,8 +34,7 @@ public class ReportConfiguration implements Cloneable, Serializable {
         this.sortableHeader = configuration.sortableHeader();
         this.headerRowIndex = configuration.headerRowIndex();
         this.dataStartRowIndex = configuration.dataStartRowIndex();
-        this.useExistingSheet = configuration.useExistingSheet();
-        this.forceRawInject = configuration.forceRawInject();
+        this.templatedInject = configuration.templatedInject();
         this.specialRows = Arrays.stream(configuration.specialRows()).map(ReportSpecialRow::new).collect(Collectors.toList());
         this.specialColumns = Arrays.stream(configuration.specialColumns()).map(ReportSpecialColumn::new).collect(Collectors.toList());;
     }
@@ -45,7 +43,7 @@ public class ReportConfiguration implements Cloneable, Serializable {
         this.sheetName = sheetName;
     }
 
-    public ReportConfiguration(final String sheetName, final String translationsDir, final String locale, final String templatePath, final boolean createHeader, final boolean sortableHeader, final short headerRowIndex, final short dataStartRowIndex, final boolean useExistingSheet, final List<ReportSpecialRow> specialRows, final List<ReportSpecialColumn> specialColumns) {
+    public ReportConfiguration(final String sheetName, final String translationsDir, final String locale, final String templatePath, final boolean createHeader, final boolean sortableHeader, final short headerRowIndex, final short dataStartRowIndex, final boolean templatedInject, final List<ReportSpecialRow> specialRows, final List<ReportSpecialColumn> specialColumns) {
         this.sheetName = sheetName;
         this.translationsDir = translationsDir;
         this.locale = locale;
@@ -54,7 +52,7 @@ public class ReportConfiguration implements Cloneable, Serializable {
         this.sortableHeader = sortableHeader;
         this.headerRowIndex = headerRowIndex;
         this.dataStartRowIndex = dataStartRowIndex;
-        this.useExistingSheet = useExistingSheet;
+        this.templatedInject = templatedInject;
         this.specialRows = specialRows;
         this.specialColumns = specialColumns;
     }
@@ -95,12 +93,8 @@ public class ReportConfiguration implements Cloneable, Serializable {
         return dataStartRowIndex;
     }
 
-    public boolean isUseExistingSheet() {
-        return useExistingSheet;
-    }
-
-    public boolean isForceRawInject() {
-        return forceRawInject;
+    public boolean isTemplatedInject() {
+        return templatedInject;
     }
 
     public List<ReportSpecialRow> getSpecialRows() {
@@ -156,13 +150,8 @@ public class ReportConfiguration implements Cloneable, Serializable {
         return this;
     }
 
-    public ReportConfiguration setUseExistingSheet(final boolean useExistingSheet) {
-        this.useExistingSheet = useExistingSheet;
-        return this;
-    }
-
-    public ReportConfiguration setForceRawInject(boolean forceRawInject) {
-        this.forceRawInject = forceRawInject;
+    public ReportConfiguration setTemplatedInject(final boolean templatedInject) {
+        this.templatedInject = templatedInject;
         return this;
     }
 

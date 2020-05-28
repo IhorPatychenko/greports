@@ -85,22 +85,12 @@ public @interface Configuration {
     short dataStartRowIndex() default 1;
 
     /**
-     * When set to true the engine tries to inject
-     * data into an existing sheet. If the sheet with
-     * name indicated in {@link Configuration#sheetName()}
-     * doesn't exist the engine will create a sheet
-     * with value of passed sheet name.
+     * Indicates if the configuration to be parsed need to be injected
+     * into existing sheet using {@link org.greports.engine.TemplateDataInjector}
      *
      * @return boolean
      */
-    boolean useExistingSheet() default false;
-
-    /**
-     * Forces raw inject even when template url is provided.
-     *
-     * @return boolean
-     */
-    boolean forceRawInject() default false;
+    boolean templatedInject() default false;
 
     /**
      * An array of {@link SpecialRow}

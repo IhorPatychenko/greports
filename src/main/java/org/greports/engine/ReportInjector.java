@@ -11,9 +11,9 @@ import java.util.List;
 
 public class ReportInjector {
 
-    private XSSFWorkbook currentWorkbook = new XSSFWorkbook();
+    private XSSFWorkbook currentWorkbook;
     private final List<ReportData> reportData;
-    private boolean loggerEnabled;
+    private final boolean loggerEnabled;
     private final List<String> deleteSheet;
 
     public ReportInjector(List<ReportData> reportData, final List<String> deleteSheet, boolean loggerEnabled) {
@@ -25,15 +25,15 @@ public class ReportInjector {
     public void inject() {
         try {
             for (ReportData data : reportData) {
-                if(!data.getConfiguration().isForceRawInject() && data.isReportWithTemplate()) {
-                    if(!data.getConfiguration().isUseExistingSheet()) {
-                        currentWorkbook = (XSSFWorkbook) WorkbookFactory.create(data.getTemplateURL().openStream());
-                    }
+                if(currentWorkbook == null && data.isReportWithTemplate()) {
+                    currentWorkbook = (XSSFWorkbook) WorkbookFactory.create(data.getTemplateURL().openStream());
+                } else if(currentWorkbook == null) {
+                    currentWorkbook = new XSSFWorkbook();
+                }
+
+                if(data.isReportWithTemplate() || data.getConfiguration().isTemplatedInject()) {
                     new TemplateDataInjector(currentWorkbook, data, loggerEnabled).inject();
                 } else {
-                    if(data.isReportWithTemplate() && !data.getConfiguration().isUseExistingSheet()) {
-                        currentWorkbook = (XSSFWorkbook) WorkbookFactory.create(data.getTemplateURL().openStream());
-                    }
                     new RawDataInjector(currentWorkbook, data, loggerEnabled).inject();
                 }
             }
