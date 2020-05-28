@@ -39,4 +39,12 @@ public class ReportResultChanger {
         }
         return this;
     }
+
+    public ReportResultChanger changeSheetName(final String newSheetName) {
+        if(newSheetName == null) {
+            throw new ReportEngineRuntimeException("Error changing sheet's name. New name cannot be null", this.getClass());
+        }
+        reportData.setSheetName(newSheetName);
+        return this;
+    }
 }
