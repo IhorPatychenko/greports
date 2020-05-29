@@ -8,4 +8,8 @@ public interface ReportRow<T extends ReportCell> {
     T getCell(int index);
     List<T> getCells();
     Integer getRowIndex();
+
+    default void removeCell(int i) {
+        this.getCells().remove(i);
+    }
 }

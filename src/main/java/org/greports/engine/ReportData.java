@@ -201,17 +201,21 @@ public class ReportData implements Cloneable, Serializable {
     }
 
     public ReportRow<?> getPhysicalRow(final int rowIndex) {
+        final List<ReportRow<?>> sorted = this.getReportRows().stream().sorted(Comparator.comparing(ReportRow::getRowIndex)).collect(Collectors.toList());
+        if(sorted.size() > rowIndex){
+            return sorted.get(rowIndex);
+        }
+        return null;
+    }
+
+    public List<ReportRow<?>> getReportRows() {
         List<ReportRow<?>> rows = new ArrayList<>();
         if(createHeader) {
             rows.add(header);
         }
         rows.addAll(dataRows);
         rows.addAll(specialRows);
-        final List<ReportRow<?>> sorted = rows.stream().sorted(Comparator.comparing(ReportRow::getRowIndex)).collect(Collectors.toList());
-        if(sorted.size() > rowIndex){
-            return sorted.get(rowIndex);
-        }
-        return null;
+        return rows;
     }
 
     public int getRowsCount(){
@@ -277,7 +281,15 @@ public class ReportData implements Cloneable, Serializable {
 
         // Override titles
         for (final Map.Entry<Integer, String> entry : configurator.getOverriddenTitles().entrySet()) {
-            this.getHeader().getCell(entry.getKey()).setValue(entry.getValue());
+            this.header.getCell(entry.getKey()).setValue(entry.getValue());
+        }
+
+        final List<Integer> removedColumns = configurator.getRemovedColumns();
+        final List<ReportRow<?>> reportRows = this.getReportRows();
+        for(int i = 0; i < removedColumns.size(); i++) {
+            for(ReportRow<?> reportRow : reportRows) {
+                reportRow.removeCell(removedColumns.get(i) - i);
+            }
         }
 
         // Override template URL

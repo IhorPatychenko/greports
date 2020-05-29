@@ -4,7 +4,9 @@ import org.greports.exceptions.ReportEngineRuntimeException;
 
 import java.io.Serializable;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class ReportConfigurator implements Serializable {
@@ -16,6 +18,7 @@ public class ReportConfigurator implements Serializable {
     private String sheetName;
     private Map<Class<?>, String> formats = new HashMap<>();
     private URL templateUrl;
+    private List<Integer> removedColumns = new ArrayList<>();
 
     protected ReportGenerator getReportGenerator() {
         return reportGenerator;
@@ -29,8 +32,17 @@ public class ReportConfigurator implements Serializable {
         return overriddenTitles;
     }
 
+    public List<Integer> getRemovedColumns() {
+        return this.removedColumns;
+    }
+
     public ReportConfigurator setOverriddenTitles(final Map<Integer, String> overriddenTitles) {
         this.overriddenTitles = overriddenTitles;
+        return this;
+    }
+
+    public ReportConfigurator setRemovedColumns(final List<Integer> removedColumns) {
+        this.removedColumns = removedColumns;
         return this;
     }
 
