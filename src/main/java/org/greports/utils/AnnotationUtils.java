@@ -16,6 +16,7 @@ import org.greports.annotations.SubreportGetter;
 import org.greports.annotations.SubreportSetter;
 import org.greports.content.cell.HeaderCell;
 import org.greports.engine.ReportBlock;
+import org.greports.engine.ReportConfiguration;
 import org.greports.engine.ValueType;
 import org.greports.exceptions.ReportEngineReflectionException;
 import org.greports.exceptions.ReportEngineRuntimeException;
@@ -54,9 +55,8 @@ public class AnnotationUtils {
             ));
     }
 
-    public static int getLastSpecialRowsCount(Configuration configuration) {
-        return (int) Arrays.stream(configuration.specialRows())
-                .filter(entry -> Integer.MAX_VALUE == entry.rowIndex()).count();
+    public static int getLastSpecialRowsCount(ReportConfiguration configuration) {
+        return (int) configuration.getSpecialRows().stream().filter(entry -> entry.getRowIndex() == Integer.MAX_VALUE).count();
     }
 
     public static <T> void methodsWithColumnAnnotations(Class<T> clazz, Function<Pair<Method, Column>, Void> columnFunction, String reportName) throws ReportEngineReflectionException {

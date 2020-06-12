@@ -3,7 +3,6 @@ package org.greports.engine;
 import com.google.common.base.Stopwatch;
 import org.apache.log4j.Level;
 import org.greports.annotations.Cell;
-import org.greports.annotations.Configuration;
 import org.greports.content.cell.DataCell;
 import org.greports.content.row.DataRow;
 import org.greports.exceptions.ReportEngineReflectionException;
@@ -34,8 +33,8 @@ public class ReportSingleDataParser extends ReportParser {
         loggerService.info("Parsing started...");
         loggerService.info(String.format("Parsing report for class \"%s\" with name \"%s\"...", clazz.getSimpleName(), reportName));
         Stopwatch timer = Stopwatch.createStarted();
-        final Configuration configuration = AnnotationUtils.getReportConfiguration(clazz, reportName);
-        reportData = new ReportData(reportName, configuration, !configuration.templatePath().equals("") ? getClass().getClassLoader().getResource(configuration.templatePath()) : null);
+        ReportConfiguration configuration = ReportConfigurationLoader.load(clazz, reportName);
+        reportData = new ReportData(reportName, configuration);
         parseData(object, clazz);
         parseStyles(clazz);
         loggerService.info(String.format("Report with name \"%s\" successfully parsed. Parse time: %s", reportName, timer.stop()));

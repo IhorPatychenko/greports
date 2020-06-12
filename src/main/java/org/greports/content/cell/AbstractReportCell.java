@@ -1,8 +1,7 @@
 package org.greports.content.cell;
 
 /**
- * An abstract cell. Contains the common data of all cell in the report.
- *
+ * An abstract cell. Contains the common data of all cells in the report.
  */
 public abstract class AbstractReportCell implements ReportCell, Cloneable {
     private final Float position;

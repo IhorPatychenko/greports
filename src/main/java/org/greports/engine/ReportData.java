@@ -31,7 +31,7 @@ public class ReportData implements Cloneable, Serializable {
     private ReportHeader header;
     private boolean createHeader;
     private int dataStartRow;
-    private List<Pair<Integer, Integer>> groupedRows = new ArrayList<>();
+    private final List<Pair<Integer, Integer>> groupedRows = new ArrayList<>();
     private boolean groupedRowsDefaultCollapsed;
     private List<Pair<Integer, Integer>> groupedColumns = new ArrayList<>();
     private boolean groupedColumnsDefaultCollapsed;
@@ -42,10 +42,14 @@ public class ReportData implements Cloneable, Serializable {
         this.configuration = configuration;
     }
 
-    ReportData(final String reportName, final Configuration configuration, final URL templateURL) {
+    public ReportData(final String reportName, final ReportConfiguration configuration) {
         this.reportName = reportName;
-        this.configuration = new ReportConfiguration(configuration);
-        this.templateURL = templateURL;
+        this.configuration = configuration;
+        this.templateURL = !configuration.getTemplatePath().equals("") ? getClass().getClassLoader().getResource(configuration.getTemplatePath()) : null;
+    }
+
+    ReportData(final String reportName, final Configuration configuration) {
+        this(reportName, new ReportConfiguration(configuration));
     }
 
     public boolean isReportWithTemplate(){
@@ -284,6 +288,7 @@ public class ReportData implements Cloneable, Serializable {
             this.header.getCell(entry.getKey()).setValue(entry.getValue());
         }
 
+        // Remove columns
         final List<Integer> removedColumns = configurator.getRemovedColumns();
         final List<ReportRow<?>> reportRows = this.getReportRows();
         for(int i = 0; i < removedColumns.size(); i++) {

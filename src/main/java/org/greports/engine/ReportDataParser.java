@@ -3,7 +3,6 @@ package org.greports.engine;
 import com.google.common.base.Stopwatch;
 import org.apache.log4j.Level;
 import org.greports.annotations.Column;
-import org.greports.annotations.Configuration;
 import org.greports.annotations.Subreport;
 import org.greports.content.ReportHeader;
 import org.greports.content.cell.DataCell;
@@ -62,7 +61,7 @@ public final class ReportDataParser extends ReportParser {
 
     protected <T> ReportDataParser parse(List<T> collection, final String reportName, Class<T> clazz, ReportConfigurator configurator) throws ReportEngineReflectionException, ReportEngineRuntimeException {
         loggerService.info("Parsing started...");
-        loggerService.info(String.format("Parsing report for class \"%s\" with name \"%s\"...", clazz.getSimpleName(), reportName));
+        loggerService.info(String.format("Parsing report for class \"%s\" with report name \"%s\"...", clazz.getSimpleName(), reportName));
         Stopwatch timer = Stopwatch.createStarted();
         final ReportDataParser parser = parse(collection, reportName, clazz, 0f, configurator, "");
         reportData.applyConfigurator(configurator);
@@ -71,9 +70,8 @@ public final class ReportDataParser extends ReportParser {
     }
 
     private <T> ReportDataParser parse(List<T> collection, final String reportName, Class<T> clazz, Float positionIncrement, ReportConfigurator configurator, String idPrefix) throws ReportEngineReflectionException, ReportEngineRuntimeException {
-        final Configuration configuration = AnnotationUtils.getReportConfiguration(clazz, reportName);
-        reportData = new ReportData(reportName, configuration, !configuration.templatePath().equals("") ? getClass().getClassLoader().getResource(configuration.templatePath()) : null);
-        final Map<String, Object> translations = new TranslationsParser(reportData.getConfiguration().getTranslationsDir()).parse(Utils.getLocale(reportData.getConfiguration().getLocale()));
+        reportData = new ReportData(reportName, ReportConfigurationLoader.load(clazz, reportName));
+        final Map<String, Object> translations = new TranslationsParser(reportData.getConfiguration()).getTranslations();
         translator = new Translator(translations);
         subreportsData = new ArrayList<>();
         reportConfigurator = configurator;

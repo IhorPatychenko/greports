@@ -9,7 +9,6 @@ import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.greports.annotations.CellValidator;
 import org.greports.annotations.ColumnValidator;
-import org.greports.annotations.Configuration;
 import org.greports.exceptions.ReportEngineReflectionException;
 import org.greports.exceptions.ReportEngineValidationException;
 import org.greports.positioning.TranslationsParser;
@@ -17,7 +16,6 @@ import org.greports.utils.AnnotationUtils;
 import org.greports.utils.ConverterUtils;
 import org.greports.utils.ReflectionUtils;
 import org.greports.utils.Translator;
-import org.greports.utils.Utils;
 import org.greports.validators.AbstractCellValidator;
 import org.greports.validators.AbstractColumnValidator;
 import org.greports.validators.AbstractValidator;
@@ -71,8 +69,9 @@ public class ReportLoader {
     }
 
     public <T> ReportLoader bindForClass(Class<T> clazz, ReportLoaderErrorTreatment treatment) throws ReportEngineReflectionException {
-        final Configuration configuration = AnnotationUtils.getReportConfiguration(clazz, reportName);
-        this.translator = new Translator(new TranslationsParser(configuration.translationsDir()).parse(Utils.getLocale(configuration.locale())));
+        ReportConfiguration configuration = ReportConfigurationLoader.load(clazz, reportName);
+        final Map<String, Object> translations = new TranslationsParser(configuration).getTranslations();
+        translator = new Translator(translations);
         final ReportBlock reportBlock = new ReportBlock(clazz, reportName, null);
         loadBlocks(reportBlock);
         reportBlock
@@ -105,13 +104,13 @@ public class ReportLoader {
         }
     }
 
-    public <T> List<T> bindBlocks(ReportBlock reportBlock, Class<T> clazz, Configuration configuration, ReportLoaderErrorTreatment treatment, List<Integer> skipRows) throws ReportEngineReflectionException {
+    public <T> List<T> bindBlocks(ReportBlock reportBlock, Class<T> clazz, ReportConfiguration configuration, ReportLoaderErrorTreatment treatment, List<Integer> skipRows) throws ReportEngineReflectionException {
         List<T> list = new ArrayList<>();
-        final Sheet sheet = currentWorkbook.getSheet(configuration.sheetName());
+        final Sheet sheet = currentWorkbook.getSheet(configuration.getSheetName());
         boolean errorThrown = false;
         try {
             Method method;
-            for (int dataRowNum = configuration.dataStartRowIndex(); dataRowNum <= sheet.getLastRowNum() - AnnotationUtils.getLastSpecialRowsCount(configuration); dataRowNum++) {
+            for (int dataRowNum = configuration.getDataStartRowIndex(); dataRowNum <= sheet.getLastRowNum() - AnnotationUtils.getLastSpecialRowsCount(configuration); dataRowNum++) {
                 if (!skipRows.contains(dataRowNum)) {
                     final T instance = ReflectionUtils.newInstance(clazz);
                     final Row row = sheet.getRow(dataRowNum);
@@ -156,7 +155,7 @@ public class ReportLoader {
                     try {
                         checkColumnValidations(block.getValues(), block.getColumnValidators());
                     } catch (ReportEngineValidationException e) {
-                        loaderResult.addError(clazz, sheet.getSheetName(), e.getRowIndex() + configuration.dataStartRowIndex(), block.getStartColumn(), block.getAsColumn().title(), e.getMessage(), (Serializable) e.getErrorValue());
+                        loaderResult.addError(clazz, sheet.getSheetName(), e.getRowIndex() + configuration.getDataStartRowIndex(), block.getStartColumn(), block.getAsColumn().title(), e.getMessage(), (Serializable) e.getErrorValue());
                     }
                 }
             }
