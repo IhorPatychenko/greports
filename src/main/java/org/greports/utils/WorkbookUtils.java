@@ -1,13 +1,14 @@
-package org.greports.engine;
+package org.greports.utils;
 
 import org.apache.poi.ss.usermodel.Cell;
+import org.greports.engine.ValueType;
 
 import java.util.Date;
 import java.util.Objects;
 
-class WorkbookUtils {
+public class WorkbookUtils {
 
-    protected static void setCellValue(Cell cell, Object value) {
+    public static void setCellValue(Cell cell, Object value) {
         setCellValue(cell, value, ValueType.PLAIN_VALUE);
     }
 

@@ -8,19 +8,36 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.greports.exceptions.ReportEngineReflectionException;
 import org.greports.exceptions.ReportEngineRuntimeException;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.net.URL;
 
 
 public class ReportTemplateNormalizer {
 
-    public static boolean isNormalized(Class<?> clazz, String reportName, URL templateUrl) throws IOException, ReportEngineReflectionException {
-        XSSFWorkbook workbook = new XSSFWorkbook(templateUrl.openStream());
+    private XSSFWorkbook workbook;
+
+    public ReportTemplateNormalizer(URL templateUrl) throws IOException {
+        this.workbook = new XSSFWorkbook(templateUrl.openStream());
+    }
+
+    public ReportTemplateNormalizer(File file) throws IOException {
+        this.workbook = new XSSFWorkbook(new FileInputStream(file));
+    }
+
+    public ReportTemplateNormalizer reset() {
+        workbook = null;
+        return this;
+    }
+
+    public boolean isNormalized(Class<?> clazz, String reportName) throws ReportEngineReflectionException {
         ReportConfiguration configuration = ReportConfigurationLoader.load(clazz, reportName);
         final ReportData reportData = getReportData(clazz, reportName);
 
-        XSSFRow row = getRow(configuration, workbook);
+        XSSFRow row = getRow(configuration);
 
         int columnsCount = reportData.getColumnsCount();
         for(int columnIndex = 0; columnIndex < columnsCount; columnIndex++) {
@@ -32,41 +49,44 @@ public class ReportTemplateNormalizer {
         return true;
     }
 
-    public synchronized static void normalize(Class<?> clazz, String reportName, URL templateUrl) throws IOException, ReportEngineReflectionException {
-        normalize(clazz, reportName, templateUrl, null);
-    }
-
-    public synchronized static void normalize(Class<?> clazz, String reportName, URL templateUrl, String savePath) throws IOException, ReportEngineReflectionException {
-        XSSFWorkbook workbook = new XSSFWorkbook(templateUrl.openStream());
+    public synchronized ReportTemplateNormalizer normalize(Class<?> clazz, String reportName) throws ReportEngineReflectionException {
         ReportConfiguration configuration = ReportConfigurationLoader.load(clazz, reportName);
         final ReportData reportData = getReportData(clazz, reportName);
 
-        XSSFRow row = getRow(configuration, workbook);
+        XSSFRow row = getRow(configuration);
 
         int columnsCount = reportData.getColumnsCount();
         for(int columnIndex = 0; columnIndex < columnsCount; columnIndex++) {
             XSSFCell cell = row.getCell(columnIndex);
             if(cell == null) {
-                cell = row.createCell(columnIndex);
+                row.createCell(columnIndex);
             }
         }
 
-        if(savePath != null) {
-            save(workbook, savePath);
-        }
+        return this;
     }
 
-    private static void save(XSSFWorkbook workbook, String savePath) throws IOException {
-        workbook.write(new FileOutputStream(savePath));
+    private synchronized ReportTemplateNormalizer save(String filePath) throws IOException {
+        return this.save(new FileOutputStream(filePath));
+    }
+
+    private synchronized ReportTemplateNormalizer save(File file) throws IOException {
+        return this.save(new FileOutputStream(file));
+    }
+
+    private synchronized ReportTemplateNormalizer save(OutputStream outputStream) throws IOException {
+        workbook.write(outputStream);
         workbook.close();
+        outputStream.close();
+        return this;
     }
 
-    private static ReportData getReportData(Class<?> clazz, String reportName) throws ReportEngineReflectionException {
+    private ReportData getReportData(Class<?> clazz, String reportName) throws ReportEngineReflectionException {
         ReportDataParser dataParser = new ReportDataParser(true, Level.INFO);
         return dataParser.parse(clazz, reportName).getData();
     }
 
-    private static XSSFRow getRow(ReportConfiguration configuration, XSSFWorkbook workbook) {
+    private XSSFRow getRow(ReportConfiguration configuration) {
         XSSFSheet sheet = workbook.getSheet(configuration.getSheetName());
         if(sheet == null) {
             throw new ReportEngineRuntimeException("Sheet cannot be null. Check the sheet name.", ReportTemplateNormalizer.class);

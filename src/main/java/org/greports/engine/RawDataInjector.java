@@ -39,6 +39,7 @@ import org.greports.styles.stylesbuilders.RectangleRangedStylesBuilder;
 import org.greports.styles.stylesbuilders.VerticalRangedStylesBuilder;
 import org.greports.utils.Pair;
 import org.greports.utils.Utils;
+import org.greports.utils.WorkbookUtils;
 
 import java.awt.*;
 import java.util.ArrayList;
