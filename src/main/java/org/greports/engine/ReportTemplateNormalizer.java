@@ -52,18 +52,26 @@ public class ReportTemplateNormalizer {
     public synchronized ReportTemplateNormalizer normalize(Class<?> clazz, String reportName) throws ReportEngineReflectionException {
         ReportConfiguration configuration = ReportConfigurationLoader.load(clazz, reportName);
         final ReportData reportData = getReportData(clazz, reportName);
-
         XSSFRow row = getRow(configuration);
-
         int columnsCount = reportData.getColumnsCount();
-        for(int columnIndex = 0; columnIndex < columnsCount; columnIndex++) {
+        normalizeCells(row, columnsCount);
+        return this;
+    }
+
+    public synchronized ReportTemplateNormalizer normalize(String sheetName, int dataStartRowIndex, int lastColumnIndex) {
+        XSSFSheet sheet = getSheet(sheetName);
+        XSSFRow row = getRow(sheet, dataStartRowIndex);
+        normalizeCells(row, lastColumnIndex);
+        return this;
+    }
+
+    private void normalizeCells(XSSFRow row, int lastColumnIndex) {
+        for(int columnIndex = 0; columnIndex < lastColumnIndex; columnIndex++) {
             XSSFCell cell = row.getCell(columnIndex);
             if(cell == null) {
                 row.createCell(columnIndex);
             }
         }
-
-        return this;
     }
 
     private synchronized ReportTemplateNormalizer save(String filePath) throws IOException {
@@ -86,12 +94,25 @@ public class ReportTemplateNormalizer {
         return dataParser.parse(clazz, reportName).getData();
     }
 
-    private XSSFRow getRow(ReportConfiguration configuration) {
-        XSSFSheet sheet = workbook.getSheet(configuration.getSheetName());
+    private XSSFSheet getSheet(ReportConfiguration configuration) {
+        return getSheet(configuration.getSheetName());
+    }
+
+    private XSSFSheet getSheet(String sheetName) {
+        XSSFSheet sheet = workbook.getSheet(sheetName);
         if(sheet == null) {
             throw new ReportEngineRuntimeException("Sheet cannot be null. Check the sheet name.", ReportTemplateNormalizer.class);
         }
-        XSSFRow row = sheet.getRow(configuration.getDataStartRowIndex());
+        return sheet;
+    }
+
+    private XSSFRow getRow(ReportConfiguration configuration) {
+        XSSFSheet sheet = getSheet(configuration);
+        return getRow(sheet, configuration.getDataStartRowIndex());
+    }
+
+    private XSSFRow getRow(XSSFSheet sheet, int rowIndex) {
+        XSSFRow row = sheet.getRow(rowIndex);
         if(row == null) {
             throw new ReportEngineRuntimeException("Row cannot be null. Check dataStartRowIndex value.", ReportTemplateNormalizer.class);
         }
