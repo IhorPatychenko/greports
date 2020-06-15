@@ -10,6 +10,7 @@ public interface ReportRow<T extends ReportCell> {
     Integer getRowIndex();
 
     default void removeCell(int i) {
-        this.getCells().remove(i);
+        List<T> cells = this.getCells();
+        cells.removeIf(cell -> cell.getColumnIndex() == i);
     }
 }

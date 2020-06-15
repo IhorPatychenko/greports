@@ -68,6 +68,7 @@ public final class ReportDataParser extends ReportParser {
         loggerService.info(String.format("Parsing report for class \"%s\" with report name \"%s\"...", clazz.getSimpleName(), reportName));
         Stopwatch timer = Stopwatch.createStarted();
         final ReportDataParser parser = parse(clazz, reportName, collection, configurator, 0f, "");
+        reportData.setColumnIndexes();
         reportData.applyConfigurator(configurator);
         loggerService.info(String.format("Report with name \"%s\" successfully parsed. Parse time: %s", reportName, timer.stop()));
         return parser;

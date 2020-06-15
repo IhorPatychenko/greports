@@ -1,9 +1,10 @@
 package org.greports.content.cell;
 
-public class HeaderCell extends AbstractReportCell {
+public class HeaderCell extends AbstractReportCell implements PositionedCell {
     private final String id;
     private final boolean autoSizeColumn;
     private final int columnWidth;
+    private final Float position;
 
     public HeaderCell(Float position, String title, String id, boolean autoSizeColumn) {
         this(position, title, id, autoSizeColumn, 1);
@@ -14,7 +15,8 @@ public class HeaderCell extends AbstractReportCell {
     }
 
     public HeaderCell(Float position, String title, String format, String id, boolean autoSizeColumn, int columnWidth) {
-        super(position, title, format);
+        super(title, format);
+        this.position = position;
         this.id = id;
         this.autoSizeColumn = autoSizeColumn;
         this.columnWidth = columnWidth;
@@ -34,5 +36,10 @@ public class HeaderCell extends AbstractReportCell {
 
     public int getColumnWidth() {
         return columnWidth;
+    }
+
+    @Override
+    public Float getPosition() {
+        return this.position;
     }
 }

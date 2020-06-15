@@ -2,8 +2,9 @@ package org.greports.engine;
 
 import org.greports.annotations.Configuration;
 import org.greports.content.ReportHeader;
-import org.greports.content.cell.AbstractReportCell;
+import org.greports.content.cell.DataCell;
 import org.greports.content.cell.HeaderCell;
+import org.greports.content.cell.SpecialDataCell;
 import org.greports.content.row.DataRow;
 import org.greports.content.row.ReportRow;
 import org.greports.content.row.SpecialDataRow;
@@ -146,9 +147,27 @@ public class ReportData implements Cloneable, Serializable {
         }
     }
 
+    public void setColumnIndexes() {
+        for(int i = 0; i < header.getCells().size(); i++) {
+            header.getCell(i).setColumnIndex(i);
+        }
+
+        for(DataRow dataRow : dataRows) {
+            for(int i = 0; i < dataRow.getCells().size(); i++) {
+                dataRow.getCell(i).setColumnIndex(i);
+            }
+        }
+
+        for(SpecialDataRow specialRow : specialRows) {
+            for(SpecialDataCell specialCell : specialRow.getSpecialCells()) {
+                specialCell.setColumnIndex(targetIndexes.get(specialCell.getTargetId()));
+            }
+        }
+    }
+
     private void sortData() {
-        header.getCells().sort(Comparator.comparing(AbstractReportCell::getPosition));
-        dataRows.forEach(row -> row.getCells().sort(Comparator.comparing(AbstractReportCell::getPosition)));
+        header.getCells().sort(Comparator.comparing(HeaderCell::getPosition));
+        dataRows.forEach(row -> row.getCells().sort(Comparator.comparing(DataCell::getPosition)));
     }
 
     private void mergeHeaders(ReportData other) {
@@ -294,7 +313,7 @@ public class ReportData implements Cloneable, Serializable {
             final List<ReportRow<?>> reportRows = this.getReportRows();
             for(int i = 0; i < removedColumns.size(); i++) {
                 for(ReportRow<?> reportRow : reportRows) {
-                    reportRow.removeCell(removedColumns.get(i) - i);
+                    reportRow.removeCell(removedColumns.get(i));
                 }
             }
 

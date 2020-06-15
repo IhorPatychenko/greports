@@ -5,8 +5,9 @@ import org.greports.engine.ValueType;
 /**
  * This class represents a cell which contains an input data.
  */
-public class DataCell extends AbstractReportCell {
+public class DataCell extends AbstractReportCell implements PositionedCell {
 
+    private final Float position;
     private final boolean physicalPosition;
     private final ValueType valueType;
     private int columnWidth;
@@ -16,10 +17,16 @@ public class DataCell extends AbstractReportCell {
     }
 
     public DataCell(final Float position, final boolean physicalPosition, final String format, final Object value, final ValueType valueType, final int columnWidth) {
-        super(position, value, format);
+        super(value, format);
+        this.position = position;
         this.physicalPosition = physicalPosition;
         this.valueType = valueType;
         this.columnWidth = columnWidth;
+    }
+
+    @Override
+    public Float getPosition() {
+        return position;
     }
 
     public boolean isPhysicalPosition() {

@@ -4,22 +4,13 @@ package org.greports.content.cell;
  * An abstract cell. Contains the common data of all cells in the report.
  */
 public abstract class AbstractReportCell implements ReportCell, Cloneable {
-    private final Float position;
     private Object value;
     private String format;
+    private Integer columnIndex;
 
-    public AbstractReportCell(Float position) {
-        this.position = position;
-    }
-
-    public AbstractReportCell(Float position, Object value, String format) {
-        this(position);
+    public AbstractReportCell(Object value, String format) {
         this.value = value;
         this.format = format;
-    }
-
-    public Float getPosition() {
-        return position;
     }
 
     public Object getValue() {
@@ -38,6 +29,14 @@ public abstract class AbstractReportCell implements ReportCell, Cloneable {
     @Override
     public void setFormat(final String newFormat) {
         this.format = newFormat;
+    }
+
+    public Integer getColumnIndex() {
+        return columnIndex;
+    }
+
+    public void setColumnIndex(Integer columnIndex) {
+        this.columnIndex = columnIndex;
     }
 
     @Override
