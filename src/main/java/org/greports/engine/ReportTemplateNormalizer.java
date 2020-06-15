@@ -74,15 +74,15 @@ public class ReportTemplateNormalizer {
         }
     }
 
-    private synchronized ReportTemplateNormalizer save(String filePath) throws IOException {
+    public synchronized ReportTemplateNormalizer save(String filePath) throws IOException {
         return this.save(new FileOutputStream(filePath));
     }
 
-    private synchronized ReportTemplateNormalizer save(File file) throws IOException {
+    public synchronized ReportTemplateNormalizer save(File file) throws IOException {
         return this.save(new FileOutputStream(file));
     }
 
-    private synchronized ReportTemplateNormalizer save(OutputStream outputStream) throws IOException {
+    public synchronized ReportTemplateNormalizer save(OutputStream outputStream) throws IOException {
         workbook.write(outputStream);
         workbook.close();
         outputStream.close();
