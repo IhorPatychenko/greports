@@ -49,9 +49,6 @@ public class ReportTemplateNormalizer {
             if(cell == null) {
                 cell = row.createCell(columnIndex);
             }
-            if(cell.getRawValue() == null || "".equals(cell.getRawValue())) {
-                cell.setCellValue(" ");
-            }
         }
 
         if(savePath != null) {
