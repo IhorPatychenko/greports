@@ -280,24 +280,26 @@ public class ReportData implements Cloneable, Serializable {
     }
 
     public void applyConfigurator(final ReportConfigurator configurator) {
-        // Override sheet name
-        if(configurator.getSheetName() != null) this.setSheetName(configurator.getSheetName());
+        if(configurator != null) {
+            // Override sheet name
+            if(configurator.getSheetName() != null) this.setSheetName(configurator.getSheetName());
 
-        // Override titles
-        for (final Map.Entry<Integer, String> entry : configurator.getOverriddenTitles().entrySet()) {
-            this.header.getCell(entry.getKey()).setValue(entry.getValue());
-        }
-
-        // Remove columns
-        final List<Integer> removedColumns = configurator.getRemovedColumns();
-        final List<ReportRow<?>> reportRows = this.getReportRows();
-        for(int i = 0; i < removedColumns.size(); i++) {
-            for(ReportRow<?> reportRow : reportRows) {
-                reportRow.removeCell(removedColumns.get(i) - i);
+            // Override titles
+            for (final Map.Entry<Integer, String> entry : configurator.getOverriddenTitles().entrySet()) {
+                this.header.getCell(entry.getKey()).setValue(entry.getValue());
             }
-        }
 
-        // Override template URL
-        if(configurator.getTemplateUrl() != null) this.templateURL = configurator.getTemplateUrl();
+            // Remove columns
+            final List<Integer> removedColumns = configurator.getRemovedColumns();
+            final List<ReportRow<?>> reportRows = this.getReportRows();
+            for(int i = 0; i < removedColumns.size(); i++) {
+                for(ReportRow<?> reportRow : reportRows) {
+                    reportRow.removeCell(removedColumns.get(i) - i);
+                }
+            }
+
+            // Override template URL
+            if(configurator.getTemplateUrl() != null) this.templateURL = configurator.getTemplateUrl();
+        }
     }
 }

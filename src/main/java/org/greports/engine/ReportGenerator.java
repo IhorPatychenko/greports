@@ -28,7 +28,7 @@ public class ReportGenerator {
     }
 
     public <T> ReportGenerator parse(final List<T> collection, final String reportName, Class<T> clazz) throws ReportEngineReflectionException {
-        final ReportData data = reportDataParser.parse(collection, reportName, clazz, getConfigurator(clazz, reportName)).getData();
+        final ReportData data = reportDataParser.parse(clazz, reportName, collection, getConfigurator(clazz, reportName)).getData();
         reportGeneratorResult.addData(data);
         return this;
     }
