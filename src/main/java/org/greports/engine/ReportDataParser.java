@@ -393,7 +393,7 @@ public final class ReportDataParser extends ReportParser {
             final T newInstance = ReflectionUtils.newInstance(clazz);
             if(newInstance instanceof ConditionalRowStyles || newInstance instanceof ConditionalCellStyles){
                 final List<T> list = new ArrayList<>(collection);
-                final short startRowIndex = reportData.getConfiguration().getDataStartRowIndex();
+                final int startRowIndex = reportData.getConfiguration().getDataStartRowIndex();
                 RectangleRangedStylesBuilder rectangleRangedStylesBuilder = reportData.getStyles().getRectangleRangedStylesBuilder();
                 if(rectangleRangedStylesBuilder == null){
                     rectangleRangedStylesBuilder = reportData.getStyles().createRectangleRangedStylesBuilder(AbstractReportStylesBuilder.StylePriority.PRIORITY4);

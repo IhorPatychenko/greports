@@ -18,8 +18,8 @@ public class ReportConfiguration implements Cloneable, Serializable {
     private String templatePath = "";
     private boolean createHeader = true;
     private boolean sortableHeader = false;
-    private short headerRowIndex = 0;
-    private short dataStartRowIndex = 1;
+    private int headerRowIndex = 0;
+    private int dataStartRowIndex = 1;
     private boolean templatedInject = false;
     private List<ReportSpecialRow> specialRows = new ArrayList<>();
     private List<ReportSpecialColumn> specialColumns = new ArrayList<>();
@@ -85,11 +85,11 @@ public class ReportConfiguration implements Cloneable, Serializable {
         return sortableHeader;
     }
 
-    public short getHeaderRowIndex() {
+    public int getHeaderRowIndex() {
         return headerRowIndex;
     }
 
-    public short getDataStartRowIndex() {
+    public int getDataStartRowIndex() {
         return dataStartRowIndex;
     }
 
