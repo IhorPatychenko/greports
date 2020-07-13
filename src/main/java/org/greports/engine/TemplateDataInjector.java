@@ -1,11 +1,21 @@
 package org.greports.engine;
 
+import org.apache.poi.ss.formula.EvaluationWorkbook;
+import org.apache.poi.ss.formula.FormulaParser;
+import org.apache.poi.ss.formula.FormulaParsingWorkbook;
+import org.apache.poi.ss.formula.FormulaRenderer;
+import org.apache.poi.ss.formula.FormulaRenderingWorkbook;
+import org.apache.poi.ss.formula.FormulaType;
+import org.apache.poi.ss.formula.ptg.AreaPtgBase;
+import org.apache.poi.ss.formula.ptg.Ptg;
+import org.apache.poi.ss.formula.ptg.RefPtgBase;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.util.AreaReference;
 import org.apache.poi.ss.util.CellReference;
 import org.apache.poi.xssf.usermodel.XSSFCellStyle;
+import org.apache.poi.xssf.usermodel.XSSFEvaluationWorkbook;
 import org.apache.poi.xssf.usermodel.XSSFFormulaEvaluator;
 import org.apache.poi.xssf.usermodel.XSSFTable;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -49,7 +59,7 @@ public class TemplateDataInjector extends DataInjector {
         }
     }
 
-    private void cloneCell(Row sourceRow, Row targetRow, DataCell dataCell, int cellIndex) {
+    private void cloneCell(Sheet sheet, Row sourceRow, Row targetRow, DataCell dataCell, int cellIndex) {
         final Cell sourceRowCell = sourceRow.getCell(cellIndex);
         final Cell targetRowCell = targetRow.createCell(cellIndex);
         XSSFCellStyle cellStyle;
@@ -63,9 +73,49 @@ public class TemplateDataInjector extends DataInjector {
         targetRowCell.setCellStyle(cellStyle);
         Object value = dataCell.getValue();
         if(ValueType.FORMULA.equals(dataCell.getValueType())) {
-            value = replaceFormulaIndexes(targetRow, value.toString());
+            value = replaceFormulaIndexes(sourceRow, value.toString());
+        } else if(ValueType.TEMPLATED_FORMULA.equals(dataCell.getValueType())) {
+            value = copyFormula(sheet, sourceRowCell.getCellFormula(), targetRow.getRowNum() - sourceRow.getRowNum());
         }
         WorkbookUtils.setCellValue(targetRowCell, value, dataCell.getValueType());
+    }
+
+    private String copyFormula(Sheet sheet, String formula, int rowdiff){
+        EvaluationWorkbook evaluationWorkbook = XSSFEvaluationWorkbook.create(currentWorkbook);
+        Ptg[] ptgs = FormulaParser.parse(formula,
+                (FormulaParsingWorkbook) evaluationWorkbook,
+                FormulaType.CELL,
+                sheet.getWorkbook().getSheetIndex(sheet)
+        );
+
+        for(Ptg ptg : ptgs) {
+            if(ptg instanceof RefPtgBase) { // base class for cell references
+                RefPtgBase ref = (RefPtgBase) ptg;
+                if(ref.isColRelative()) {
+                    ref.setColumn(ref.getColumn());
+                }
+                if(ref.isRowRelative()) {
+                    ref.setRow(ref.getRow() + rowdiff);
+                }
+            } else if(ptg instanceof AreaPtgBase) { // base class for range references
+                AreaPtgBase ref = (AreaPtgBase) ptg;
+                if(ref.isFirstColRelative()) {
+                    ref.setFirstColumn(ref.getFirstColumn());
+                }
+                if(ref.isLastColRelative()) {
+                    ref.setLastColumn(ref.getLastColumn());
+                }
+                if(ref.isFirstRowRelative()) {
+                    ref.setFirstRow(ref.getFirstRow() + rowdiff);
+                }
+                if(ref.isLastRowRelative()) {
+                    ref.setLastRow(ref.getLastRow() + rowdiff);
+                }
+            }
+        }
+
+        formula = FormulaRenderer.toFormulaString((FormulaRenderingWorkbook)evaluationWorkbook, ptgs);
+        return formula;
     }
 
     private void createDataRows(Sheet sheet) {
@@ -74,7 +124,7 @@ public class TemplateDataInjector extends DataInjector {
             final Row targetRow = sheet.createRow(reportData.getDataStartRow() + i + 1);
             final DataRow dataRow = reportData.getDataRows().get(i);
             for (int cellIndex = 0; cellIndex < dataRow.getCells().size(); cellIndex++) {
-                cloneCell(sourceRow, targetRow, dataRow.getCells().get(cellIndex), cellIndex);
+                cloneCell(sheet, sourceRow, targetRow, dataRow.getCells().get(cellIndex), cellIndex);
             }
         }
         sheet.shiftRows(reportData.getDataStartRow() + 1, reportData.getDataStartRow() + reportData.getRowsCount() + 1, -1);

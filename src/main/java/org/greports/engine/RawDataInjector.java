@@ -145,7 +145,7 @@ class RawDataInjector extends DataInjector {
             int mergedCellsCount = 0;
             for (int y = 0; y < dataRow.getCells().size(); y++) {
                 final DataCell dataCell = dataRow.getCell(y);
-                if(!dataCell.getValueType().equals(ValueType.FORMULA)) {
+                if(!dataCell.getValueType().equals(ValueType.FORMULA) && !dataCell.getValueType().equals(ValueType.TEMPLATED_FORMULA)) {
                     createCell(sheet, row, dataCell, dataCell.isPhysicalPosition() ? dataCell.getPosition().intValue() : y + mergedCellsCount);
                     if(dataCell.getColumnWidth() > 1) {
                         mergedCellsCount += dataCell.getColumnWidth() - 1;
@@ -188,7 +188,7 @@ class RawDataInjector extends DataInjector {
     private void createCell(Sheet sheet, Row row, DataCell dataCell, int columnIndex) {
         CellType cellType = CellType.BLANK;
         final ValueType valueType = dataCell.getValueType();
-        if(!ValueType.FORMULA.equals(valueType)) {
+        if(!ValueType.FORMULA.equals(valueType) && !ValueType.TEMPLATED_FORMULA.equals(valueType)) {
             if(dataCell.getValue() instanceof Number) {
                 cellType = CellType.NUMERIC;
             } else if(dataCell.getValue() instanceof String) {
@@ -231,7 +231,7 @@ class RawDataInjector extends DataInjector {
                     WorkbookUtils.setCellValue(cell, specialCell.getValue());
                 } else {
                     String formulaString = specialCell.getValue().toString();
-                    if(ValueType.FORMULA.equals(valueType)){
+                    if(ValueType.FORMULA.equals(valueType) || ValueType.TEMPLATED_FORMULA.equals(valueType)){
 
                         if(sheet.getLastRowNum() > reportData.getDataStartRow()) {
                             for (Map.Entry<String, Integer> entry : reportData.getTargetIndexes().entrySet()) {
