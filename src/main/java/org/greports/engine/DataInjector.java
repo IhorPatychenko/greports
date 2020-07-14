@@ -18,7 +18,7 @@ public abstract class DataInjector {
     protected final ReportData reportData;
     protected final CreationHelper creationHelper;
     protected LoggerService loggerService;
-    protected Map<String, XSSFCellStyle> _formatsCache = new HashMap<>();
+    protected Map<String, XSSFCellStyle> formatsCache = new HashMap<>();
 
     protected abstract void inject();
 
@@ -38,13 +38,13 @@ public abstract class DataInjector {
     protected void setCellFormat(Cell cell, String format) {
         if(format != null && !format.isEmpty()){
             XSSFCellStyle cellStyle;
-            if(!_formatsCache.containsKey(format)){
+            if(!formatsCache.containsKey(format)){
                 cellStyle = currentWorkbook.createCellStyle();
                 cellStyle.cloneStyleFrom(cell.getCellStyle());
                 cellStyle.setDataFormat(creationHelper.createDataFormat().getFormat(format));
-                _formatsCache.put(format, cellStyle);
+                formatsCache.put(format, cellStyle);
             } else {
-                cellStyle = _formatsCache.get(format);
+                cellStyle = formatsCache.get(format);
             }
             cell.setCellStyle(cellStyle);
         }

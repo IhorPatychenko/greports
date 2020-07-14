@@ -10,19 +10,13 @@ public class HorizontalRange extends Range implements Serializable {
         super(start, end);
     }
 
+    @Override
     public Integer getStart(){
         return super.getStart();
     }
 
+    @Override
     public Integer getEnd(){
         return super.getEnd();
-    }
-
-    public void setStart(Integer start) {
-        super.setStart(start);
-    }
-
-    public void setEnd(Integer end) {
-        super.setEnd(end);
     }
 }

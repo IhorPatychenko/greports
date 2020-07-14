@@ -36,6 +36,9 @@ import java.util.function.Predicate;
 
 public class AnnotationUtils {
 
+    private AnnotationUtils() {
+    }
+
     private static Report getReportAnnotation(Class<?> clazz) {
         final Report annotation = clazz.getAnnotation(Report.class);
         if (annotation != null) {
@@ -144,7 +147,7 @@ public class AnnotationUtils {
         return list.stream().max(Comparator.comparing(Column::position)).orElse(null);
     }
 
-    public static <T> Map<Annotation, Method> loadBlockAnnotations(final ReportBlock reportBlock) throws ReportEngineReflectionException {
+    public static Map<Annotation, Method> loadBlockAnnotations(final ReportBlock reportBlock) throws ReportEngineReflectionException {
         Map<Annotation, Method> map = new HashMap<>();
         Class<?> clazz = reportBlock.getBlockClass();
         final List<Field> fields = getAllClassFields(clazz);

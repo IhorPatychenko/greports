@@ -9,6 +9,9 @@ import java.util.Map;
 
 public class ValidatorFactory {
 
+    private ValidatorFactory() {
+    }
+
     protected static final Map<Pair<Class<? extends AbstractValidator>, String>, AbstractValidator> _validators = new HashMap<>();
 
     public static AbstractValidator get(Class<? extends AbstractValidator> clazz, String value) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {

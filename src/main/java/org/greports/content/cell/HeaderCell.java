@@ -22,10 +22,6 @@ public class HeaderCell extends AbstractReportCell implements PositionedCell {
         this.columnWidth = columnWidth;
     }
 
-    public void setValue(String newValue){
-        super.setValue(newValue);
-    }
-
     public String getId() {
         return id;
     }

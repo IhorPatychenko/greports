@@ -1,6 +1,6 @@
 package org.greports.converters;
 
-public class IntegerConverter extends AbstractValueConverter {
+public class IntegerConverter implements AbstractValueConverter {
 
     @Override
     public Integer convert(final Object input, final String[] params) {
@@ -8,7 +8,7 @@ public class IntegerConverter extends AbstractValueConverter {
     }
 
     @Override
-    public Class getToClass() {
+    public Class<?> getToClass() {
         return Integer.class;
     }
 }

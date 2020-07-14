@@ -8,6 +8,9 @@ import java.util.StringJoiner;
 
 public class Utils {
 
+    private Utils() {
+    }
+
     @SafeVarargs
     public static <T> boolean anyNotNull(T... objects) {
         for (T object : objects) {
