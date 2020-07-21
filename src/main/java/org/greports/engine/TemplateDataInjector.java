@@ -14,7 +14,6 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.util.AreaReference;
 import org.apache.poi.ss.util.CellReference;
-import org.apache.poi.xssf.usermodel.XSSFCellStyle;
 import org.apache.poi.xssf.usermodel.XSSFEvaluationWorkbook;
 import org.apache.poi.xssf.usermodel.XSSFTable;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -24,12 +23,8 @@ import org.greports.content.row.DataRow;
 import org.greports.utils.WorkbookUtils;
 import org.openxmlformats.schemas.spreadsheetml.x2006.main.CTTable;
 
-import java.util.HashMap;
-import java.util.Map;
 
 public class TemplateDataInjector extends DataInjector {
-
-    private final Map<Integer, XSSFCellStyle> stylesCache = new HashMap<>();
 
     public TemplateDataInjector(XSSFWorkbook targetWorkbook, ReportData data, boolean loggerEnabled) {
         super(targetWorkbook, data, loggerEnabled);
@@ -61,15 +56,7 @@ public class TemplateDataInjector extends DataInjector {
     private void cloneCell(Sheet sheet, Row sourceRow, Row targetRow, DataCell dataCell, int cellIndex) {
         final Cell sourceRowCell = sourceRow.getCell(cellIndex);
         final Cell targetRowCell = targetRow.createCell(cellIndex);
-        XSSFCellStyle cellStyle;
-        if(stylesCache.containsKey(cellIndex)){
-            cellStyle = stylesCache.get(cellIndex);
-        } else {
-            cellStyle = currentWorkbook.createCellStyle();
-            cellStyle.cloneStyleFrom(sourceRowCell.getCellStyle());
-            stylesCache.put(cellIndex, cellStyle);
-        }
-        targetRowCell.setCellStyle(cellStyle);
+        targetRowCell.setCellStyle(sourceRowCell.getCellStyle());
         Object value = dataCell.getValue();
         if(ValueType.FORMULA.equals(dataCell.getValueType())) {
             value = replaceFormulaIndexes(sourceRow, value.toString());
