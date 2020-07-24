@@ -6,11 +6,11 @@ public abstract class Range extends Tuple<Integer, Integer> {
         super(start, end);
     }
 
-    protected Integer getStart(){
+    public Integer getStart(){
         return super.getA();
     }
 
-    protected Integer getEnd(){
+    public Integer getEnd(){
         return super.getB();
     }
 

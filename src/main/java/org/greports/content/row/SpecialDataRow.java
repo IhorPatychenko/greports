@@ -19,10 +19,6 @@ public class SpecialDataRow implements ReportRow<SpecialDataCell>, Cloneable {
         this.rowIndex = rowIndex;
     }
 
-    public List<SpecialDataCell> getSpecialCells() {
-        return specialCells;
-    }
-
     public void addCell(SpecialDataCell cell) {
         specialCells.add(cell);
     }

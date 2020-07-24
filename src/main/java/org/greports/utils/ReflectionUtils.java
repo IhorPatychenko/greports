@@ -16,6 +16,9 @@ public class ReflectionUtils {
     private static final List<String> gettersPrefixes = new ArrayList<>(Arrays.asList("get", "is"));
     private static final List<String> settersPrefixes = new ArrayList<>(Collections.singletonList("set"));
 
+    private ReflectionUtils() {
+    }
+
     public static <T> Method getMethodWithName(Class<T> clazz, String methodName, Class<?>[] parameters) throws ReportEngineReflectionException {
         try {
             return clazz.getDeclaredMethod(methodName, parameters);
@@ -43,7 +46,10 @@ public class ReflectionUtils {
                 if (method != null) {
                     return method;
                 }
-            } catch (ReportEngineReflectionException ignored) {}
+            } catch (ReportEngineReflectionException ignored) {
+                // Ignored exception, could be that the method
+                // which we are looking for will not be found in the first iteration
+            }
         }
         throw new ReportEngineReflectionException(
             "No getter was found with any of these names \"" + String.join(", ", getterPossibleNames) + "\" for field " + field.getName() + " in class @" + clazz.getSimpleName(),
@@ -62,7 +68,10 @@ public class ReflectionUtils {
                 if (method != null) {
                     return method;
                 }
-            } catch (ReportEngineReflectionException ignored) {}
+            } catch (ReportEngineReflectionException ignored) {
+                // Ignored exception, could be that the method
+                // which we are looking for will not be found in the first iteration
+            }
         }
         throw new ReportEngineReflectionException(
             "No setter was found with any of these names \"" + String.join(", ", setterPossibleNames) + "\" for field " + field.getName(),

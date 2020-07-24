@@ -1,7 +1,6 @@
 package org.greports.styles.interfaces;
 
 import org.greports.styles.stylesbuilders.HorizontalRangedStyleBuilder;
-import org.greports.styles.stylesbuilders.VerticalRangedStyleBuilder;
 
 import java.util.List;
 import java.util.Map;

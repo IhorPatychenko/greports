@@ -8,12 +8,14 @@ import java.util.Objects;
 
 public class WorkbookUtils {
 
+    private WorkbookUtils() {}
+
     public static void setCellValue(Cell cell, Object value) {
         setCellValue(cell, value, ValueType.PLAIN_VALUE);
     }
 
     public static void setCellValue(Cell cell, Object value, ValueType valueType) {
-        if(ValueType.FORMULA.equals(valueType)) {
+        if(ValueType.FORMULA.equals(valueType) || ValueType.TEMPLATED_FORMULA.equals(valueType)) {
             cell.setCellFormula(value.toString());
         } else if(value instanceof Date) {
             cell.setCellValue(((Date) value));

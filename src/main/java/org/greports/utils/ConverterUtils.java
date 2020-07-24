@@ -8,6 +8,9 @@ import java.util.List;
 
 public class ConverterUtils {
 
+    private ConverterUtils() {
+    }
+
     public static Object convertValue(final Object value, final Converter converter) throws ReportEngineReflectionException {
         final Class<? extends AbstractValueConverter> clazz = converter.converterClass();
         try {

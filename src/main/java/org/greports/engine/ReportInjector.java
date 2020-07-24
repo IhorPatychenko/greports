@@ -31,14 +31,14 @@ public class ReportInjector {
                     currentWorkbook = new XSSFWorkbook();
                 }
 
-                if(data.isReportWithTemplate() || data.getConfiguration().isTemplatedInject()) {
+                if(data.isReportWithTemplate() && data.getConfiguration().isTemplatedInject()) {
                     new TemplateDataInjector(currentWorkbook, data, loggerEnabled).inject();
                 } else {
                     new RawDataInjector(currentWorkbook, data, loggerEnabled).inject();
                 }
             }
-            for(final String deleteSheet : deleteSheet) {
-                currentWorkbook.removeSheetAt(currentWorkbook.getSheetIndex(deleteSheet));
+            for(final String sheetToDelete : deleteSheet) {
+                currentWorkbook.removeSheetAt(currentWorkbook.getSheetIndex(sheetToDelete));
             }
         } catch (InvalidFormatException e) {
             throw new ReportEngineRuntimeException("Error creating a workbook", e, ReportInjector.class);

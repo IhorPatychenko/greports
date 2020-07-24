@@ -159,7 +159,7 @@ public class ReportData implements Cloneable, Serializable {
         }
 
         for(SpecialDataRow specialRow : specialRows) {
-            for(SpecialDataCell specialCell : specialRow.getSpecialCells()) {
+            for(SpecialDataCell specialCell : specialRow.getCells()) {
                 specialCell.setColumnIndex(targetIndexes.get(specialCell.getTargetId()));
             }
         }

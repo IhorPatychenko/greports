@@ -3,13 +3,11 @@ package org.greports.services;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
-import java.io.Serializable;
-
 public class LoggerService {
 
-    private Logger logger;
-    private Level level;
-    private boolean enabled;
+    private final Logger logger;
+    private final Level level;
+    private final boolean enabled;
 
     public LoggerService(Class<?> clazz, boolean enabled) {
         this(clazz, enabled, Level.ALL);

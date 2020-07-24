@@ -1,6 +1,6 @@
 package org.greports.converters;
 
-public class StringConverter extends AbstractValueConverter {
+public class StringConverter implements AbstractValueConverter {
 
     @Override
     public String convert(final Object input, final String[] params) {
