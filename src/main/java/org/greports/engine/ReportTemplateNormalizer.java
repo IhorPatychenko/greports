@@ -114,7 +114,7 @@ public class ReportTemplateNormalizer {
     private XSSFRow getRow(XSSFSheet sheet, int rowIndex) {
         XSSFRow row = sheet.getRow(rowIndex);
         if(row == null) {
-            throw new ReportEngineRuntimeException("Row cannot be null. Check dataStartRowIndex value.", ReportTemplateNormalizer.class);
+            row = sheet.createRow(rowIndex);
         }
         return row;
     }
