@@ -13,7 +13,7 @@ public @interface Converter {
 
     /**
      * Converter class
-     * @return {@link Class<AbstractValueConverter>}
+     * @return {@link Class}
      */
     Class<? extends AbstractValueConverter> converterClass();
 
