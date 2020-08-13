@@ -31,7 +31,7 @@ public class ReportInjector {
                     currentWorkbook = new XSSFWorkbook();
                 }
 
-                if(data.isReportWithTemplate() && data.getConfiguration().isTemplatedInject()) {
+                if(data.isReportWithTemplate() || data.getConfiguration().isTemplatedInject()) {
                     new TemplateDataInjector(currentWorkbook, data, loggerEnabled).inject();
                 } else {
                     new RawDataInjector(currentWorkbook, data, loggerEnabled).inject();
