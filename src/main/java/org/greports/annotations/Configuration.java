@@ -78,11 +78,19 @@ public @interface Configuration {
     short headerRowIndex() default 0;
 
     /**
-     * Indicates where the data will start.
+     * Indicates on which row the data will start.
+     * 0-based.
      *
-     * @return {@link short}
+     * @return short
      */
     short dataStartRowIndex() default 1;
+
+    /**
+     * Indicates on which column the data will start.
+     * 0-based.
+     * @return short
+     */
+    short dataStartColumnIndex() default 0;
 
     /**
      * Indicates if the configuration to be parsed need to be injected

@@ -11,6 +11,7 @@ import java.util.stream.Collectors;
 public class ReportConfiguration implements Cloneable, Serializable {
     private static final long serialVersionUID = -5662450749358381078L;
 
+
     private String sheetName;
     private String[] reportName = new String[]{};
     private String translationsDir = "i18n/";
@@ -20,6 +21,7 @@ public class ReportConfiguration implements Cloneable, Serializable {
     private boolean sortableHeader = false;
     private int headerRowIndex = 0;
     private int dataStartRowIndex = 1;
+    private int dataStartColumnIndex = 0;
     private boolean templatedInject = false;
     private List<ReportSpecialRow> specialRows = new ArrayList<>();
     private List<ReportSpecialColumn> specialColumns = new ArrayList<>();
@@ -34,6 +36,7 @@ public class ReportConfiguration implements Cloneable, Serializable {
         this.sortableHeader = configuration.sortableHeader();
         this.headerRowIndex = configuration.headerRowIndex();
         this.dataStartRowIndex = configuration.dataStartRowIndex();
+        this.dataStartColumnIndex = configuration.dataStartColumnIndex();
         this.templatedInject = configuration.templatedInject();
         this.specialRows = Arrays.stream(configuration.specialRows()).map(ReportSpecialRow::new).collect(Collectors.toList());
         this.specialColumns = Arrays.stream(configuration.specialColumns()).map(ReportSpecialColumn::new).collect(Collectors.toList());;
@@ -43,7 +46,7 @@ public class ReportConfiguration implements Cloneable, Serializable {
         this.sheetName = sheetName;
     }
 
-    public ReportConfiguration(final String sheetName, final String translationsDir, final String locale, final String templatePath, final boolean createHeader, final boolean sortableHeader, final short headerRowIndex, final short dataStartRowIndex, final boolean templatedInject, final List<ReportSpecialRow> specialRows, final List<ReportSpecialColumn> specialColumns) {
+    public ReportConfiguration(final String sheetName, final String translationsDir, final String locale, final String templatePath, final boolean createHeader, final boolean sortableHeader, final short headerRowIndex, final short dataStartRowIndex, final short dataStartColumnIndex, final boolean templatedInject, final List<ReportSpecialRow> specialRows, final List<ReportSpecialColumn> specialColumns) {
         this.sheetName = sheetName;
         this.translationsDir = translationsDir;
         this.locale = locale;
@@ -52,6 +55,7 @@ public class ReportConfiguration implements Cloneable, Serializable {
         this.sortableHeader = sortableHeader;
         this.headerRowIndex = headerRowIndex;
         this.dataStartRowIndex = dataStartRowIndex;
+        this.dataStartColumnIndex = dataStartColumnIndex;
         this.templatedInject = templatedInject;
         this.specialRows = specialRows;
         this.specialColumns = specialColumns;
@@ -91,6 +95,10 @@ public class ReportConfiguration implements Cloneable, Serializable {
 
     public int getDataStartRowIndex() {
         return dataStartRowIndex;
+    }
+
+    public int getDataStartColumnIndex() {
+        return dataStartColumnIndex;
     }
 
     public boolean isTemplatedInject() {
@@ -147,6 +155,11 @@ public class ReportConfiguration implements Cloneable, Serializable {
 
     public ReportConfiguration setDataStartRowIndex(final short dataStartRowIndex) {
         this.dataStartRowIndex = dataStartRowIndex;
+        return this;
+    }
+
+    public ReportConfiguration setDataStartColumnIndex(int dataStartColumnIndex) {
+        this.dataStartColumnIndex = dataStartColumnIndex;
         return this;
     }
 
