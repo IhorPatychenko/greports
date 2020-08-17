@@ -19,7 +19,7 @@ public @interface Converter {
 
     /**
      * Array of params to be passed to the converter
-     * @return {@link String[]}
+     * @return String[]
      */
     String[] params() default {};
 

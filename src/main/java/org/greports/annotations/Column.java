@@ -103,7 +103,7 @@ public @interface Column {
      * This functionality is very expensive due to the large number of calculations to be performed.
      * Use only when necessary.
      *
-     * @return {@link boolean}
+     * @return boolean
      */
     boolean autoSizeColumn() default false;
 

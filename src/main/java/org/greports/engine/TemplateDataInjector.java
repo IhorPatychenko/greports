@@ -113,7 +113,7 @@ public class TemplateDataInjector extends DataInjector {
 
     private void reindexTablesRows(final Sheet sheet) {
         for (final XSSFTable table : currentWorkbook.getSheet(reportData.getSheetName()).getTables()) {
-            final Row lastDataRow = sheet.getRow(sheet.getLastRowNum());
+            final Row lastDataRow = sheet.getRow(reportData.getDataStartRow() + reportData.getRowsCount() - 1);
             final CTTable ctTable = table.getCTTable();
             final AreaReference reference = new AreaReference(
                 table.getStartCellReference(),

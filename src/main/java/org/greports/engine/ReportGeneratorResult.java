@@ -15,20 +15,18 @@ import java.util.List;
 public class ReportGeneratorResult implements Serializable {
     private static final long serialVersionUID = 8220764494072805634L;
 
-    private final boolean loggerEnabled;
-    private transient LoggerService loggerService;
+    private final transient LoggerService loggerService;
     private final List<ReportData> reportData = new ArrayList<>();
     private final transient ReportInjector reportInjector;
     private final List<String> deleteSheets = new ArrayList<>();
 
     public ReportGeneratorResult() {
-        this(false, Level.ALL);
+        this(false, Level.ALL, new ArrayList<>(), false);
     }
 
-    public ReportGeneratorResult(boolean loggerEnabled, Level level) {
-        this.loggerEnabled = loggerEnabled;
+    public ReportGeneratorResult(boolean loggerEnabled, Level level, List<CustomFunction> functions, boolean evaluateFormulas) {
         loggerService = new LoggerService(ReportGeneratorResult.class, loggerEnabled, level);
-        reportInjector = new ReportInjector(reportData, deleteSheets, loggerEnabled);
+        reportInjector = new ReportInjector(reportData, deleteSheets, loggerEnabled, functions, evaluateFormulas);
     }
 
     protected void addData(ReportData data){
@@ -60,6 +58,14 @@ public class ReportGeneratorResult implements Serializable {
         }
         deleteSheets.add(sheetName);
         return this;
+    }
+
+    public void setEvaluateFormulas(boolean evaluateFormulas) {
+        this.reportInjector.setEvaluateFormulas(evaluateFormulas);
+    }
+
+    public void setForceFormulaRecalculation(boolean formulaRecalculation) {
+        this.reportInjector.setForceFormulaRecalculation(formulaRecalculation);
     }
 
     /**
