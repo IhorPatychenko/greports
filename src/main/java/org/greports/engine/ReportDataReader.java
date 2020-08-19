@@ -3,6 +3,7 @@ package org.greports.engine;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.ss.usermodel.CellType;
 import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.xssf.usermodel.XSSFCell;
 import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
@@ -17,6 +18,37 @@ public class ReportDataReader {
         this.workbook = workbook;
     }
 
+    public int getLastRowNum(int sheetIndex) {
+        if(sheetIndex < 0 || sheetIndex >= workbook.getNumberOfSheets()) {
+            throw new ReportEngineRuntimeException("sheetIndex cannot be lower than zeo and greater than workbook number of sheets", this.getClass());
+        }
+        return this.getLastRowNum(this.workbook.getSheetAt(sheetIndex));
+    }
+
+    public int getLastRowNum(String sheetName) {
+        final Sheet sheet = this.workbook.getSheet(sheetName);
+        if(sheet == null) {
+            throw new ReportEngineRuntimeException(String.format("The sheet with name %s does not exist", sheetName), this.getClass());
+        }
+        return this.getLastRowNum(sheet);
+    }
+
+    public int getLastRowNum(Sheet sheet) {
+        return sheet.getLastRowNum();
+    }
+
+    public Object getCellValue(int sheetIndex, int rowNumber, int cellNumber) {
+        return this.getCellValue(sheetIndex, rowNumber, cellNumber, Row.MissingCellPolicy.CREATE_NULL_AS_BLANK);
+    }
+
+    public Object getCellValue(int sheetIndex, int rowNumber, int cellNumber, Row.MissingCellPolicy missingCellPolicy) {
+        if(sheetIndex < 0 || sheetIndex >= workbook.getNumberOfSheets()) {
+            throw new ReportEngineRuntimeException("sheetIndex cannot be lower than zeo and greater than workbook number of sheets", this.getClass());
+        }
+
+        return this.getCellValue(this.workbook.getSheetAt(sheetIndex), rowNumber, cellNumber, missingCellPolicy);
+    }
+
     public Object getCellValue(String sheetName, int rowNumber, int cellNumber) {
         return this.getCellValue(sheetName, rowNumber, cellNumber, Row.MissingCellPolicy.CREATE_NULL_AS_BLANK);
     }
@@ -26,17 +58,22 @@ public class ReportDataReader {
             throw new ReportEngineRuntimeException("sheetName cannot be null.", this.getClass());
         }
 
+        final XSSFSheet sheet = this.workbook.getSheet(sheetName);
+
+        if(sheet == null) {
+            throw new ReportEngineRuntimeException(String.format("The sheet with name %s does not exist", sheetName), this.getClass());
+        }
+
+        return this.getCellValue(sheet, rowNumber, cellNumber, missingCellPolicy);
+    }
+
+    public Object getCellValue(XSSFSheet sheet, int rowNumber, int cellNumber, Row.MissingCellPolicy missingCellPolicy) {
         if(rowNumber < 0) {
             throw new ReportEngineRuntimeException("Row index cannot be lower than zero.", this.getClass());
         }
 
         if(cellNumber < 0) {
             throw new ReportEngineRuntimeException("Cell index cannot be lower than zero.", this.getClass());
-        }
-
-        final XSSFSheet sheet = this.workbook.getSheet(sheetName);
-        if(sheet == null) {
-            throw new ReportEngineRuntimeException(String.format("The sheet with name %s does not exist", sheetName), this.getClass());
         }
 
         final XSSFRow row = sheet.getRow(rowNumber);
