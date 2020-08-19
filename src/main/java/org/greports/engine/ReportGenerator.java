@@ -18,7 +18,6 @@ public class ReportGenerator {
     private final ReportSingleDataParser reportSingleDataParser;
     private final ReportGeneratorResult reportGeneratorResult;
     private final List<CustomFunction> functions = new ArrayList<>();
-//    private boolean formulaRecalculation;
 
     public ReportGenerator() {
         this(false, Level.ALL);
