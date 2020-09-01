@@ -331,13 +331,7 @@ public final class ReportDataParser extends ReportParser {
             final SpecialDataRow specialDataRow = new SpecialDataRow(specialRow.getRowIndex());
             for (final ReportSpecialRowCell specialRowCell : specialRow.getCells()) {
                 if(!specialRowCell.getValueType().equals(ValueType.COLLECTED_VALUE) && !specialRowCell.getValueType().equals(ValueType.COLLECTED_FORMULA_VALUE)) {
-                    specialDataRow.addCell(new SpecialDataCell(
-                        specialRowCell.getValueType(),
-                        specialRowCell.getValue(),
-                        specialRowCell.getFormat(),
-                        specialRowCell.getTargetId(),
-                        specialRowCell.getColumnWidth()
-                    ));
+                    specialDataRow.addCell(createSpecialDataCell(specialRowCell, specialRowCell.getValue()));
                 } else if(specialRowCell.getValueType().equals(ValueType.COLLECTED_VALUE) && CollectedValues.class.isAssignableFrom(clazz)){
                     try {
                         final T newInstance = ReflectionUtils.newInstance(clazz);
@@ -351,12 +345,7 @@ public final class ReportDataParser extends ReportParser {
                                 }
                             }
                             final Object value = ((CollectedValues) newInstance).getCollectedValuesResult(list);
-                            specialDataRow.addCell(new SpecialDataCell(
-                                specialRowCell.getValueType(),
-                                value,
-                                specialRowCell.getFormat(),
-                                specialRowCell.getTargetId()
-                            ));
+                            specialDataRow.addCell(createSpecialDataCell(specialRowCell, value));
                         }
                     } catch (ReflectiveOperationException e) {
                         throw new ReportEngineReflectionException("Error instantiating an object. The class should have an empty constructor without parameters", e, clazz);
@@ -386,6 +375,16 @@ public final class ReportDataParser extends ReportParser {
             }
             reportData.addSpecialRow(specialDataRow);
         }
+    }
+
+    private static SpecialDataCell createSpecialDataCell(ReportSpecialRowCell specialRowCell, Object value) {
+        return new SpecialDataCell(
+                specialRowCell.getValueType(),
+                value,
+                specialRowCell.getFormat(),
+                specialRowCell.getTargetId(),
+                specialRowCell.getColumnWidth()
+        );
     }
 
     private <T> void parseStyles(Class<T> clazz, List<T> collection) throws ReportEngineReflectionException {
