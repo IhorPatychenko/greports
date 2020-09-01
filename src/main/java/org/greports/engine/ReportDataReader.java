@@ -42,11 +42,15 @@ public class ReportDataReader {
     }
 
     public Object getCellValue(int sheetIndex, int rowNumber, int cellNumber, Row.MissingCellPolicy missingCellPolicy) {
+        return this.getCellValue(sheetIndex, rowNumber, cellNumber, missingCellPolicy, Object.class);
+    }
+
+    public <T> T getCellValue(int sheetIndex, int rowNumber, int cellNumber, Row.MissingCellPolicy missingCellPolicy, Class<T> bindToClass) {
         if(sheetIndex < 0 || sheetIndex >= workbook.getNumberOfSheets()) {
             throw new ReportEngineRuntimeException("sheetIndex cannot be lower than zeo and greater than workbook number of sheets", this.getClass());
         }
 
-        return this.getCellValue(this.workbook.getSheetAt(sheetIndex), rowNumber, cellNumber, missingCellPolicy);
+        return bindToClass.cast(this.getCellValue(this.workbook.getSheetAt(sheetIndex), rowNumber, cellNumber, missingCellPolicy));
     }
 
     public Object getCellValue(String sheetName, int rowNumber, int cellNumber) {
@@ -54,6 +58,10 @@ public class ReportDataReader {
     }
 
     public Object getCellValue(String sheetName, int rowNumber, int cellNumber, Row.MissingCellPolicy missingCellPolicy) {
+        return this.getCellValue(sheetName, rowNumber, cellNumber, missingCellPolicy, Object.class);
+    }
+
+    public <T> T getCellValue(String sheetName, int rowNumber, int cellNumber, Row.MissingCellPolicy missingCellPolicy, Class<T> bindToClass) {
         if(StringUtils.isEmpty(sheetName)) {
             throw new ReportEngineRuntimeException("sheetName cannot be null.", this.getClass());
         }
@@ -64,10 +72,14 @@ public class ReportDataReader {
             throw new ReportEngineRuntimeException(String.format("The sheet with name %s does not exist", sheetName), this.getClass());
         }
 
-        return this.getCellValue(sheet, rowNumber, cellNumber, missingCellPolicy);
+        return bindToClass.cast(this.getCellValue(sheet, rowNumber, cellNumber, missingCellPolicy));
     }
 
     public Object getCellValue(XSSFSheet sheet, int rowNumber, int cellNumber, Row.MissingCellPolicy missingCellPolicy) {
+        return this.getCellValue(sheet, rowNumber, cellNumber, missingCellPolicy, Object.class);
+    }
+
+    public <T> T getCellValue(XSSFSheet sheet, int rowNumber, int cellNumber, Row.MissingCellPolicy missingCellPolicy, Class<T> bindToClass) {
         if(rowNumber < 0) {
             throw new ReportEngineRuntimeException("Row index cannot be lower than zero.", this.getClass());
         }
@@ -86,7 +98,7 @@ public class ReportDataReader {
             throw new ReportEngineRuntimeException(String.format("The cell with index %d does not exist", cellNumber), this.getClass());
         }
 
-        return this.getValue(cell);
+        return bindToClass.cast(this.getValue(cell));
     }
 
     private Object getValue(XSSFCell cell) {
