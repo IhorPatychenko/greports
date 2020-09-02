@@ -201,7 +201,6 @@ public final class ReportDataParser extends ReportParser {
         }
     }
 
-
     private <T> void parseGroupColumns(final Class<T> clazz) throws ReportEngineReflectionException {
         if(GroupedColumns.class.isAssignableFrom(clazz)){
             try {
@@ -248,7 +247,7 @@ public final class ReportDataParser extends ReportParser {
                     }
                 }
 
-                if(subreportsList.size() > 0){
+                if(!subreportsList.isEmpty()){
                     float positionalIncrement = subreportPositionalIncrement;
                     final int subreportsInEveryList = subreportsList.get(0).size();
                     for (int i = 0; i < subreportsInEveryList; i++) {

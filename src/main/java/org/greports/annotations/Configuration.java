@@ -10,7 +10,7 @@ import java.lang.annotation.Target;
 public @interface Configuration {
 
     /**
-     * Defines a name of report which will be used by the org.greports.engine
+     * Defines a name of report which is used by the org.greports.engine
      * to obtain this configuration.
      *
      * @return {@link String}
@@ -59,21 +59,21 @@ public @interface Configuration {
     /**
      * The value indicates if the header needs to be created.
      *
-     * @return boolean
+     * @return {@code boolean}
      */
     boolean createHeader() default true;
 
     /**
      * The value indicates if the header needs to be sortable.
      *
-     * @return boolean
+     * @return {@code boolean}
      */
     boolean sortableHeader() default false;
 
     /**
      * Header's row index.
      *
-     * @return short
+     * @return {@code short}
      */
     short headerRowIndex() default 0;
 
@@ -81,7 +81,7 @@ public @interface Configuration {
      * Indicates on which row the data will start.
      * 0-based.
      *
-     * @return short
+     * @return {@code short}
      */
     short dataStartRowIndex() default 1;
 
@@ -96,21 +96,57 @@ public @interface Configuration {
      * Indicates if the configuration to be parsed need to be injected
      * into existing sheet using {@link org.greports.engine.TemplateDataInjector}
      *
-     * @return boolean
+     * @return {@code boolean}
      */
     boolean templatedInject() default false;
 
     /**
+     * Vertical offset. When greater then zero, indicated quantity of rows
+     * will be skipped counting from first row (0 index). Applies as global offset.
+     * {@code headerRowIndex}, {@code dataStartRowIndex} and {@code specialRows}
+     * will consider the offset value.
+     * <br/>
+     * Example: (All row indexes are 0-based)
+     * <pre>
+     *     verticalOffset = 0, headerRowIndex = 1 => header starts at row 1
+     *     verticalOffset = 1, headerRowIndex = 1 => header starts at row 2
+     *     verticalOffset = 4, headerRowIndex = 0 => header starts at row 4
+     *     verticalOffset = 4, headerRowIndex = 2 => header starts at row 6
+     * </pre>
+     *
+     * @return {@code short}
+     */
+    short verticalOffset() default 0;
+
+    /**
+     * Horizontal offset. When greater then zero, indicated quantity of columns
+     * will be skipped counting from first column (0 index). Applies as global offset.
+     * {@code headerRowIndex}, {@code dataStartRowIndex} and {@code specialRows}
+     * will consider the offset value.
+     * <br/>
+     * Example: (All column indexes are 0-based)
+     * <pre>
+     *     horizontalOffset = 0, headerRowIndex = 1 => header starts at column 0 (A)
+     *     horizontalOffset = 1, headerRowIndex = 1 => header starts at column 1 (B)
+     *     horizontalOffset = 4, headerRowIndex = 0 => header starts at column 4 (E)
+     *     horizontalOffset = 4, headerRowIndex = 2 => header starts at column 4 (E)
+     * </pre>
+     *
+     * @return {@code short}
+     */
+    short horizontalOffset() default 0;
+
+    /**
      * An array of {@link SpecialRow}
      *
-     * @return an array of {@link SpecialRow}
+     * @return {@code SpecialRow[]}
      */
     SpecialRow[] specialRows() default {};
 
     /**
      * An array of {@link SpecialColumn}
      *
-     * @return an array of {@link SpecialColumn}
+     * @return {@code SpecialColumn[]}
      */
     SpecialColumn[] specialColumns() default {};
 }

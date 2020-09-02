@@ -120,11 +120,17 @@ class RawDataInjector extends DataInjector {
     private void createHeader(Sheet sheet) {
         if(data.isCreateHeader()) {
             final ReportHeader header = data.getHeader();
-            final Row headerRow = sheet.createRow(header.getRowIndex());
+            final Row headerRow = sheet.createRow(header.getRowIndex() + data.getConfiguration().getVerticalOffset());
             int mergeCount = 0;
             for (int i = 0; i < header.getCells().size(); i++) {
                 final HeaderCell headerCell = header.getCells().get(i);
-                createHeaderCell(sheet, headerRow, headerCell, i + mergeCount, headerCell.getColumnWidth());
+                createHeaderCell(
+                    sheet,
+                    headerRow,
+                    headerCell,
+                    i + mergeCount + data.getConfiguration().getHorizontalOffset(),
+                    headerCell.getColumnWidth()
+                );
                 if(headerCell.getColumnWidth() > 1) {
                     mergeCount += headerCell.getColumnWidth() - 1;
                 }
@@ -146,12 +152,19 @@ class RawDataInjector extends DataInjector {
     private void createDataCells(Sheet sheet) {
         for (int i = 0; i < data.getDataRows().size(); i++) {
             final DataRow dataRow = data.getDataRow(i);
-            final Row row = sheet.createRow(data.getDataStartRow() + i);
+            final Row row = sheet.createRow(data.getDataStartRow() + data.getConfiguration().getVerticalOffset() + i);
             int mergedCellsCount = 0;
             for (int y = 0; y < dataRow.getCells().size(); y++) {
                 final DataCell dataCell = dataRow.getCell(y);
                 if(!dataCell.getValueType().equals(ValueType.FORMULA) && !dataCell.getValueType().equals(ValueType.TEMPLATED_FORMULA)) {
-                    createCell(sheet, row, dataCell, dataCell.isPhysicalPosition() ? dataCell.getPosition().intValue() : y + mergedCellsCount);
+                    createCell(
+                            sheet,
+                            row,
+                            dataCell,
+                            dataCell.isPhysicalPosition()
+                                    ? dataCell.getPosition().intValue()
+                                    : mergedCellsCount + data.getConfiguration().getHorizontalOffset() + y
+                    );
                     if(dataCell.getColumnWidth() > 1) {
                         mergedCellsCount += dataCell.getColumnWidth() - 1;
                     }
@@ -163,12 +176,19 @@ class RawDataInjector extends DataInjector {
     private void createFormulaCells(Sheet sheet) {
         for (int i = 0; i < data.getDataRows().size(); i++) {
             final DataRow dataRow = data.getDataRow(i);
-            final Row row = sheet.getRow(data.getDataStartRow() + i);
+            final Row row = sheet.getRow(data.getDataStartRow() + data.getConfiguration().getVerticalOffset() + i);
             int mergedCellsCount = 0;
             for (int y = 0; y < dataRow.getCells().size(); y++) {
                 final DataCell dataCell = dataRow.getCell(y);
                 if(dataCell.getValueType().equals(ValueType.FORMULA)) {
-                    createCell(sheet, row, dataCell, dataCell.isPhysicalPosition() ? dataCell.getPosition().intValue() : y + mergedCellsCount);
+                    createCell(
+                            sheet,
+                            row,
+                            dataCell,
+                            dataCell.isPhysicalPosition()
+                                    ? dataCell.getPosition().intValue()
+                                    : mergedCellsCount + data.getConfiguration().getHorizontalOffset() + y
+                    );
                     if(dataCell.getColumnWidth() > 1) {
                         mergedCellsCount += dataCell.getColumnWidth() - 1;
                     }
@@ -226,12 +246,12 @@ class RawDataInjector extends DataInjector {
                 specialRow.setRowIndex(data.getDataStartRow() + data.getRowsCount() + i);
             }
             for (final SpecialDataCell specialCell : specialRow.getCells()) {
-                Row row = sheet.getRow(specialRow.getRowIndex());
+                Row row = sheet.getRow(specialRow.getRowIndex() + data.getConfiguration().getVerticalOffset());
                 if(row == null) {
-                    row = sheet.createRow(specialRow.getRowIndex());
+                    row = sheet.createRow(specialRow.getRowIndex() + data.getConfiguration().getVerticalOffset());
                 }
                 final Integer columnIndexForTarget = data.getColumnIndexForId(specialCell.getTargetId());
-                Cell cell = row.createCell(columnIndexForTarget);
+                Cell cell = row.createCell(columnIndexForTarget + data.getConfiguration().getVerticalOffset());
                 createColumnsToMerge(sheet, row, columnIndexForTarget, specialCell.getColumnWidth());
                 final ValueType valueType = specialCell.getValueType();
                 if(!ValueType.FORMULA.equals(valueType) &&
@@ -243,8 +263,14 @@ class RawDataInjector extends DataInjector {
                     if(ValueType.FORMULA.equals(valueType)){
                         if(sheet.getLastRowNum() > data.getDataStartRow()) {
                             for (Map.Entry<String, Integer> entry : data.getTargetIndexes().entrySet()) {
-                                CellReference firstCellReference = super.getCellReferenceForTargetId(sheet.getRow(data.getDataStartRow()), specialCell.getTargetId());
-                                CellReference lastCellReference = super.getCellReferenceForTargetId(sheet.getRow(data.getDataStartRow() + data.getRowsCount() - 1), specialCell.getTargetId());
+                                CellReference firstCellReference = super.getCellReferenceForTargetId(
+                                        sheet.getRow(data.getDataStartRow() + data.getConfiguration().getVerticalOffset()),
+                                        specialCell.getTargetId()
+                                );
+                                CellReference lastCellReference = super.getCellReferenceForTargetId(
+                                        sheet.getRow(data.getDataStartRow() + data.getRowsCount() + data.getConfiguration().getVerticalOffset() - 1),
+                                        specialCell.getTargetId()
+                                );
                                 formulaString = formulaString.replaceAll(entry.getKey(), firstCellReference.formatAsString() + ":" + lastCellReference.formatAsString());
                             }
                         }
@@ -259,7 +285,10 @@ class RawDataInjector extends DataInjector {
                                 List<Integer> rowIndexes = entry.getValue();
                                 List<String> cellReferences = new ArrayList<>();
                                 for(final Integer rowIndex : rowIndexes) {
-                                    CellReference cellReference = super.getCellReferenceForTargetId(sheet.getRow(data.getDataStartRow() + rowIndex), specialCell.getTargetId());
+                                    CellReference cellReference = super.getCellReferenceForTargetId(
+                                            sheet.getRow(data.getDataStartRow() + rowIndex + data.getConfiguration().getVerticalOffset()),
+                                            specialCell.getTargetId()
+                                    );
                                     cellReferences.add(cellReference.formatAsString() + ":" + cellReference.formatAsString());
                                 }
                                 String joinedReferences = String.join(",", cellReferences);
@@ -277,18 +306,21 @@ class RawDataInjector extends DataInjector {
     private void createRowsGroups(final Sheet sheet) {
         List<Pair<Integer, Integer>> groupedRows = data.getGroupedRows();
         for(final Pair<Integer, Integer> groupedRow : groupedRows) {
-            int startGroup = data.getDataStartRow() + groupedRow.getLeft();
-            int endGroup = data.getDataStartRow() + groupedRow.getRight();
+            int startGroup = data.getDataStartRow() + groupedRow.getLeft() + data.getConfiguration().getDataStartRowIndex();
+            int endGroup = data.getDataStartRow() + groupedRow.getRight()  + data.getConfiguration().getDataStartRowIndex();
             sheet.groupRow(startGroup, endGroup);
-            sheet.setRowGroupCollapsed(startGroup, data.isGroupedRowsDefaultCollapsed());
+            sheet.setRowGroupCollapsed(startGroup, data.isGroupedRowsDefaultCollapsed()
+            );
         }
     }
 
     private void createColumnsGroups(final Sheet sheet) {
         final List<Pair<Integer, Integer>> groupedColumns = data.getGroupedColumns();
         for(final Pair<Integer, Integer> groupedColumn : groupedColumns) {
-            sheet.groupColumn(groupedColumn.getLeft(), groupedColumn.getRight());
-            sheet.setColumnGroupCollapsed(groupedColumn.getLeft(), data.isGroupedColumnsDefaultCollapsed());
+            final int left = groupedColumn.getLeft() + data.getConfiguration().getHorizontalOffset();
+            final int right = groupedColumn.getRight() + data.getConfiguration().getHorizontalOffset();
+            sheet.groupColumn(left, right);
+            sheet.setColumnGroupCollapsed(left, data.isGroupedColumnsDefaultCollapsed());
         }
     }
 
@@ -296,7 +328,7 @@ class RawDataInjector extends DataInjector {
         final StripedRows.StripedRowsIndex stripedRowsIndex = data.getStyles().getStripedRowsIndex();
         final Color stripedRowsColor = data.getStyles().getStripedRowsColor();
         if(stripedRowsIndex != null && stripedRowsColor != null) {
-            for (int i = stripedRowsIndex.getIndex(); i <= sheet.getLastRowNum(); i += 2) {
+            for (int i = stripedRowsIndex.getIndex() + data.getConfiguration().getVerticalOffset(); i <= sheet.getLastRowNum() + data.getConfiguration().getVerticalOffset(); i += 2) {
                 final Row row = sheet.getRow(i);
                 for (int y = row.getFirstCellNum(); y < row.getLastCellNum(); y++) {
                     final Cell cell = row.getCell(y);
@@ -332,10 +364,10 @@ class RawDataInjector extends DataInjector {
         for (VerticalRangedStyle style : styles) {
             final VerticalRange range = style.getRange();
             checkRange(range, sheet);
-            for (int i = range.getStart(); i <= range.getEnd(); i++) {
+            for (int i = range.getStart() + data.getConfiguration().getVerticalOffset(); i <= range.getEnd() + data.getConfiguration().getVerticalOffset(); i++) {
                 final Row row = sheet.getRow(i);
                 if(row != null) {
-                    for (int y = 0; y < row.getLastCellNum(); y++) {
+                    for (int y = data.getConfiguration().getHorizontalOffset(); y < row.getLastCellNum() + data.getConfiguration().getHorizontalOffset(); y++) {
                         cellApplyStyles(row.getCell(y), style);
                     }
                     if(style.getRowHeight() != null) {
@@ -349,18 +381,18 @@ class RawDataInjector extends DataInjector {
     private void applyColumnStyles(Sheet sheet, HorizontalRangedStylesBuilder columnStyles, ReportData reportData) {
         final Collection<HorizontalRangedStyle> styles = columnStyles.getStyles();
         for (HorizontalRangedStyle style : styles) {
-            for (int i = 0; i <= sheet.getLastRowNum(); i++) {
+            for (int i = data.getConfiguration().getVerticalOffset(); i <= sheet.getLastRowNum() + data.getConfiguration().getVerticalOffset(); i++) {
                 final Row row = sheet.getRow(i);
                 if(row != null) {
                     final HorizontalRange range = style.getRange();
                     checkRange(range, reportData);
-                    for (int y = range.getStart(); y <= range.getEnd(); y++) {
+                    for (int y = range.getStart() + data.getConfiguration().getHorizontalOffset(); y <= range.getEnd() + data.getConfiguration().getHorizontalOffset(); y++) {
                         cellApplyStyles(row.getCell(y), style);
                     }
                 }
             }
             if(style.getColumnWidth() != null) {
-                for (int i = style.getRange().getStart(); i <= style.getRange().getEnd(); i++) {
+                for (int i = style.getRange().getStart() + data.getConfiguration().getHorizontalOffset(); i <= style.getRange().getEnd() + data.getConfiguration().getHorizontalOffset(); i++) {
                     sheet.setColumnWidth(i, style.getColumnWidth() * 256);
                 }
             }
@@ -371,11 +403,10 @@ class RawDataInjector extends DataInjector {
         final Collection<PositionedStyle> styles = positionedStyles.getStyles();
         for (PositionedStyle style : styles) {
             checkPosition(style.getRange(), sheet, reportData);
-            final Row row = sheet.getRow(style.getRange().getRow());
-            if(row != null && row.getCell(style.getRange().getColumn()) != null) {
-                cellApplyStyles(row.getCell(style.getRange().getColumn()), style);
+            final Row row = sheet.getRow(style.getRange().getRow() + data.getConfiguration().getVerticalOffset());
+            if(row != null && row.getCell(style.getRange().getColumn() + data.getConfiguration().getHorizontalOffset()) != null) {
+                cellApplyStyles(row.getCell(style.getRange().getColumn() + data.getConfiguration().getHorizontalOffset()), style);
             }
-
         }
     }
 
@@ -387,10 +418,10 @@ class RawDataInjector extends DataInjector {
             checkRange(verticalRange, sheet);
             final HorizontalRange horizontalRange = range.getHorizontalRange();
             checkRange(horizontalRange, reportData);
-            for (int i = verticalRange.getStart(); i <= verticalRange.getEnd(); i++) {
+            for (int i = verticalRange.getStart() + data.getConfiguration().getVerticalOffset(); i <= verticalRange.getEnd() + data.getConfiguration().getVerticalOffset(); i++) {
                 final Row row = sheet.getRow(i);
                 if(row != null){
-                    for (int y = horizontalRange.getStart(); y <= horizontalRange.getEnd(); y++) {
+                    for (int y = horizontalRange.getStart() + data.getConfiguration().getHorizontalOffset(); y <= horizontalRange.getEnd() + data.getConfiguration().getHorizontalOffset(); y++) {
                         cellApplyStyles(row.getCell(y), rangedStyle);
                     }
                 }

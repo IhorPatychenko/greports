@@ -1,6 +1,5 @@
 package org.greports.engine;
 
-import org.greports.annotations.Configuration;
 import org.greports.content.ReportHeader;
 import org.greports.content.cell.DataCell;
 import org.greports.content.cell.HeaderCell;
@@ -47,10 +46,6 @@ public class ReportData implements Cloneable, Serializable {
         this.reportName = reportName;
         this.configuration = configuration;
         this.templateURL = !configuration.getTemplatePath().equals("") ? getClass().getClassLoader().getResource(configuration.getTemplatePath()) : null;
-    }
-
-    ReportData(final String reportName, final Configuration configuration) {
-        this(reportName, new ReportConfiguration(configuration));
     }
 
     public boolean isReportWithTemplate(){
