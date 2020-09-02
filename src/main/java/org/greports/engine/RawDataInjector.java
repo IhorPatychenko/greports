@@ -251,7 +251,7 @@ class RawDataInjector extends DataInjector {
                     row = sheet.createRow(specialRow.getRowIndex() + data.getConfiguration().getVerticalOffset());
                 }
                 final Integer columnIndexForTarget = data.getColumnIndexForId(specialCell.getTargetId());
-                Cell cell = row.createCell(columnIndexForTarget + data.getConfiguration().getVerticalOffset());
+                Cell cell = row.createCell(columnIndexForTarget + data.getConfiguration().getHorizontalOffset());
                 createColumnsToMerge(sheet, row, columnIndexForTarget, specialCell.getColumnWidth());
                 final ValueType valueType = specialCell.getValueType();
                 if(!ValueType.FORMULA.equals(valueType) &&
