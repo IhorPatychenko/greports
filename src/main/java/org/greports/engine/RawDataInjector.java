@@ -13,7 +13,6 @@ import org.apache.poi.ss.util.CellReference;
 import org.apache.poi.xssf.usermodel.XSSFCellStyle;
 import org.apache.poi.xssf.usermodel.XSSFColor;
 import org.apache.poi.xssf.usermodel.XSSFFont;
-import org.apache.poi.xssf.usermodel.XSSFFormulaEvaluator;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.apache.poi.xssf.usermodel.extensions.XSSFCellBorder;
 import org.greports.content.ReportHeader;
@@ -273,7 +272,6 @@ class RawDataInjector extends DataInjector {
                 setCellFormat(cell, specialCell.getFormat());
             }
         }
-        XSSFFormulaEvaluator.evaluateAllFormulaCells(currentWorkbook);
     }
 
     private void createRowsGroups(final Sheet sheet) {

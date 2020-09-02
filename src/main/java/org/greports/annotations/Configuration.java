@@ -59,21 +59,21 @@ public @interface Configuration {
     /**
      * The value indicates if the header needs to be created.
      *
-     * @return {@link boolean}
+     * @return boolean
      */
     boolean createHeader() default true;
 
     /**
      * The value indicates if the header needs to be sortable.
      *
-     * @return {@link boolean}
+     * @return boolean
      */
     boolean sortableHeader() default false;
 
     /**
      * Header's row index.
      *
-     * @return {@link short}
+     * @return short
      */
     short headerRowIndex() default 0;
 

@@ -5,17 +5,19 @@ import org.greports.exceptions.ReportEngineReflectionException;
 import org.greports.exceptions.ReportEngineRuntimeException;
 import org.greports.utils.Pair;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public class ReportGenerator {
 
-    private final static Map<Pair<Class<?>, String>, ReportConfigurator> _configurators = new HashMap<>();
+    private static final Map<Pair<Class<?>, String>, ReportConfigurator> _configurators = new HashMap<>();
 
     private final ReportDataParser reportDataParser;
     private final ReportSingleDataParser reportSingleDataParser;
     private final ReportGeneratorResult reportGeneratorResult;
+    private final List<CustomFunction> functions = new ArrayList<>();
 
     public ReportGenerator() {
         this(false, Level.ALL);
@@ -24,7 +26,7 @@ public class ReportGenerator {
     public ReportGenerator(boolean loggerEnabled, Level level) {
         reportDataParser = new ReportDataParser(loggerEnabled, level);
         reportSingleDataParser = new ReportSingleDataParser(loggerEnabled, level);
-        reportGeneratorResult = new ReportGeneratorResult(loggerEnabled, level);
+        reportGeneratorResult = new ReportGeneratorResult(loggerEnabled, level, this.functions, false);
     }
 
     public <T> ReportGenerator parse(final List<T> collection, final String reportName, Class<T> clazz) throws ReportEngineReflectionException {
@@ -44,6 +46,21 @@ public class ReportGenerator {
             throw new ReportEngineRuntimeException("reportData cannot be null", this.getClass());
         }
         reportGeneratorResult.addData(reportData);
+        return this;
+    }
+
+    public ReportGenerator registerFunction(CustomFunction function) {
+        functions.add(function);
+        return this;
+    }
+
+    public ReportGenerator setEvaluateFormulas(boolean evaluateFormulas) {
+        this.reportGeneratorResult.setEvaluateFormulas(evaluateFormulas);
+        return this;
+    }
+
+    public ReportGenerator setForceFormulaRecalculation(boolean formulaRecalculation) {
+        this.reportGeneratorResult.setForceFormulaRecalculation(formulaRecalculation);
         return this;
     }
 

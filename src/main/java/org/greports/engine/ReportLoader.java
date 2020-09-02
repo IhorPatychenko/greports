@@ -5,21 +5,15 @@ import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellType;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.greports.annotations.CellValidator;
-import org.greports.annotations.ColumnValidator;
 import org.greports.exceptions.ReportEngineReflectionException;
+import org.greports.exceptions.ReportEngineRuntimeException;
 import org.greports.exceptions.ReportEngineValidationException;
-import org.greports.positioning.TranslationsParser;
 import org.greports.utils.AnnotationUtils;
 import org.greports.utils.ConverterUtils;
 import org.greports.utils.ReflectionUtils;
-import org.greports.utils.Translator;
-import org.greports.validators.AbstractCellValidator;
-import org.greports.validators.AbstractColumnValidator;
-import org.greports.validators.AbstractValidator;
-import org.greports.validators.ValidatorFactory;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -42,26 +36,40 @@ public class ReportLoader {
     }
 
     private final String reportName;
-    private final Workbook currentWorkbook;
+    private final XSSFWorkbook currentWorkbook;
     private final ReportLoaderResult loaderResult;
-    private Translator translator;
+    private ReportLoaderValidator validator;
+    private final ReportDataReader reader;
 
-    public ReportLoader(String reportName, String filePath) throws IOException, InvalidFormatException {
-        this(reportName, new File(filePath));
+    public ReportLoader(String filePath) throws IOException, InvalidFormatException {
+        this(new File(filePath), null);
     }
 
-    public ReportLoader(String reportName, File file) throws IOException, InvalidFormatException {
-        this(reportName, new FileInputStream(file));
+    public ReportLoader(String filePath, String reportName) throws IOException, InvalidFormatException {
+        this(new File(filePath), reportName);
     }
 
-    public ReportLoader(String reportName, InputStream inputStream) throws IOException, InvalidFormatException {
-        this(reportName, WorkbookFactory.create(inputStream));
+    public ReportLoader(File file) throws IOException, InvalidFormatException {
+        this(new FileInputStream(file), null);
     }
 
-    private ReportLoader(String reportName, Workbook workbook) {
+    public ReportLoader(File file, String reportName) throws IOException, InvalidFormatException {
+        this(new FileInputStream(file), reportName);
+    }
+
+    public ReportLoader(InputStream inputStream) throws IOException, InvalidFormatException {
+        this((XSSFWorkbook) WorkbookFactory.create(inputStream), null);
+    }
+
+    public ReportLoader(InputStream inputStream, String reportName) throws IOException, InvalidFormatException {
+        this((XSSFWorkbook) WorkbookFactory.create(inputStream), reportName);
+    }
+
+    private ReportLoader(XSSFWorkbook workbook, String reportName) {
         this.reportName = reportName;
         this.currentWorkbook = workbook;
         this.loaderResult = new ReportLoaderResult();
+        this.reader = new ReportDataReader(this.currentWorkbook);
     }
 
     public <T> ReportLoader bindForClass(Class<T> clazz) throws ReportEngineReflectionException {
@@ -69,9 +77,11 @@ public class ReportLoader {
     }
 
     public <T> ReportLoader bindForClass(Class<T> clazz, ReportLoaderErrorTreatment treatment) throws ReportEngineReflectionException {
+        if(reportName == null) {
+            throw new ReportEngineRuntimeException("reportName cannot be null", this.getClass());
+        }
         ReportConfiguration configuration = ReportConfigurationLoader.load(clazz, reportName);
-        final Map<String, Object> translations = new TranslationsParser(configuration).getTranslations();
-        translator = new Translator(translations);
+        this.validator = new ReportLoaderValidator(configuration);
         final ReportBlock reportBlock = new ReportBlock(clazz, reportName, null);
         loadBlocks(reportBlock);
         reportBlock
@@ -153,7 +163,7 @@ public class ReportLoader {
                     }
                 } else if (block.isColumn()) {
                     try {
-                        checkColumnValidations(block.getValues(), block.getColumnValidators());
+                        validator.checkColumnValidations(block.getValues(), block.getColumnValidators());
                     } catch (ReportEngineValidationException e) {
                         loaderResult.addError(clazz, sheet.getSheetName(), e.getRowIndex() + configuration.getDataStartRowIndex(), block.getStartColumn(), block.getAsColumn().title(), e.getMessage(), (Serializable) e.getErrorValue());
                     }
@@ -169,12 +179,10 @@ public class ReportLoader {
         return list;
     }
 
-
-
     private void instanceSetValue(final Method method, final Object instance, final Object value, final List<CellValidator> cellValidators) throws ReportEngineReflectionException, ReportEngineValidationException {
         try {
             method.setAccessible(true);
-            checkCellValidations(value, cellValidators);
+            validator.checkCellValidations(value, cellValidators);
             method.invoke(instance, value);
         } catch (IllegalAccessException | InvocationTargetException e) {
             throw new ReportEngineReflectionException("Error executing method witch does not have access to the definition of the specified class", e, method.getDeclaringClass());
@@ -209,41 +217,8 @@ public class ReportLoader {
         return null;
     }
 
-    private void checkColumnValidations(final List<Object> values, final List<ColumnValidator> columnValidators) {
-        for (final ColumnValidator columnValidator : columnValidators) {
-            try {
-                AbstractValidator validatorInstance = ValidatorFactory.get(columnValidator.validatorClass(), columnValidator.param());
-                validateColumn((AbstractColumnValidator) validatorInstance, values, columnValidator.errorMessage());
-            } catch (ReflectiveOperationException e) {
-                throw new ReportEngineValidationException("Error instantiating a validator @" + columnValidator.validatorClass().getSimpleName(), columnValidator.validatorClass());
-            }
-        }
-    }
-
-    private void checkCellValidations(final Object value, final List<CellValidator> cellValidators) throws ReportEngineReflectionException {
-        for (final CellValidator cellValidator : cellValidators) {
-            try {
-                AbstractValidator validatorInstance = ValidatorFactory.get(cellValidator.validatorClass(), cellValidator.value());
-                validateCell((AbstractCellValidator) validatorInstance, value, cellValidator.errorMessage());
-            } catch (ReflectiveOperationException e) {
-                throw new ReportEngineReflectionException("Error instantiating a validator @" + cellValidator.validatorClass().getSimpleName(), e, cellValidator.validatorClass());
-            }
-        }
-    }
-
-    private void validateColumn(final AbstractColumnValidator validatorInstance, final List<Object> values, final String errorMessageKey) {
-        if (!validatorInstance.isValid(values)) {
-            String errorMessage = translator.translate(errorMessageKey, validatorInstance.getValidatorValue());
-            final Integer errorRowIndex = validatorInstance.getErrorRowIndex(values);
-            throw new ReportEngineValidationException(errorMessage, validatorInstance.getClass(), errorRowIndex, (Serializable) validatorInstance.getErrorValue());
-        }
-    }
-
-    private void validateCell(final AbstractCellValidator validatorInstance, final Object value, final String errorMessageKey) throws ReportEngineValidationException {
-        if (!validatorInstance.isValid(value)) {
-            String errorMessage = translator.translate(errorMessageKey, validatorInstance.getValidatorValue());
-            throw new ReportEngineValidationException(errorMessage, validatorInstance.getClass());
-        }
+    public ReportDataReader getReader() {
+        return reader;
     }
 
     public ReportLoaderResult getLoaderResult() {
