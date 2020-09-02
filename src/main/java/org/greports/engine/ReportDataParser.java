@@ -343,8 +343,8 @@ public final class ReportDataParser extends ReportParser {
                                     list.add(values.getCollectedValue().get(pair));
                                 }
                             }
-                            final Object value = ((CollectedValues) newInstance).getCollectedValuesResult(list);
-                            specialDataRow.addCell(createSpecialDataCell(specialRowCell, value));
+                            final Map<Pair<String, String>, Object> value = ((CollectedValues) newInstance).getCollectedValuesResult(list);
+                            specialDataRow.addCell(createSpecialDataCell(specialRowCell, value.get(pair)));
                         }
                     } catch (ReflectiveOperationException e) {
                         throw new ReportEngineReflectionException("Error instantiating an object. The class should have an empty constructor without parameters", e, clazz);
