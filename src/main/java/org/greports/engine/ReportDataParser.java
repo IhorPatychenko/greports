@@ -43,6 +43,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
+import java.util.function.IntPredicate;
 import java.util.function.Predicate;
 
 public final class ReportDataParser extends ReportParser {
@@ -401,9 +402,9 @@ public final class ReportDataParser extends ReportParser {
                     final T entry = list.get(i);
                     if(newInstance instanceof ConditionalRowStyles) {
                         final ConditionalRowStyles conditionalRowStyles = (ConditionalRowStyles) entry;
-                        final Optional<Map<String, Predicate<Integer>>> styledOptional = Optional.ofNullable(conditionalRowStyles.isStyled());
+                        final Optional<Map<String, IntPredicate>> styledOptional = Optional.ofNullable(conditionalRowStyles.isStyled());
                         final List<HorizontalRangedStyleBuilder> horizontalRangedStyleBuilders = conditionalRowStyles.getIndexBasedStyle().getOrDefault(reportData.getReportName(), new ArrayList<>());
-                        final Predicate<Integer> predicate = styledOptional
+                        final IntPredicate predicate = styledOptional
                                 .orElseThrow(() -> new ReportEngineRuntimeException("The returned map cannot be null", this.getClass()))
                                 .getOrDefault(reportData.getReportName(), null);
                         if(predicate != null && predicate.test(i)) {

@@ -261,22 +261,7 @@ class RawDataInjector extends DataInjector {
                 } else {
                     String formulaString = specialCell.getValue().toString();
                     if(ValueType.FORMULA.equals(valueType)){
-                        if(sheet.getLastRowNum() > data.getDataStartRow()) {
-                            for (Map.Entry<String, Integer> entry : data.getTargetIndexes().entrySet()) {
-                                CellReference firstCellReference = super.getCellReferenceForTargetId(
-                                        sheet.getRow(data.getDataStartRow() + data.getConfiguration().getVerticalOffset()),
-                                        specialCell.getTargetId()
-                                );
-                                CellReference lastCellReference = super.getCellReferenceForTargetId(
-                                        sheet.getRow(data.getDataStartRow() + data.getRowsCount() + data.getConfiguration().getVerticalOffset() - 1),
-                                        specialCell.getTargetId()
-                                );
-                                formulaString = formulaString.replaceAll(entry.getKey(), firstCellReference.formatAsString() + ":" + lastCellReference.formatAsString());
-                            }
-                        }
-                        if(sheet.getLastRowNum() > data.getDataStartRow()) {
-                            cell.setCellFormula(formulaString);
-                        }
+                        createSpecialFormulaCell(sheet, specialCell, cell, formulaString);
                     } else {
                         Map<String, List<Integer>> extraData = (Map<String, List<Integer>>) specialCell.getExtraData();
                         if(extraData != null) {
@@ -300,6 +285,25 @@ class RawDataInjector extends DataInjector {
                 }
                 setCellFormat(cell, specialCell.getFormat());
             }
+        }
+    }
+
+    private void createSpecialFormulaCell(Sheet sheet, SpecialDataCell specialCell, Cell cell, String formulaString) {
+        if(sheet.getLastRowNum() > data.getDataStartRow()) {
+            for (Map.Entry<String, Integer> entry : data.getTargetIndexes().entrySet()) {
+                CellReference firstCellReference = super.getCellReferenceForTargetId(
+                        sheet.getRow(data.getDataStartRow() + data.getConfiguration().getVerticalOffset()),
+                        specialCell.getTargetId()
+                );
+                CellReference lastCellReference = super.getCellReferenceForTargetId(
+                        sheet.getRow(data.getDataStartRow() + data.getRowsCount() + data.getConfiguration().getVerticalOffset() - 1),
+                        specialCell.getTargetId()
+                );
+                formulaString = formulaString.replaceAll(entry.getKey(), firstCellReference.formatAsString() + ":" + lastCellReference.formatAsString());
+            }
+        }
+        if(sheet.getLastRowNum() > data.getDataStartRow()) {
+            cell.setCellFormula(formulaString);
         }
     }
 

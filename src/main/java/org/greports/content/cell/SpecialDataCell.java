@@ -2,7 +2,7 @@ package org.greports.content.cell;
 
 import org.greports.engine.ValueType;
 
-public class SpecialDataCell extends AbstractReportCell implements ReportCell, Cloneable {
+public class SpecialDataCell extends AbstractReportCell implements ReportCell {
     private final ValueType valueType;
     private final String targetId;
     private final int columnWidth;
