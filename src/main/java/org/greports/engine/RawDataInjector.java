@@ -240,27 +240,35 @@ class RawDataInjector extends DataInjector {
 
     private void createSpecialRows(Sheet sheet) {
         final List<SpecialDataRow> specialRows = data.getSpecialRows();
-        for (int i = 0; i < specialRows.size(); i++) {
-            SpecialDataRow specialRow = specialRows.get(i);
+        int countBottomRows = 0;
+        for(SpecialDataRow specialRow : specialRows) {
             if(specialRow.getRowIndex() == Integer.MAX_VALUE) {
-                specialRow.setRowIndex(data.getDataStartRow() + data.getRowsCount() + i);
+                specialRow.setRowIndex(
+                        data.getConfiguration().getVerticalOffset() +
+                        data.getDataStartRow() +
+                        data.getRowsCount() +
+                        countBottomRows
+                );
+                countBottomRows++;
+            } else {
+                specialRow.setRowIndex(specialRow.getRowIndex() + data.getConfiguration().getVerticalOffset());
             }
-            for (final SpecialDataCell specialCell : specialRow.getCells()) {
-                Row row = sheet.getRow(specialRow.getRowIndex() + data.getConfiguration().getVerticalOffset());
+            for(final SpecialDataCell specialCell : specialRow.getCells()) {
+                Row row = sheet.getRow(specialRow.getRowIndex());
                 if(row == null) {
-                    row = sheet.createRow(specialRow.getRowIndex() + data.getConfiguration().getVerticalOffset());
+                    row = sheet.createRow(specialRow.getRowIndex());
                 }
-                final Integer columnIndexForTarget = data.getColumnIndexForId(specialCell.getTargetId());
-                Cell cell = row.createCell(columnIndexForTarget + data.getConfiguration().getHorizontalOffset());
+                final Integer columnIndexForTarget = data.getColumnIndexForId(specialCell.getTargetId()) + data.getConfiguration().getHorizontalOffset();
+                Cell cell = row.createCell(columnIndexForTarget);
                 createColumnsToMerge(sheet, row, columnIndexForTarget, specialCell.getColumnWidth());
                 final ValueType valueType = specialCell.getValueType();
                 if(!ValueType.FORMULA.equals(valueType) &&
-                    !ValueType.COLLECTED_FORMULA_VALUE.equals(valueType) &&
-                    !ValueType.TEMPLATED_FORMULA.equals(valueType)) {
+                        !ValueType.COLLECTED_FORMULA_VALUE.equals(valueType) &&
+                        !ValueType.TEMPLATED_FORMULA.equals(valueType)) {
                     WorkbookUtils.setCellValue(cell, specialCell.getValue());
                 } else {
                     String formulaString = specialCell.getValue().toString();
-                    if(ValueType.FORMULA.equals(valueType)){
+                    if(ValueType.FORMULA.equals(valueType)) {
                         createSpecialFormulaCell(sheet, specialCell, cell, formulaString);
                     } else {
                         Map<String, List<Integer>> extraData = (Map<String, List<Integer>>) specialCell.getExtraData();
