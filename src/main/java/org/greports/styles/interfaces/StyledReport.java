@@ -14,7 +14,7 @@ public interface StyledReport {
      *
      * @return Map<String, VerticalRangedStylesBuilder> getRangedRowStyles();
      */
-    Map<String, VerticalRangedStylesBuilder> getRangedRowStyles();
+    Map<String, VerticalRangedStylesBuilder> getRangedRowStyles(int rowsCount);
     /**
      * Method returns a map containing report names as keys and {@link HorizontalRangedStylesBuilder} as values
      * used to apply generated styles to specified columns range
@@ -35,5 +35,5 @@ public interface StyledReport {
      *
      * @return Map<String, RectangleRangedStylesBuilder> getRectangleRangedStyles();
      */
-    Map<String, RectangleRangedStylesBuilder> getRectangleRangedStyles();
+    Map<String, RectangleRangedStylesBuilder> getRectangleRangedStyles(int rowsCount);
 }

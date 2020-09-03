@@ -14,8 +14,8 @@ public abstract class ReportParser {
             final ReportDataStyles reportDataStyles = reportData.getStyles();
             if(newInstance instanceof StyledReport){
                 final StyledReport instance = (StyledReport) newInstance;
-                if(instance.getRangedRowStyles() != null){
-                    reportDataStyles.setRowStyles(instance.getRangedRowStyles().getOrDefault(reportData.getReportName(), null));
+                if(instance.getRangedRowStyles(reportData.getRowsCount()) != null){
+                    reportDataStyles.setRowStyles(instance.getRangedRowStyles(reportData.getRowsCount()).getOrDefault(reportData.getReportName(), null));
                 }
                 if(instance.getRangedColumnStyles() != null){
                     reportDataStyles.setColumnStyles(instance.getRangedColumnStyles().getOrDefault(reportData.getReportName(), null));
@@ -23,8 +23,8 @@ public abstract class ReportParser {
                 if(instance.getPositionedStyles() != null){
                     reportDataStyles.setPositionedStyles(instance.getPositionedStyles().getOrDefault(reportData.getReportName(), null));
                 }
-                if(instance.getRectangleRangedStyles() != null){
-                    reportDataStyles.setRectangleStyles(instance.getRectangleRangedStyles().getOrDefault(reportData.getReportName(), null));
+                if(instance.getRectangleRangedStyles(reportData.getRowsCount()) != null){
+                    reportDataStyles.setRectangleStyles(instance.getRectangleRangedStyles(reportData.getRowsCount()).getOrDefault(reportData.getReportName(), null));
                 }
             }
             if(newInstance instanceof StripedRows){
