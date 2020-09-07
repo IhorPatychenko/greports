@@ -120,7 +120,10 @@ class RawDataInjector extends DataInjector {
     private void createHeader(Sheet sheet) {
         if(data.isCreateHeader()) {
             final ReportHeader header = data.getHeader();
-            final Row headerRow = sheet.createRow(header.getRowIndex() + data.getConfiguration().getVerticalOffset());
+            Row headerRow = sheet.getRow(header.getRowIndex() + data.getConfiguration().getVerticalOffset());
+            if(headerRow == null) {
+                headerRow = sheet.createRow(header.getRowIndex() + data.getConfiguration().getVerticalOffset());
+            }
             int mergeCount = 0;
             for (int i = 0; i < header.getCells().size(); i++) {
                 final HeaderCell headerCell = header.getCells().get(i);
@@ -152,7 +155,10 @@ class RawDataInjector extends DataInjector {
     private void createDataCells(Sheet sheet) {
         for (int i = 0; i < data.getDataRows().size(); i++) {
             final DataRow dataRow = data.getDataRow(i);
-            final Row row = sheet.createRow(data.getDataStartRow() + data.getConfiguration().getVerticalOffset() + i);
+            Row row = sheet.getRow(data.getDataStartRow() + data.getConfiguration().getVerticalOffset() + i);
+            if(row == null) {
+                row = sheet.createRow(data.getDataStartRow() + data.getConfiguration().getVerticalOffset() + i);
+            }
             int mergedCellsCount = 0;
             for (int y = 0; y < dataRow.getCells().size(); y++) {
                 final DataCell dataCell = dataRow.getCell(y);
@@ -176,7 +182,10 @@ class RawDataInjector extends DataInjector {
     private void createFormulaCells(Sheet sheet) {
         for (int i = 0; i < data.getDataRows().size(); i++) {
             final DataRow dataRow = data.getDataRow(i);
-            final Row row = sheet.getRow(data.getDataStartRow() + data.getConfiguration().getVerticalOffset() + i);
+            Row row = sheet.getRow(data.getDataStartRow() + data.getConfiguration().getVerticalOffset() + i);
+            if(row == null) {
+                row = sheet.createRow(data.getDataStartRow() + data.getConfiguration().getVerticalOffset() + i);
+            }
             int mergedCellsCount = 0;
             for (int y = 0; y < dataRow.getCells().size(); y++) {
                 final DataCell dataCell = dataRow.getCell(y);
@@ -321,8 +330,7 @@ class RawDataInjector extends DataInjector {
             int startGroup = data.getDataStartRow() + groupedRow.getLeft() + data.getConfiguration().getDataStartRowIndex();
             int endGroup = data.getDataStartRow() + groupedRow.getRight()  + data.getConfiguration().getDataStartRowIndex();
             sheet.groupRow(startGroup, endGroup);
-            sheet.setRowGroupCollapsed(startGroup, data.isGroupedRowsDefaultCollapsed()
-            );
+            sheet.setRowGroupCollapsed(startGroup, data.isGroupedRowsDefaultCollapsed());
         }
     }
 
