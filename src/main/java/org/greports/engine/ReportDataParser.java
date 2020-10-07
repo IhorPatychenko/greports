@@ -224,7 +224,7 @@ public final class ReportDataParser extends ReportParser {
 
         for (Map.Entry<Method, Subreport> entry : subreportMap.entrySet()) {
             final Method method = entry.getKey();
-            final Subreport subreport = entry.getValue();
+            final Subreport subreportAnnotation = entry.getValue();
             Class<?> returnType = method.getReturnType();
             Class<?> componentType = returnType;
             method.setAccessible(true);
@@ -250,18 +250,26 @@ public final class ReportDataParser extends ReportParser {
 
                 if(!subreportsList.isEmpty()){
                     float positionalIncrement = subreportPositionalIncrement;
-                    final int subreportsInEveryList = subreportsList.get(0).size();
+                    final int subreportsInEveryList = subreportsList.stream().map(List::size).max(Integer::compareTo).orElse(0);
                     for (int i = 0; i < subreportsInEveryList; i++) {
                         final List<Object> subreportData = new ArrayList<>();
                         for (final List<?> list : subreportsList) {
-                            subreportData.add(list.get(i));
+                            if(list.size() > i) {
+                                subreportData.add(list.get(i));
+                            } else {
+                                try {
+                                    subreportData.add(componentType.newInstance());
+                                } catch(ReflectiveOperationException e) {
+                                    throw new ReportEngineReflectionException(String.format("The class %s needs to have an empty constuctor", componentType.getName()), this.getClass());
+                                }
+                            }
                         }
                         parseSubreportData(
                                 reportDataParser,
                                 componentType,
                                 subreportData,
-                                positionalIncrement + subreport.position(),
-                                Utils.generateId(Utils.generateId(idPrefix, subreport.id()), Integer.toString(i))
+                                positionalIncrement + subreportAnnotation.position(),
+                                Utils.generateId(Utils.generateId(idPrefix, subreportAnnotation.id()), Integer.toString(i))
                         );
                         positionalIncrement += subreportPositionalIncrement;
                     }
@@ -273,7 +281,7 @@ public final class ReportDataParser extends ReportParser {
                     final Object invokeResult = subreportInvokeMethod(method, collectionEntry);
                     subreportData.add(invokeResult);
                 }
-                parseSubreportData(reportDataParser, returnType, subreportData, subreportPositionalIncrement + subreport.position(), Utils.generateId(idPrefix, subreport.id()));
+                parseSubreportData(reportDataParser, returnType, subreportData, subreportPositionalIncrement + subreportAnnotation.position(), Utils.generateId(idPrefix, subreportAnnotation.id()));
             }
         }
     }
