@@ -10,29 +10,31 @@ public abstract class ReportParser {
 
     protected  <T> void parseStyles(ReportData reportData, Class<T> clazz) throws ReportEngineReflectionException {
         try {
-            final T newInstance = ReflectionUtils.newInstance(clazz);
-            final ReportDataStyles reportDataStyles = reportData.getStyles();
-            if(newInstance instanceof StyledReport){
-                final StyledReport instance = (StyledReport) newInstance;
-                if(instance.getRangedRowStyles(reportData.getRowsCount()) != null){
-                    reportDataStyles.setRowStyles(instance.getRangedRowStyles(reportData.getRowsCount()).getOrDefault(reportData.getReportName(), null));
+            if(StyledReport.class.isAssignableFrom(clazz) || StripedRows.class.isAssignableFrom(clazz)) {
+                final T newInstance = ReflectionUtils.newInstance(clazz);
+                final ReportDataStyles reportDataStyles = reportData.getStyles();
+                if(StyledReport.class.isAssignableFrom(clazz)){
+                    final StyledReport instance = (StyledReport) newInstance;
+                    if(instance.getRangedRowStyles(reportData.getRowsCount()) != null){
+                        reportDataStyles.setRowStyles(instance.getRangedRowStyles(reportData.getRowsCount()).getOrDefault(reportData.getReportName(), null));
+                    }
+                    if(instance.getRangedColumnStyles() != null){
+                        reportDataStyles.setColumnStyles(instance.getRangedColumnStyles().getOrDefault(reportData.getReportName(), null));
+                    }
+                    if(instance.getPositionedStyles() != null){
+                        reportDataStyles.setPositionedStyles(instance.getPositionedStyles().getOrDefault(reportData.getReportName(), null));
+                    }
+                    if(instance.getRectangleRangedStyles(reportData.getRowsCount()) != null){
+                        reportDataStyles.setRectangleStyles(instance.getRectangleRangedStyles(reportData.getRowsCount()).getOrDefault(reportData.getReportName(), null));
+                    }
                 }
-                if(instance.getRangedColumnStyles() != null){
-                    reportDataStyles.setColumnStyles(instance.getRangedColumnStyles().getOrDefault(reportData.getReportName(), null));
-                }
-                if(instance.getPositionedStyles() != null){
-                    reportDataStyles.setPositionedStyles(instance.getPositionedStyles().getOrDefault(reportData.getReportName(), null));
-                }
-                if(instance.getRectangleRangedStyles(reportData.getRowsCount()) != null){
-                    reportDataStyles.setRectangleStyles(instance.getRectangleRangedStyles(reportData.getRowsCount()).getOrDefault(reportData.getReportName(), null));
-                }
-            }
-            if(newInstance instanceof StripedRows){
-                final StripedRows instance = (StripedRows) newInstance;
-                if(instance.getStripedRowsIndex() != null && instance.getStripedRowsColor() != null){
-                    reportDataStyles
-                            .setStripedRowsIndex(instance.getStripedRowsIndex().getOrDefault(reportData.getReportName(), null))
-                            .setStripedRowsColor(instance.getStripedRowsColor().getOrDefault(reportData.getReportName(), null));
+                if(StripedRows.class.isAssignableFrom(clazz)){
+                    final StripedRows instance = (StripedRows) newInstance;
+                    if(instance.getStripedRowsIndex() != null && instance.getStripedRowsColor() != null){
+                        reportDataStyles
+                                .setStripedRowsIndex(instance.getStripedRowsIndex().getOrDefault(reportData.getReportName(), null))
+                                .setStripedRowsColor(instance.getStripedRowsColor().getOrDefault(reportData.getReportName(), null));
+                    }
                 }
             }
         } catch (ReflectiveOperationException e) {

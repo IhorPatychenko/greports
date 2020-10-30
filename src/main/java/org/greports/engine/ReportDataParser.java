@@ -398,8 +398,8 @@ public final class ReportDataParser extends ReportParser {
     private <T> void parseStyles(Class<T> clazz, List<T> collection) throws ReportEngineReflectionException {
         super.parseStyles(reportData, clazz);
         try {
-            final T newInstance = ReflectionUtils.newInstance(clazz);
-            if(newInstance instanceof ConditionalRowStyles || newInstance instanceof ConditionalCellStyles){
+            if(ConditionalRowStyles.class.isAssignableFrom(clazz) || ConditionalCellStyles.class.isAssignableFrom(clazz)){
+                final T newInstance = ReflectionUtils.newInstance(clazz);
                 final List<T> list = new ArrayList<>(collection);
                 final int startRowIndex = reportData.getConfiguration().getDataStartRowIndex();
                 RectangleRangedStylesBuilder rectangleRangedStylesBuilder = reportData.getStyles().getRectangleRangedStylesBuilder();
