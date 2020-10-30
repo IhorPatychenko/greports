@@ -2,6 +2,7 @@ package org.greports.engine;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.ss.usermodel.CellType;
+import org.apache.poi.ss.usermodel.DateUtil;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.xssf.usermodel.XSSFCell;
@@ -94,26 +95,27 @@ public class ReportDataReader {
         }
 
         final XSSFCell cell = row.getCell(cellNumber, missingCellPolicy);
-        if(cell == null) {
-            throw new ReportEngineRuntimeException(String.format("The cell with index %d does not exist", cellNumber), this.getClass());
-        }
 
         return bindToClass.cast(this.getValue(cell));
     }
 
     private Object getValue(XSSFCell cell) {
-        if(CellType.STRING.equals(cell.getCellTypeEnum()) || CellType.BLANK.equals(cell.getCellTypeEnum())) {
-            return cell.getStringCellValue();
+        if(cell == null) {
+            return null;
+        }
+        if(CellType.ERROR.equals(cell.getCellTypeEnum())) {
+            return cell.getErrorCellString();
         } else if(CellType.BOOLEAN.equals(cell.getCellTypeEnum())) {
             return cell.getBooleanCellValue();
+        } else if(CellType.NUMERIC.equals(cell.getCellTypeEnum()) && DateUtil.isCellDateFormatted(cell)) {
+            return cell.getDateCellValue();
         } else if(CellType.NUMERIC.equals(cell.getCellTypeEnum())) {
             return cell.getNumericCellValue();
         } else if(CellType.FORMULA.equals(cell.getCellTypeEnum())) {
             return cell.getCellFormula();
-        } else if(CellType.ERROR.equals(cell.getCellTypeEnum())){
-            return cell.getErrorCellString();
         } else {
-            return null;
+            // CellType.STRING and CellType.BLANK
+            return cell.getStringCellValue();
         }
     }
 }
