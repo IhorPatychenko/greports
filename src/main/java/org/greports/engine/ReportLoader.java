@@ -40,6 +40,7 @@ public class ReportLoader {
     private final ReportLoaderResult loaderResult;
     private ReportLoaderValidator validator;
     private final ReportDataReader reader;
+    private ReportLoaderErrorTreatment errorTreatment;
 
     public ReportLoader(String filePath) throws IOException, InvalidFormatException {
         this(new File(filePath), null);
@@ -73,21 +74,30 @@ public class ReportLoader {
     }
 
     public <T> ReportLoader bindForClass(Class<T> clazz) throws ReportEngineReflectionException {
-        return bindForClass(clazz, ReportLoaderErrorTreatment.THROW_ERROR);
+        return bindForClass(clazz, ReportLoaderErrorTreatment.THROW_ERROR, -1, Integer.MAX_VALUE);
     }
 
-    public <T> ReportLoader bindForClass(Class<T> clazz, ReportLoaderErrorTreatment treatment) throws ReportEngineReflectionException {
+    public <T> ReportLoader bindForClass(Class<T> clazz, int fromRow) throws ReportEngineReflectionException {
+        return bindForClass(clazz, ReportLoaderErrorTreatment.THROW_ERROR, fromRow, Integer.MAX_VALUE);
+    }
+
+    public <T> ReportLoader bindForClass(Class<T> clazz, int fromRow, int toRow) throws ReportEngineReflectionException {
+        return bindForClass(clazz, ReportLoaderErrorTreatment.THROW_ERROR, fromRow, toRow);
+    }
+
+    public <T> ReportLoader bindForClass(Class<T> clazz, ReportLoaderErrorTreatment treatment, int fromRow, int toRow) throws ReportEngineReflectionException {
         if(reportName == null) {
             throw new ReportEngineRuntimeException("reportName cannot be null", this.getClass());
         }
         ReportConfiguration configuration = ReportConfigurationLoader.load(clazz, reportName);
         this.validator = new ReportLoaderValidator(configuration);
+        this.errorTreatment = treatment;
         final ReportBlock reportBlock = new ReportBlock(clazz, reportName, null);
         loadBlocks(reportBlock);
         reportBlock
                 .orderBlocks()
                 .setBlockIndexes(0);
-        final List<T> list = bindBlocks(reportBlock, clazz, configuration, treatment, new ArrayList<>());
+        final List<T> list = bindBlocks(reportBlock, clazz, configuration, new ArrayList<>(), fromRow, toRow);
         this.loaderResult.addResult(clazz, list);
         return this;
     }
@@ -114,13 +124,28 @@ public class ReportLoader {
         }
     }
 
-    public <T> List<T> bindBlocks(ReportBlock reportBlock, Class<T> clazz, ReportConfiguration configuration, ReportLoaderErrorTreatment treatment, List<Integer> skipRows) throws ReportEngineReflectionException {
-        List<T> list = new ArrayList<>();
+    protected <T> List<T> bindBlocks(ReportBlock reportBlock, Class<T> clazz, ReportConfiguration configuration, List<Integer> skipRows, int fromRow, int toRow) throws ReportEngineReflectionException {
+        List<T> instancesList = new ArrayList<>();
         final Sheet sheet = currentWorkbook.getSheet(configuration.getSheetName());
         boolean errorThrown = false;
+
+        if(fromRow > toRow) {
+            throw new ReportEngineRuntimeException("fromRow cannot be greater than toRow", this.getClass());
+        }
+
         try {
             Method method;
-            for (int dataRowNum = configuration.getDataStartRowIndex(); dataRowNum <= sheet.getLastRowNum() - AnnotationUtils.getLastSpecialRowsCount(configuration); dataRowNum++) {
+            int dataRowNum = configuration.getDataStartRowIndex();
+            int dataRowMaxNum = sheet.getLastRowNum() - AnnotationUtils.getLastSpecialRowsCount(configuration);
+
+            if(fromRow > -1) {
+                dataRowNum = configuration.getDataStartRowIndex() + fromRow;
+            }
+            if(Integer.MAX_VALUE != toRow) {
+                dataRowMaxNum = configuration.getDataStartRowIndex() + toRow;
+            }
+
+            for (; dataRowNum <= dataRowMaxNum; dataRowNum++) {
                 if (!skipRows.contains(dataRowNum)) {
                     final T instance = ReflectionUtils.newInstance(clazz);
                     final Row row = sheet.getRow(dataRowNum);
@@ -128,47 +153,21 @@ public class ReportLoader {
                         if (block.isColumn()) {
                             method = block.getParentMethod();
                             final Cell cell = row.getCell(block.getStartColumn());
-                            Object value = null;
-                            try {
-                                value = getCellValue(method, cell);
-                                value = ConverterUtils.convertValue(value, block.getSetterConverters(), block.getBlockClass());
-                                instanceSetValue(method, instance, value, block.getCellValidators());
-                                block.addValue(value);
-                            } catch (ReportEngineValidationException e) {
-                                if (ReportLoaderErrorTreatment.THROW_ERROR.equals(treatment)) {
-                                    throw e;
-                                } else {
-                                    loaderResult.addError(clazz, cell, block.getAsColumn().title(), e.getMessage(), (Serializable) value);
-                                    errorThrown = true;
-                                }
-                            }
+                            errorThrown = bindCellValueToClassAttr(clazz, method, instance, block, cell);
                         }
                     }
-                    if (!errorThrown || !ReportLoaderErrorTreatment.SKIP_ROW_ON_ERROR.equals(treatment)) {
-                        list.add(instance);
+                    if (!errorThrown || !ReportLoaderErrorTreatment.SKIP_ROW_ON_ERROR.equals(errorTreatment)) {
+                        instancesList.add(instance);
                     }
-                    if (errorThrown && ReportLoaderErrorTreatment.SKIP_ROW_ON_ERROR.equals(treatment)) {
+                    if (errorThrown && ReportLoaderErrorTreatment.SKIP_ROW_ON_ERROR.equals(errorTreatment)) {
                         skipRows.add(dataRowNum);
                     }
                     errorThrown = false;
                 }
             }
 
-            for (final ReportBlock block : reportBlock.getBlocks()) {
-                if (block.isSubreport()) {
-                    final List<?> objects = bindBlocks(block, block.getBlockClass(), configuration, treatment, skipRows);
-                    method = block.getParentMethod();
-                    for (int i = 0; i < list.size(); i++) {
-                        method.invoke(list.get(i), objects.get(i));
-                    }
-                } else if (block.isColumn()) {
-                    try {
-                        validator.checkColumnValidations(block.getValues(), block.getColumnValidators());
-                    } catch (ReportEngineValidationException e) {
-                        loaderResult.addError(clazz, sheet.getSheetName(), e.getRowIndex() + configuration.getDataStartRowIndex(), block.getStartColumn(), block.getAsColumn().title(), e.getMessage(), (Serializable) e.getErrorValue());
-                    }
-                }
-            }
+            bindSubBlocks(reportBlock, clazz, configuration, skipRows, fromRow, toRow, instancesList, sheet);
+
         } catch (NoSuchMethodException e) {
             throw new ReportEngineReflectionException("Error obtaining constructor reference" , e, clazz);
         } catch (InstantiationException e) {
@@ -176,12 +175,48 @@ public class ReportLoader {
         } catch (IllegalAccessException | InvocationTargetException e) {
             throw new ReportEngineReflectionException("Error executing method witch does not have access to the definition of the specified class", e, clazz);
         }
-        return list;
+        return instancesList;
     }
 
-    private void instanceSetValue(final Method method, final Object instance, final Object value, final List<CellValidator> cellValidators) throws ReportEngineReflectionException, ReportEngineValidationException {
+    private <T> void bindSubBlocks(ReportBlock reportBlock, Class<T> clazz, ReportConfiguration configuration, List<Integer> skipRows, int fromRow, int toRow, List<T> instancesList, Sheet sheet) throws ReportEngineReflectionException, IllegalAccessException, InvocationTargetException {
+        Method method;
+        for (final ReportBlock block : reportBlock.getBlocks()) {
+            if (block.isSubreport()) {
+                final List<?> objects = bindBlocks(block, block.getBlockClass(), configuration, skipRows, fromRow, toRow);
+                method = block.getParentMethod();
+                for (int i = 0; i < instancesList.size(); i++) {
+                    method.invoke(instancesList.get(i), objects.get(i));
+                }
+            } else if (block.isColumn()) {
+                try {
+                    validator.checkColumnValidations(block.getValues(), block.getColumnValidators());
+                } catch (ReportEngineValidationException e) {
+                    loaderResult.addError(clazz, sheet.getSheetName(), e.getRowIndex() + configuration.getDataStartRowIndex(), block.getStartColumn(), block.getAsColumn().title(), e.getMessage(), (Serializable) e.getErrorValue());
+                }
+            }
+        }
+    }
+
+    private <T> boolean bindCellValueToClassAttr(Class<T> clazz, Method method, T instance, ReportBlock block, Cell cell) throws ReportEngineReflectionException {
+        Object value = null;
         try {
-            method.setAccessible(true);
+            value = getCellValue(method, cell);
+            value = ConverterUtils.convertValue(value, block.getSetterConverters(), block.getBlockClass());
+            instanceSetValue(method, instance, value, block.getCellValidators());
+            block.addValue(value);
+        } catch (ReportEngineValidationException e) {
+            if (ReportLoaderErrorTreatment.THROW_ERROR.equals(errorTreatment)) {
+                throw e;
+            } else {
+                loaderResult.addError(clazz, cell, block.getAsColumn().title(), e.getMessage(), (Serializable) value);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private void instanceSetValue(final Method method, final Object instance, final Object value, final List<CellValidator> cellValidators) throws ReportEngineReflectionException {
+        try {
             validator.checkCellValidations(value, cellValidators);
             method.invoke(instance, value);
         } catch (IllegalAccessException | InvocationTargetException e) {
@@ -205,13 +240,13 @@ public class ReportLoader {
             } else if (parameterType.equals(Double.class) || parameterType.getName().equals("double")) {
                 return cell.getNumericCellValue();
             } else if (parameterType.equals(Integer.class) || parameterType.getName().equals("int")) {
-                return new Double(cell.getNumericCellValue()).intValue();
+                return ((int) cell.getNumericCellValue());
             } else if (parameterType.equals(Long.class) || parameterType.getName().equals("long")) {
-                return new Double(cell.getNumericCellValue()).longValue();
+                return ((long) cell.getNumericCellValue());
             } else if (parameterType.equals(Float.class) || parameterType.getName().equals("float")) {
-                return new Double(cell.getNumericCellValue()).floatValue();
+                return ((float) cell.getNumericCellValue());
             } else if (parameterType.equals(Short.class) || parameterType.getName().equals("short")) {
-                return new Double(cell.getNumericCellValue()).shortValue();
+                return ((short) cell.getNumericCellValue());
             }
         }
         return null;
