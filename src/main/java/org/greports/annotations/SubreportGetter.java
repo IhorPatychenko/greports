@@ -2,6 +2,7 @@ package org.greports.annotations;
 
 import org.greports.engine.ValueType;
 
+import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Repeatable;
 import java.lang.annotation.Retention;
@@ -10,7 +11,8 @@ import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.METHOD, ElementType.ANNOTATION_TYPE})
-@Repeatable(value = SubreportGetters.class)
+@Repeatable(SubreportGetter.List.class)
+@Documented
 public @interface SubreportGetter {
 
     /**
@@ -38,4 +40,16 @@ public @interface SubreportGetter {
      * @return {@link String}
      */
     String id() default "";
+
+    /**
+     * Defines several {@link SubreportGetter} annotations on the same element.
+     * @see SubreportGetter
+     */
+    @Retention(RetentionPolicy.RUNTIME)
+    @Target(ElementType.METHOD)
+    @Documented
+    @interface List {
+        SubreportGetter[] value();
+    }
+
 }

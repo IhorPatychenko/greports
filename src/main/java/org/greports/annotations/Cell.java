@@ -2,6 +2,7 @@ package org.greports.annotations;
 
 import org.greports.engine.ValueType;
 
+import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Repeatable;
 import java.lang.annotation.Retention;
@@ -10,7 +11,8 @@ import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.FIELD, ElementType.ANNOTATION_TYPE})
-@Repeatable(value = Cells.class)
+@Repeatable(Cell.List.class)
+@Documented
 public @interface Cell {
 
     /**
@@ -106,5 +108,16 @@ public @interface Cell {
      * @return int
      */
     int columnWidth() default 1;
+
+    /**
+     * Defines several {@link Cell} annotations on the same element.
+     * @see Cell
+     */
+    @Retention(RetentionPolicy.RUNTIME)
+    @Target(ElementType.FIELD)
+    @Documented
+    @interface List {
+        Cell[] value();
+    }
 
 }

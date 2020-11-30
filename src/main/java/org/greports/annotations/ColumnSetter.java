@@ -2,6 +2,7 @@ package org.greports.annotations;
 
 import org.greports.engine.ValueType;
 
+import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Repeatable;
 import java.lang.annotation.Retention;
@@ -10,7 +11,8 @@ import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.METHOD, ElementType.ANNOTATION_TYPE})
-@Repeatable(value = ColumnSetters.class)
+@Repeatable(ColumnSetter.List.class)
+@Documented
 public @interface ColumnSetter {
     /**
      * Indicates the report's name which contains the column.
@@ -108,4 +110,16 @@ public @interface ColumnSetter {
      * @return int
      */
     int columnWidth() default 1;
+
+    /**
+     * Defines several {@link ColumnSetter} annotations on the same element.
+     * @see ColumnSetter
+     */
+    @Retention(RetentionPolicy.RUNTIME)
+    @Target(ElementType.METHOD)
+    @Documented
+    @interface List {
+        ColumnSetter[] value();
+    }
+
 }

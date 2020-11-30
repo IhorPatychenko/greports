@@ -39,6 +39,7 @@ public class TemplateDataInjector extends DataInjector {
     protected void injectData(Sheet sheet) {
         createHeader(sheet);
         createDataRows(sheet);
+        super.createSpecialRows(sheet);
         reindexTablesRows(sheet);
         super.adjustColumns(sheet);
     }
