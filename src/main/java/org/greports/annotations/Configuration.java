@@ -137,6 +137,13 @@ public @interface Configuration {
     short horizontalOffset() default 0;
 
     /**
+     * A boolean indicating if the gridlines must be shown.
+     *
+     * @return {@code boolean}
+     */
+    boolean showGridlines() default true;
+
+    /**
      * An array of {@link SpecialRow}
      *
      * @return {@code SpecialRow[]}

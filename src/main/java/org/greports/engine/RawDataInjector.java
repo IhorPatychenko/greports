@@ -111,6 +111,8 @@ class RawDataInjector extends DataInjector {
         final Stopwatch adjustColumnsStopwatch = Stopwatch.createStarted();
         super.adjustColumns(sheet);
         loggerService.trace("Columns adjusted. Time: " + adjustColumnsStopwatch.stop());
+
+        setGridlines(sheet);
     }
 
     private void createHeader(Sheet sheet) {

@@ -70,6 +70,10 @@ public abstract class DataInjector {
         }
     }
 
+    protected void setGridlines(Sheet sheet) {
+        sheet.setDisplayGridlines(reportData.getConfiguration().isShowGridlines());
+    }
+
     protected void createSpecialRows(Sheet sheet) {
         final List<SpecialDataRow> specialRows = reportData.getSpecialRows();
         int countBottomRows = 0;
