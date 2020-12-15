@@ -43,6 +43,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.Predicate;
 
 class RawDataInjector extends DataInjector {
 
@@ -126,11 +127,11 @@ class RawDataInjector extends DataInjector {
             for (int i = 0; i < header.getCells().size(); i++) {
                 final HeaderCell headerCell = header.getCells().get(i);
                 createHeaderCell(
-                    sheet,
-                    headerRow,
-                    headerCell,
-                    i + mergeCount + data.getConfiguration().getHorizontalOffset(),
-                    headerCell.getColumnWidth()
+                        sheet,
+                        headerRow,
+                        headerCell,
+                        i + mergeCount + data.getConfiguration().getHorizontalOffset(),
+                        headerCell.getColumnWidth()
                 );
                 if(headerCell.getColumnWidth() > 1) {
                     mergeCount += headerCell.getColumnWidth() - 1;
@@ -145,12 +146,14 @@ class RawDataInjector extends DataInjector {
 
     private void createDataRows(Sheet sheet) {
         // First create cells with data
-        createDataCells(sheet);
+        final Predicate<DataCell> dataCellsPredicate = (DataCell dataCell) -> !dataCell.getValueType().equals(ValueType.FORMULA) && !dataCell.getValueType().equals(ValueType.TEMPLATED_FORMULA);
         // After create cells with formulas to can evaluate them
-        createFormulaCells(sheet);
+        final Predicate<DataCell> formulaCellsPredicate = (DataCell dataCell) -> dataCell.getValueType().equals(ValueType.FORMULA);
+        this.createCells(sheet, dataCellsPredicate);
+        this.createCells(sheet, formulaCellsPredicate);
     }
 
-    private void createDataCells(Sheet sheet) {
+    private void createCells(Sheet sheet, Predicate<DataCell> predicate) {
         for (int i = 0; i < data.getDataRows().size(); i++) {
             final DataRow dataRow = data.getDataRow(i);
             Row row = sheet.getRow(data.getDataStartRow() + data.getConfiguration().getVerticalOffset() + i);
@@ -160,34 +163,7 @@ class RawDataInjector extends DataInjector {
             int mergedCellsCount = 0;
             for (int y = 0; y < dataRow.getCells().size(); y++) {
                 final DataCell dataCell = dataRow.getCell(y);
-                if(!dataCell.getValueType().equals(ValueType.FORMULA) && !dataCell.getValueType().equals(ValueType.TEMPLATED_FORMULA)) {
-                    createCell(
-                            sheet,
-                            row,
-                            dataCell,
-                            dataCell.isPhysicalPosition()
-                                    ? dataCell.getPosition().intValue()
-                                    : mergedCellsCount + data.getConfiguration().getHorizontalOffset() + y
-                    );
-                    if(dataCell.getColumnWidth() > 1) {
-                        mergedCellsCount += dataCell.getColumnWidth() - 1;
-                    }
-                }
-            }
-        }
-    }
-
-    private void createFormulaCells(Sheet sheet) {
-        for (int i = 0; i < data.getDataRows().size(); i++) {
-            final DataRow dataRow = data.getDataRow(i);
-            Row row = sheet.getRow(data.getDataStartRow() + data.getConfiguration().getVerticalOffset() + i);
-            if(row == null) {
-                row = sheet.createRow(data.getDataStartRow() + data.getConfiguration().getVerticalOffset() + i);
-            }
-            int mergedCellsCount = 0;
-            for (int y = 0; y < dataRow.getCells().size(); y++) {
-                final DataCell dataCell = dataRow.getCell(y);
-                if(dataCell.getValueType().equals(ValueType.FORMULA)) {
+                if(predicate.test(dataCell)) {
                     createCell(
                             sheet,
                             row,
@@ -206,17 +182,8 @@ class RawDataInjector extends DataInjector {
 
     private void createHeaderCell(final Sheet sheet, final Row row, final HeaderCell headerCell, final int cellIndex, final int columnWidth) {
         final Cell cell = row.createCell(cellIndex);
-        createColumnsToMerge(sheet, row, cellIndex, columnWidth);
+        super.createColumnsToMerge(sheet, row, cellIndex, columnWidth);
         WorkbookUtils.setCellValue(cell, headerCell.getValue());
-    }
-
-    private void createColumnsToMerge(final Sheet sheet, final Row row, final int cellIndex, final int columnWidth) {
-        if(columnWidth > 1) {
-            for (int i = 1; i < columnWidth; i++) {
-                row.createCell(cellIndex + i, CellType.BLANK);
-            }
-            sheet.addMergedRegion(new CellRangeAddress(row.getRowNum(), row.getRowNum(), cellIndex, cellIndex + columnWidth - 1));
-        }
     }
 
     private void createCell(Sheet sheet, Row row, DataCell dataCell, int columnIndex) {
@@ -244,83 +211,6 @@ class RawDataInjector extends DataInjector {
 
         createColumnsToMerge(sheet, row, columnIndex, dataCell.getColumnWidth());
     }
-
-//    private void createSpecialRows(Sheet sheet) {
-//        final List<SpecialDataRow> specialRows = data.getSpecialRows();
-//        int countBottomRows = 0;
-//        for(SpecialDataRow specialRow : specialRows) {
-//            if(specialRow.getRowIndex() == Integer.MAX_VALUE) {
-//                specialRow.setRowIndex(
-//                        data.getConfiguration().getVerticalOffset() +
-//                        data.getDataStartRow() +
-//                        data.getRowsCount() +
-//                        countBottomRows
-//                );
-//                countBottomRows++;
-//            } else {
-//                specialRow.setRowIndex(specialRow.getRowIndex() + data.getConfiguration().getVerticalOffset());
-//            }
-//            for(final SpecialDataCell specialCell : specialRow.getCells()) {
-//                Row row = sheet.getRow(specialRow.getRowIndex());
-//                if(row == null) {
-//                    row = sheet.createRow(specialRow.getRowIndex());
-//                }
-//                final int columnIndexForTarget = data.getColumnIndexForId(specialCell.getTargetId()) + data.getConfiguration().getHorizontalOffset();
-//                Cell cell = row.createCell(columnIndexForTarget);
-//                createColumnsToMerge(sheet, row, columnIndexForTarget, specialCell.getColumnWidth());
-//                final ValueType valueType = specialCell.getValueType();
-//                if(!ValueType.FORMULA.equals(valueType) &&
-//                        !ValueType.COLLECTED_FORMULA_VALUE.equals(valueType) &&
-//                        !ValueType.TEMPLATED_FORMULA.equals(valueType)) {
-//                    WorkbookUtils.setCellValue(cell, specialCell.getValue());
-//                } else {
-//                    String formulaString = specialCell.getValue().toString();
-//                    if(ValueType.FORMULA.equals(valueType)) {
-//                        createSpecialFormulaCell(sheet, specialCell, cell, formulaString);
-//                    } else {
-//                        Map<String, List<Integer>> extraData = (Map<String, List<Integer>>) specialCell.getExtraData();
-//                        if(extraData != null) {
-//                            for(final Map.Entry<String, List<Integer>> entry : extraData.entrySet()) {
-//                                String id = entry.getKey();
-//                                List<Integer> rowIndexes = entry.getValue();
-//                                List<String> cellReferences = new ArrayList<>();
-//                                for(final Integer rowIndex : rowIndexes) {
-//                                    CellReference cellReference = super.getCellReferenceForTargetId(
-//                                            sheet.getRow(data.getDataStartRow() + rowIndex + data.getConfiguration().getVerticalOffset()),
-//                                            specialCell.getTargetId()
-//                                    );
-//                                    cellReferences.add(cellReference.formatAsString() + ":" + cellReference.formatAsString());
-//                                }
-//                                String joinedReferences = String.join(",", cellReferences);
-//                                formulaString = formulaString.replaceAll(id, joinedReferences);
-//                                cell.setCellFormula(formulaString);
-//                            }
-//                        }
-//                    }
-//                }
-//                setCellFormat(cell, specialCell.getFormat());
-//            }
-//        }
-//    }
-
-//    private void createSpecialFormulaCell(Sheet sheet, SpecialDataCell specialCell, Cell cell, String formulaString) {
-//        if(sheet.getLastRowNum() > data.getDataStartRow()) {
-//            for (Map.Entry<String, Integer> entry : data.getTargetIndexes().entrySet()) {
-//                CellReference firstCellReference = super.getCellReferenceForTargetId(
-//                        sheet.getRow(data.getDataStartRow() + data.getConfiguration().getVerticalOffset()),
-//                        specialCell.getTargetId()
-//                );
-//                CellReference lastCellReference = super.getCellReferenceForTargetId(
-//                        sheet.getRow(data.getDataStartRow() + data.getRowsCount() + data.getConfiguration().getVerticalOffset() - 1),
-//                        specialCell.getTargetId()
-//                );
-//                formulaString = formulaString.replaceAll(entry.getKey(), firstCellReference.formatAsString() + ":" + lastCellReference.formatAsString());
-//            }
-//        }
-//        if(sheet.getLastRowNum() > data.getDataStartRow()) {
-//            cell.setCellFormula(formulaString);
-//        }
-//    }
 
     private void createRowsGroups(final Sheet sheet) {
         List<Pair<Integer, Integer>> groupedRows = data.getGroupedRows();

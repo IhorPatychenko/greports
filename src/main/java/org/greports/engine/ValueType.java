@@ -30,5 +30,10 @@ public enum ValueType {
      * Used in {@link org.greports.interfaces.CollectedFormulaValues} interface to collect all values from
      * all entries and put them as entries of the formula provided.
      */
-    COLLECTED_FORMULA_VALUE
+    COLLECTED_FORMULA_VALUE,
+    /**
+     * Completely ignores the column content and it's title if set,
+     * but conserves it's physical position in excel file.
+     */
+    IGNORED_VALUE
 }

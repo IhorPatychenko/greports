@@ -39,7 +39,7 @@ public abstract class DataInjector {
     }
 
     protected CellReference getCellReferenceForTargetId(Row row, String id) {
-        return new CellReference(row.getCell(reportData.getColumnIndexForId(id)));
+        return new CellReference(row.getCell(reportData.getColumnIndexForId(id), Row.MissingCellPolicy.CREATE_NULL_AS_BLANK));
     }
 
     protected void setCellFormat(Cell cell, String format) {
@@ -150,7 +150,7 @@ public abstract class DataInjector {
         }
     }
 
-    private void createColumnsToMerge(final Sheet sheet, final Row row, final int cellIndex, final int columnWidth) {
+    protected void createColumnsToMerge(final Sheet sheet, final Row row, final int cellIndex, final int columnWidth) {
         if(columnWidth > 1) {
             for (int i = 1; i < columnWidth; i++) {
                 row.createCell(cellIndex + i, CellType.BLANK);
