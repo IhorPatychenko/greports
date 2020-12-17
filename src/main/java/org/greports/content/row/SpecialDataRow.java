@@ -9,10 +9,12 @@ import java.util.stream.Collectors;
 public class SpecialDataRow implements ReportRow<SpecialDataCell>, Cloneable {
 
     private int rowIndex;
+    private boolean stickyRow;
     private List<SpecialDataCell> specialCells = new ArrayList<>();
 
-    public SpecialDataRow(int rowIndex){
+    public SpecialDataRow(int rowIndex, boolean stickyRow){
         this.rowIndex = rowIndex;
+        this.stickyRow = stickyRow;
     }
 
     public void setRowIndex(int rowIndex) {
@@ -25,6 +27,10 @@ public class SpecialDataRow implements ReportRow<SpecialDataCell>, Cloneable {
 
     public Integer getRowIndex() {
         return rowIndex;
+    }
+
+    public boolean isStickyRow() {
+        return stickyRow;
     }
 
     @Override

@@ -20,6 +20,13 @@ public @interface SpecialRow {
     int rowIndex();
 
     /**
+     * This value indicates if the row row needs t be sticky (freeze).
+     *
+     * @return {@code boolean}
+     */
+    boolean stickyRow() default false;
+
+    /**
      * An array of {@link SpecialRowCell}
      *
      * @return an array of {@link SpecialRowCell} with cells containing special data in the report

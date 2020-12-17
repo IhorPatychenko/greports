@@ -11,12 +11,14 @@ import java.util.stream.Collectors;
 public class ReportConfiguration implements Cloneable, Serializable {
     private static final long serialVersionUID = 5728699559958112658L;
 
+
     private String sheetName;
     private String[] reportName = new String[]{};
     private String translationsDir = "i18n/";
     private String locale = "en_US";
     private String templatePath = "";
     private boolean createHeader = true;
+    private boolean stickyHeader = false;
     private boolean sortableHeader = false;
     private int headerRowIndex = 0;
     private int dataStartRowIndex = 1;
@@ -34,6 +36,7 @@ public class ReportConfiguration implements Cloneable, Serializable {
         this.templatePath = configuration.templatePath();
         this.sheetName = configuration.sheetName();
         this.createHeader = configuration.createHeader();
+        this.stickyHeader = configuration.stickyHeader();
         this.sortableHeader = configuration.sortableHeader();
         this.headerRowIndex = configuration.headerRowIndex();
         this.dataStartRowIndex = configuration.dataStartRowIndex();
@@ -71,6 +74,10 @@ public class ReportConfiguration implements Cloneable, Serializable {
 
     public boolean isCreateHeader() {
         return createHeader;
+    }
+
+    public boolean isStickyHeader() {
+        return stickyHeader;
     }
 
     public boolean isSortableHeader() {
@@ -136,6 +143,11 @@ public class ReportConfiguration implements Cloneable, Serializable {
 
     public ReportConfiguration setCreateHeader(final boolean createHeader) {
         this.createHeader = createHeader;
+        return this;
+    }
+
+    public ReportConfiguration setStickyHeader(boolean stickyHeader) {
+        this.stickyHeader = stickyHeader;
         return this;
     }
 

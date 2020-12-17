@@ -141,6 +141,10 @@ class RawDataInjector extends DataInjector {
             if(header.isColumnFilter()) {
                 sheet.setAutoFilter(new CellRangeAddress(headerRow.getRowNum(), headerRow.getRowNum(), 0, header.getCells().size() - 1));
             }
+
+            if(header.isStickyHeader()) {
+                sheet.createFreezePane(0, headerRow.getRowNum() + 1, 0, headerRow.getRowNum() + 1);
+            }
         }
     }
 

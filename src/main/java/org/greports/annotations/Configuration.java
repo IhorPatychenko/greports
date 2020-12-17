@@ -64,6 +64,13 @@ public @interface Configuration {
     boolean createHeader() default true;
 
     /**
+     * This value indicates if the header row needs t be sticky (freeze).
+     *
+     * @return {@code boolean}
+     */
+    boolean stickyHeader() default false;
+
+    /**
      * The value indicates if the header needs to be sortable.
      *
      * @return {@code boolean}

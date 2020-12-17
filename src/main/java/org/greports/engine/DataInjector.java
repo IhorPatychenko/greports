@@ -128,6 +128,9 @@ public abstract class DataInjector {
                 }
                 setCellFormat(cell, specialCell.getFormat());
             }
+            if(specialRow.isStickyRow()) {
+                sheet.createFreezePane(0, specialRow.getRowIndex() + 1, 0, specialRow.getRowIndex() + 1);
+            }
         }
     }
 
