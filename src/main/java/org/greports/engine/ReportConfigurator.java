@@ -19,6 +19,7 @@ public class ReportConfigurator implements Serializable {
     private Map<Class<?>, String> formats = new HashMap<>();
     private URL templateUrl;
     private List<Integer> removedColumns = new ArrayList<>();
+    private List<Integer> autosizedColumns;
 
     protected ReportGenerator getReportGenerator() {
         return reportGenerator;
@@ -36,6 +37,10 @@ public class ReportConfigurator implements Serializable {
         return this.removedColumns;
     }
 
+    public List<Integer> getAutosizedColumns() {
+        return autosizedColumns;
+    }
+
     public ReportConfigurator setOverriddenTitles(final Map<Integer, String> overriddenTitles) {
         this.overriddenTitles = overriddenTitles;
         return this;
@@ -43,6 +48,11 @@ public class ReportConfigurator implements Serializable {
 
     public ReportConfigurator setRemovedColumns(final List<Integer> removedColumns) {
         this.removedColumns = removedColumns;
+        return this;
+    }
+
+    public ReportConfigurator setAutosizedColumns(List<Integer> autosizedColumns) {
+        this.autosizedColumns = autosizedColumns;
         return this;
     }
 

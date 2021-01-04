@@ -37,6 +37,7 @@ public class ReportData implements Cloneable, Serializable {
     private boolean groupedColumnsDefaultCollapsed;
     private List<SpecialDataRow> specialRows = new ArrayList<>();
     private List<DataRow> dataRows = new ArrayList<>();
+    private List<Integer> autosizedColumns;
 
     public ReportData(final ReportConfiguration configuration) {
         this.configuration = configuration;
@@ -258,18 +259,24 @@ public class ReportData implements Cloneable, Serializable {
     }
 
     public List<Integer> getAutoSizedColumns() {
-        List<Integer> autosizedColumns = new ArrayList<>();
+        List<Integer> compiledAutosizedColumns = new ArrayList<>();
+
+        if(this.autosizedColumns != null) {
+            return compiledAutosizedColumns;
+        }
+
         int mergedCount = 0;
         for (int i = 0; header != null && i < header.getCells().size(); i++) {
             final HeaderCell headerCell = header.getCells().get(i);
             if(headerCell.isAutoSizeColumn()){
-                autosizedColumns.add(i + mergedCount);
+                compiledAutosizedColumns.add(i + mergedCount);
             }
             if(headerCell.getColumnWidth() > 1){
                 mergedCount += headerCell.getColumnWidth() - 1;
             }
         }
-        return autosizedColumns;
+
+        return compiledAutosizedColumns;
     }
 
     public ReportDataStyles getStyles() {
@@ -311,6 +318,9 @@ public class ReportData implements Cloneable, Serializable {
                     reportRow.removeCell(removedColumns.get(i));
                 }
             }
+
+            // Autosized columns
+            this.autosizedColumns = configurator.getAutosizedColumns();
 
             // Override template URL
             if(configurator.getTemplateUrl() != null) this.templateURL = configurator.getTemplateUrl();
