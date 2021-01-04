@@ -262,7 +262,7 @@ public class ReportData implements Cloneable, Serializable {
         List<Integer> compiledAutosizedColumns = new ArrayList<>();
 
         if(this.autosizedColumns != null) {
-            return compiledAutosizedColumns;
+            return this.autosizedColumns;
         }
 
         int mergedCount = 0;
