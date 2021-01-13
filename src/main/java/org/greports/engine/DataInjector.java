@@ -135,7 +135,7 @@ public abstract class DataInjector {
     }
 
     private void createSpecialFormulaCell(Sheet sheet, SpecialDataCell specialCell, Cell cell, String formulaString) {
-        if(sheet.getLastRowNum() > reportData.getDataStartRow()) {
+        if(sheet.getLastRowNum() >= reportData.getDataStartRow()) {
             for (Map.Entry<String, Integer> entry : reportData.getTargetIndexes().entrySet()) {
                 CellReference firstCellReference = this.getCellReferenceForTargetId(
                         sheet.getRow(reportData.getDataStartRow() + reportData.getConfiguration().getVerticalOffset()),
@@ -147,8 +147,6 @@ public abstract class DataInjector {
                 );
                 formulaString = formulaString.replaceAll(entry.getKey(), firstCellReference.formatAsString() + ":" + lastCellReference.formatAsString());
             }
-        }
-        if(sheet.getLastRowNum() > reportData.getDataStartRow()) {
             cell.setCellFormula(formulaString);
         }
     }
