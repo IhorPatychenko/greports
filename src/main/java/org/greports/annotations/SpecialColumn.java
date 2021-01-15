@@ -38,7 +38,7 @@ public @interface SpecialColumn {
      *
      * @return {@link String}
      */
-    String value();
+    String value() default "";
 
     /**
      * Visualisation format to be displayed.

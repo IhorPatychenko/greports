@@ -118,8 +118,9 @@ public final class ReportDataParser extends ReportParser {
         reportData
                 .setHeader(new ReportHeader(
                         reportData.getConfiguration().isSortableHeader(),
-                        reportData.getConfiguration().getHeaderRowIndex()))
-                .addCells(cells);
+                        reportData.getConfiguration().isStickyHeader(),
+                        reportData.getConfiguration().getHeaderRowIndex())
+                ).addCells(cells);
 
         reportData.setTargetIds();
     }
@@ -336,7 +337,7 @@ public final class ReportDataParser extends ReportParser {
 
     private <T> void parseSpecialRows(final Class<T> clazz, List<T> collection) throws ReportEngineReflectionException {
         for(ReportSpecialRow specialRow : reportData.getConfiguration().getSpecialRows()){
-            final SpecialDataRow specialDataRow = new SpecialDataRow(specialRow.getRowIndex());
+            final SpecialDataRow specialDataRow = new SpecialDataRow(specialRow.getRowIndex(), specialRow.isStickyRow());
             for (final ReportSpecialRowCell specialRowCell : specialRow.getCells()) {
                 if(!specialRowCell.getValueType().equals(ValueType.COLLECTED_VALUE) && !specialRowCell.getValueType().equals(ValueType.COLLECTED_FORMULA_VALUE)) {
                     specialDataRow.addCell(createSpecialDataCell(specialRowCell, specialRowCell.getValue()));

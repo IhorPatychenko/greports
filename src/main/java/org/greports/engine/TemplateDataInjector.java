@@ -55,16 +55,18 @@ public class TemplateDataInjector extends DataInjector {
     }
 
     private void cloneCell(Sheet sheet, Row sourceRow, Row targetRow, DataCell dataCell, int cellIndex) {
-        final Cell sourceRowCell = sourceRow.getCell(cellIndex);
-        final Cell targetRowCell = targetRow.createCell(cellIndex);
-        targetRowCell.setCellStyle(sourceRowCell.getCellStyle());
-        Object value = dataCell.getValue();
-        if(ValueType.FORMULA.equals(dataCell.getValueType())) {
-            value = replaceFormulaIndexes(sourceRow, value.toString());
-        } else if(ValueType.TEMPLATED_FORMULA.equals(dataCell.getValueType())) {
-            value = copyFormula(sheet, sourceRowCell.getCellFormula(), targetRow.getRowNum() - sourceRow.getRowNum());
+        if(!ValueType.IGNORED_VALUE.equals(dataCell.getValueType())) {
+            final Cell sourceRowCell = sourceRow.getCell(cellIndex);
+            final Cell targetRowCell = targetRow.createCell(cellIndex);
+            targetRowCell.setCellStyle(sourceRowCell.getCellStyle());
+            Object value = dataCell.getValue();
+            if(ValueType.FORMULA.equals(dataCell.getValueType())) {
+                value = replaceFormulaIndexes(sourceRow, value.toString());
+            } else if(ValueType.TEMPLATED_FORMULA.equals(dataCell.getValueType())) {
+                value = copyFormula(sheet, sourceRowCell.getCellFormula(), targetRow.getRowNum() - sourceRow.getRowNum());
+            }
+            WorkbookUtils.setCellValue(targetRowCell, value, dataCell.getValueType());
         }
-        WorkbookUtils.setCellValue(targetRowCell, value, dataCell.getValueType());
     }
 
     private String copyFormula(Sheet sheet, String formula, int rowdiff){
@@ -103,7 +105,11 @@ public class TemplateDataInjector extends DataInjector {
     private void createDataRows(Sheet sheet) {
         final Row sourceRow = sheet.getRow(reportData.getDataStartRow());
         for (int i = 0; i < reportData.getDataRows().size(); i++) {
-            final Row targetRow = sheet.createRow(reportData.getDataStartRow() + i + 1);
+            final int targetRowIndex = reportData.getDataStartRow() + i + 1;
+            Row targetRow = sheet.getRow(targetRowIndex);
+            if(targetRow == null) {
+                targetRow = sheet.createRow(targetRowIndex);
+            }
             final DataRow dataRow = reportData.getDataRows().get(i);
             for (int cellIndex = 0; cellIndex < dataRow.getCells().size(); cellIndex++) {
                 cloneCell(sheet, sourceRow, targetRow, dataRow.getCells().get(cellIndex), cellIndex);

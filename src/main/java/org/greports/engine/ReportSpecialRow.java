@@ -12,10 +12,12 @@ public class ReportSpecialRow implements Cloneable, Serializable {
     private static final long serialVersionUID = -110378709759679479L;
 
     private int rowIndex;
+    private boolean stickyRow = false;
     private List<ReportSpecialRowCell> cells = new ArrayList<>();
 
     ReportSpecialRow(SpecialRow specialRow) {
         this.rowIndex = specialRow.rowIndex();
+        this.stickyRow = specialRow.stickyRow();
         this.cells = Arrays.stream(specialRow.cells()).map(ReportSpecialRowCell::new).collect(Collectors.toList());
     }
 
@@ -29,6 +31,15 @@ public class ReportSpecialRow implements Cloneable, Serializable {
 
     public ReportSpecialRow setRowIndex(final int rowIndex) {
         this.rowIndex = rowIndex;
+        return this;
+    }
+
+    public boolean isStickyRow() {
+        return stickyRow;
+    }
+
+    public ReportSpecialRow setStickyRow(boolean stickyRow) {
+        this.stickyRow = stickyRow;
         return this;
     }
 

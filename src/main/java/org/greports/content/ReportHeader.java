@@ -12,10 +12,12 @@ public class ReportHeader implements ReportRow<HeaderCell>, Cloneable, Serializa
     private static final long serialVersionUID = -927334852923873496L;
     private List<HeaderCell> cells = new ArrayList<>();
     private final boolean columnFilter;
+    private final boolean stickyHeader;
     private final int rowIndex;
 
-    public ReportHeader(final boolean addFilter, final int rowIndex) {
+    public ReportHeader(final boolean addFilter, final boolean stickyHeader, final int rowIndex) {
         this.columnFilter = addFilter;
+        this.stickyHeader = stickyHeader;
         this.rowIndex = rowIndex;
     }
 
@@ -27,12 +29,12 @@ public class ReportHeader implements ReportRow<HeaderCell>, Cloneable, Serializa
         this.cells.addAll(cells);
     }
 
-//    public void removeCell(final int cellIndex) {
-//        this.cells.remove(cellIndex);
-//    }
-
     public boolean isColumnFilter() {
         return columnFilter;
+    }
+
+    public boolean isStickyHeader() {
+        return stickyHeader;
     }
 
     @Override

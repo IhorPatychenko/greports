@@ -68,9 +68,9 @@ public class ReportInjector {
             }
 
         } catch (InvalidFormatException e) {
-            throw new ReportEngineRuntimeException("Error creating a workbook", e, ReportInjector.class);
+            throw new ReportEngineRuntimeException("Error creating a workbook", e, this.getClass());
         } catch (IOException e) {
-            throw new ReportEngineRuntimeException("Error opening a stream of template url", e, ReportInjector.class);
+            throw new ReportEngineRuntimeException("Error opening a stream of template url", e, this.getClass());
         }
     }
 

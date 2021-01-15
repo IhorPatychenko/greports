@@ -64,6 +64,13 @@ public @interface Configuration {
     boolean createHeader() default true;
 
     /**
+     * This value indicates if the header row needs t be sticky (freeze).
+     *
+     * @return {@code boolean}
+     */
+    boolean stickyHeader() default false;
+
+    /**
      * The value indicates if the header needs to be sortable.
      *
      * @return {@code boolean}
@@ -135,6 +142,13 @@ public @interface Configuration {
      * @return {@code short}
      */
     short horizontalOffset() default 0;
+
+    /**
+     * A boolean indicating if the gridlines must be shown.
+     *
+     * @return {@code boolean}
+     */
+    boolean showGridlines() default true;
 
     /**
      * An array of {@link SpecialRow}

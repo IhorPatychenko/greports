@@ -39,7 +39,7 @@ public abstract class DataInjector {
     }
 
     protected CellReference getCellReferenceForTargetId(Row row, String id) {
-        return new CellReference(row.getCell(reportData.getColumnIndexForId(id)));
+        return new CellReference(row.getCell(reportData.getColumnIndexForId(id), Row.MissingCellPolicy.CREATE_NULL_AS_BLANK));
     }
 
     protected void setCellFormat(Cell cell, String format) {
@@ -66,8 +66,12 @@ public abstract class DataInjector {
 
     protected void adjustColumns(Sheet sheet) {
         for (Integer autoSizedColumn : reportData.getAutoSizedColumns()) {
-            sheet.autoSizeColumn(autoSizedColumn);
+            sheet.autoSizeColumn(autoSizedColumn + reportData.getConfiguration().getHorizontalOffset());
         }
+    }
+
+    protected void setGridlines(Sheet sheet) {
+        sheet.setDisplayGridlines(reportData.getConfiguration().isShowGridlines());
     }
 
     protected void createSpecialRows(Sheet sheet) {
@@ -124,11 +128,14 @@ public abstract class DataInjector {
                 }
                 setCellFormat(cell, specialCell.getFormat());
             }
+            if(specialRow.isStickyRow()) {
+                sheet.createFreezePane(0, specialRow.getRowIndex() + 1, 0, specialRow.getRowIndex() + 1);
+            }
         }
     }
 
     private void createSpecialFormulaCell(Sheet sheet, SpecialDataCell specialCell, Cell cell, String formulaString) {
-        if(sheet.getLastRowNum() > reportData.getDataStartRow()) {
+        if(sheet.getLastRowNum() >= reportData.getDataStartRow()) {
             for (Map.Entry<String, Integer> entry : reportData.getTargetIndexes().entrySet()) {
                 CellReference firstCellReference = this.getCellReferenceForTargetId(
                         sheet.getRow(reportData.getDataStartRow() + reportData.getConfiguration().getVerticalOffset()),
@@ -140,13 +147,11 @@ public abstract class DataInjector {
                 );
                 formulaString = formulaString.replaceAll(entry.getKey(), firstCellReference.formatAsString() + ":" + lastCellReference.formatAsString());
             }
-        }
-        if(sheet.getLastRowNum() > reportData.getDataStartRow()) {
             cell.setCellFormula(formulaString);
         }
     }
 
-    private void createColumnsToMerge(final Sheet sheet, final Row row, final int cellIndex, final int columnWidth) {
+    protected void createColumnsToMerge(final Sheet sheet, final Row row, final int cellIndex, final int columnWidth) {
         if(columnWidth > 1) {
             for (int i = 1; i < columnWidth; i++) {
                 row.createCell(cellIndex + i, CellType.BLANK);

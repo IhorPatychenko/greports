@@ -9,6 +9,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class ReportConfiguration implements Cloneable, Serializable {
+    private static final long serialVersionUID = 5728699559958112658L;
+
 
     private String sheetName;
     private String[] reportName = new String[]{};
@@ -16,6 +18,7 @@ public class ReportConfiguration implements Cloneable, Serializable {
     private String locale = "en_US";
     private String templatePath = "";
     private boolean createHeader = true;
+    private boolean stickyHeader = false;
     private boolean sortableHeader = false;
     private int headerRowIndex = 0;
     private int dataStartRowIndex = 1;
@@ -24,6 +27,7 @@ public class ReportConfiguration implements Cloneable, Serializable {
     private short horizontalOffset = 0;
     private List<ReportSpecialRow> specialRows = new ArrayList<>();
     private List<ReportSpecialColumn> specialColumns = new ArrayList<>();
+    private boolean showGridlines = true;
 
     ReportConfiguration(Configuration configuration) {
         this.reportName = configuration.reportName();
@@ -32,6 +36,7 @@ public class ReportConfiguration implements Cloneable, Serializable {
         this.templatePath = configuration.templatePath();
         this.sheetName = configuration.sheetName();
         this.createHeader = configuration.createHeader();
+        this.stickyHeader = configuration.stickyHeader();
         this.sortableHeader = configuration.sortableHeader();
         this.headerRowIndex = configuration.headerRowIndex();
         this.dataStartRowIndex = configuration.dataStartRowIndex();
@@ -39,27 +44,12 @@ public class ReportConfiguration implements Cloneable, Serializable {
         this.verticalOffset = configuration.verticalOffset();
         this.horizontalOffset = configuration.horizontalOffset();
         this.specialRows = Arrays.stream(configuration.specialRows()).map(ReportSpecialRow::new).collect(Collectors.toList());
-        this.specialColumns = Arrays.stream(configuration.specialColumns()).map(ReportSpecialColumn::new).collect(Collectors.toList());;
+        this.specialColumns = Arrays.stream(configuration.specialColumns()).map(ReportSpecialColumn::new).collect(Collectors.toList());
+        this.showGridlines = configuration.showGridlines();
     }
 
     public ReportConfiguration(final String sheetName) {
         this.sheetName = sheetName;
-    }
-
-    public ReportConfiguration(final String sheetName, final String translationsDir, final String locale, final String templatePath, final boolean createHeader, final boolean sortableHeader, final short headerRowIndex, final short dataStartRowIndex, final boolean templatedInject, final short verticalOffset, final short horizontalOffset, final List<ReportSpecialRow> specialRows, final List<ReportSpecialColumn> specialColumns) {
-        this.sheetName = sheetName;
-        this.translationsDir = translationsDir;
-        this.locale = locale;
-        this.templatePath = templatePath;
-        this.createHeader = createHeader;
-        this.sortableHeader = sortableHeader;
-        this.headerRowIndex = headerRowIndex;
-        this.dataStartRowIndex = dataStartRowIndex;
-        this.templatedInject = templatedInject;
-        this.verticalOffset = verticalOffset;
-        this.horizontalOffset = horizontalOffset;
-        this.specialRows = specialRows;
-        this.specialColumns = specialColumns;
     }
 
     public String[] getReportName() {
@@ -84,6 +74,10 @@ public class ReportConfiguration implements Cloneable, Serializable {
 
     public boolean isCreateHeader() {
         return createHeader;
+    }
+
+    public boolean isStickyHeader() {
+        return stickyHeader;
     }
 
     public boolean isSortableHeader() {
@@ -118,6 +112,10 @@ public class ReportConfiguration implements Cloneable, Serializable {
         return specialColumns;
     }
 
+    public boolean isShowGridlines() {
+        return showGridlines;
+    }
+
     public ReportConfiguration setReportName(final String[] reportName) {
         this.reportName = reportName;
         return this;
@@ -145,6 +143,11 @@ public class ReportConfiguration implements Cloneable, Serializable {
 
     public ReportConfiguration setCreateHeader(final boolean createHeader) {
         this.createHeader = createHeader;
+        return this;
+    }
+
+    public ReportConfiguration setStickyHeader(boolean stickyHeader) {
+        this.stickyHeader = stickyHeader;
         return this;
     }
 
@@ -185,6 +188,11 @@ public class ReportConfiguration implements Cloneable, Serializable {
 
     public ReportConfiguration setSpecialColumns(final List<ReportSpecialColumn> specialColumns) {
         this.specialColumns = specialColumns;
+        return this;
+    }
+
+    public ReportConfiguration setShowGridlines(boolean showGridlines) {
+        this.showGridlines = showGridlines;
         return this;
     }
 
