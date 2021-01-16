@@ -85,6 +85,14 @@ public class ReportLoader {
         return bindForClass(clazz, ReportLoaderErrorTreatment.THROW_ERROR, fromRow, toRow);
     }
 
+    public <T> ReportLoader bindForClass(Class<T> clazz, ReportLoaderErrorTreatment treatment) throws ReportEngineReflectionException {
+        return bindForClass(clazz, treatment, -1, Integer.MAX_VALUE);
+    }
+
+    public <T> ReportLoader bindForClass(Class<T> clazz, ReportLoaderErrorTreatment treatment, int fromRow) throws ReportEngineReflectionException {
+        return bindForClass(clazz, treatment, fromRow, Integer.MAX_VALUE);
+    }
+
     public <T> ReportLoader bindForClass(Class<T> clazz, ReportLoaderErrorTreatment treatment, int fromRow, int toRow) throws ReportEngineReflectionException {
         if(reportName == null) {
             throw new ReportEngineRuntimeException("reportName cannot be null", this.getClass());

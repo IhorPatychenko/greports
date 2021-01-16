@@ -4,7 +4,7 @@ import org.greports.annotations.CellValidator;
 import org.greports.annotations.ColumnValidator;
 import org.greports.exceptions.ReportEngineReflectionException;
 import org.greports.exceptions.ReportEngineValidationException;
-import org.greports.positioning.TranslationsParser;
+import org.greports.utils.TranslationsParser;
 import org.greports.utils.Translator;
 import org.greports.validators.AbstractCellValidator;
 import org.greports.validators.AbstractColumnValidator;

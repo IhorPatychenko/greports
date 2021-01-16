@@ -7,7 +7,7 @@ import org.greports.content.cell.SpecialDataCell;
 import org.greports.content.row.DataRow;
 import org.greports.content.row.ReportRow;
 import org.greports.content.row.SpecialDataRow;
-import org.greports.styles.ReportDataStyles;
+import org.greports.styles.ReportStylesContainer;
 import org.greports.utils.Pair;
 
 import java.io.Serializable;
@@ -23,7 +23,7 @@ import java.util.stream.Collectors;
 public class ReportData implements Cloneable, Serializable {
     private static final long serialVersionUID = 7890759064532349923L;
 
-    private final ReportDataStyles reportDataStyles = new ReportDataStyles();
+    private final ReportStylesContainer reportStylesContainer = new ReportStylesContainer();
     private final Map<String, Integer> targetIndexes = new HashMap<>();
     private String reportName;
     private ReportConfiguration configuration;
@@ -177,7 +177,7 @@ public class ReportData implements Cloneable, Serializable {
     }
 
     private void mergeStyles(ReportData other) {
-        reportDataStyles.mergeStyles(other.reportDataStyles);
+        reportStylesContainer.mergeStyles(other.reportStylesContainer);
     }
 
     @Override
@@ -279,8 +279,8 @@ public class ReportData implements Cloneable, Serializable {
         return compiledAutosizedColumns;
     }
 
-    public ReportDataStyles getStyles() {
-        return reportDataStyles;
+    public ReportStylesContainer getStyles() {
+        return reportStylesContainer;
     }
 
     public List<SpecialDataRow> getSpecialRows() {

@@ -5,15 +5,16 @@ import org.apache.poi.ss.usermodel.FillPatternType;
 import org.apache.poi.ss.usermodel.FontUnderline;
 import org.apache.poi.ss.usermodel.HorizontalAlignment;
 import org.apache.poi.ss.usermodel.VerticalAlignment;
-import org.greports.styles.interfaces.StripedRows.StripedRowsIndex;
+import org.greports.positioning.RectangleRange;
+import org.greports.styles.interfaces.StripedRows;
 
 import java.awt.*;
 import java.io.Serializable;
 
-public class ReportStyle<T extends Serializable> implements Serializable {
-    private static final long serialVersionUID = 704161250828995451L;
+public class ReportStyle implements Serializable {
+    private static final long serialVersionUID = 4183157194410162170L;
 
-    private final T range;
+    private final RectangleRange range;
     private Color foregroundColor;
     private Color fontColor;
     private FillPatternType fillPattern;
@@ -29,7 +30,7 @@ public class ReportStyle<T extends Serializable> implements Serializable {
     private BorderStyle borderLeft;
     private BorderStyle borderRight;
     private Color borderColor;
-    private StripedRowsIndex stripedRowsIndex;
+    private StripedRows.StripedRowsIndex stripedRowsIndex;
     private Color stripedRowsColor;
     private boolean clonePreviousStyle;
     private Color leftBorderColor;
@@ -42,16 +43,19 @@ public class ReportStyle<T extends Serializable> implements Serializable {
     private Boolean quotePrefixed;
     private Short rotation;
     private Boolean shrinkToFit;
+    private Float rowHeight;
+    private Integer columnWidth;
+    private Boolean wrapText;
 
-    protected ReportStyle(T tuple){
-        this.range = tuple;
+    public ReportStyle(RectangleRange range){
+        this.range = range;
     }
 
     public Color getForegroundColor() {
         return foregroundColor;
     }
 
-    public ReportStyle<T> setForegroundColor(Color foregroundColor) {
+    public ReportStyle setForegroundColor(Color foregroundColor) {
         this.foregroundColor = foregroundColor;
         return this;
     }
@@ -60,7 +64,7 @@ public class ReportStyle<T extends Serializable> implements Serializable {
         return fontColor;
     }
 
-    public ReportStyle<T> setFontColor(Color fontColor) {
+    public ReportStyle setFontColor(Color fontColor) {
         this.fontColor = fontColor;
         return this;
     }
@@ -69,7 +73,7 @@ public class ReportStyle<T extends Serializable> implements Serializable {
         return fillPattern;
     }
 
-    public ReportStyle<T> setFillPattern(FillPatternType fillPattern) {
+    public ReportStyle setFillPattern(FillPatternType fillPattern) {
         this.fillPattern = fillPattern;
         return this;
     }
@@ -78,7 +82,7 @@ public class ReportStyle<T extends Serializable> implements Serializable {
         return fontSize;
     }
 
-    public ReportStyle<T> setFontSize(Short fontSize) {
+    public ReportStyle setFontSize(Short fontSize) {
         this.fontSize = fontSize;
         return this;
     }
@@ -87,7 +91,7 @@ public class ReportStyle<T extends Serializable> implements Serializable {
         return boldFont;
     }
 
-    public ReportStyle<T> setBoldFont(Boolean boldFont) {
+    public ReportStyle setBoldFont(Boolean boldFont) {
         this.boldFont = boldFont;
         return this;
     }
@@ -96,7 +100,7 @@ public class ReportStyle<T extends Serializable> implements Serializable {
         return italicFont;
     }
 
-    public ReportStyle<T> setItalicFont(Boolean italicFont) {
+    public ReportStyle setItalicFont(Boolean italicFont) {
         this.italicFont = italicFont;
         return this;
     }
@@ -105,7 +109,7 @@ public class ReportStyle<T extends Serializable> implements Serializable {
         return underlineFont;
     }
 
-    public ReportStyle<T> setUnderlineFont(FontUnderline underlineFont) {
+    public ReportStyle setUnderlineFont(FontUnderline underlineFont) {
         this.underlineFont = underlineFont;
         return this;
     }
@@ -114,7 +118,7 @@ public class ReportStyle<T extends Serializable> implements Serializable {
         return strikeoutFont;
     }
 
-    public ReportStyle<T> setStrikeoutFont(Boolean strikeoutFont) {
+    public ReportStyle setStrikeoutFont(Boolean strikeoutFont) {
         this.strikeoutFont = strikeoutFont;
         return this;
     }
@@ -123,7 +127,7 @@ public class ReportStyle<T extends Serializable> implements Serializable {
         return horizontalAlignment;
     }
 
-    public ReportStyle<T> setHorizontalAlignment(HorizontalAlignment horizontalAlignment) {
+    public ReportStyle setHorizontalAlignment(HorizontalAlignment horizontalAlignment) {
         this.horizontalAlignment = horizontalAlignment;
         return this;
     }
@@ -132,7 +136,7 @@ public class ReportStyle<T extends Serializable> implements Serializable {
         return verticalAlignment;
     }
 
-    public ReportStyle<T> setVerticalAlignment(VerticalAlignment verticalAlignment) {
+    public ReportStyle setVerticalAlignment(VerticalAlignment verticalAlignment) {
         this.verticalAlignment = verticalAlignment;
         return this;
     }
@@ -141,7 +145,7 @@ public class ReportStyle<T extends Serializable> implements Serializable {
         return borderTop;
     }
 
-    public ReportStyle<T> setBorderTop(BorderStyle borderTop) {
+    public ReportStyle setBorderTop(BorderStyle borderTop) {
         this.borderTop = borderTop;
         return this;
     }
@@ -150,7 +154,7 @@ public class ReportStyle<T extends Serializable> implements Serializable {
         return borderBottom;
     }
 
-    public ReportStyle<T> setBorderBottom(BorderStyle borderBottom) {
+    public ReportStyle setBorderBottom(BorderStyle borderBottom) {
         this.borderBottom = borderBottom;
         return this;
     }
@@ -159,7 +163,7 @@ public class ReportStyle<T extends Serializable> implements Serializable {
         return borderLeft;
     }
 
-    public ReportStyle<T> setBorderLeft(BorderStyle borderLeft) {
+    public ReportStyle setBorderLeft(BorderStyle borderLeft) {
         this.borderLeft = borderLeft;
         return this;
     }
@@ -168,7 +172,7 @@ public class ReportStyle<T extends Serializable> implements Serializable {
         return borderRight;
     }
 
-    public ReportStyle<T> setBorderRight(BorderStyle borderRight) {
+    public ReportStyle setBorderRight(BorderStyle borderRight) {
         this.borderRight = borderRight;
         return this;
     }
@@ -177,16 +181,16 @@ public class ReportStyle<T extends Serializable> implements Serializable {
         return borderColor;
     }
 
-    public ReportStyle<T> setBorderColor(Color borderColor) {
+    public ReportStyle setBorderColor(Color borderColor) {
         this.borderColor = borderColor;
         return this;
     }
 
-    public StripedRowsIndex getStripedRowsIndex() {
+    public StripedRows.StripedRowsIndex getStripedRowsIndex() {
         return stripedRowsIndex;
     }
 
-    public ReportStyle<T> setStripedRowsIndex(StripedRowsIndex stripedRowsIndex) {
+    public ReportStyle setStripedRowsIndex(StripedRows.StripedRowsIndex stripedRowsIndex) {
         this.stripedRowsIndex = stripedRowsIndex;
         return this;
     }
@@ -195,7 +199,7 @@ public class ReportStyle<T extends Serializable> implements Serializable {
         return stripedRowsColor;
     }
 
-    public ReportStyle<T> setStripedRowsColor(Color stripedRowsColor) {
+    public ReportStyle setStripedRowsColor(Color stripedRowsColor) {
         this.stripedRowsColor = stripedRowsColor;
         return this;
     }
@@ -204,7 +208,7 @@ public class ReportStyle<T extends Serializable> implements Serializable {
         return clonePreviousStyle;
     }
 
-    public ReportStyle<T> setClonePreviousStyle(boolean clonePreviousStyle) {
+    public ReportStyle setClonePreviousStyle(boolean clonePreviousStyle) {
         this.clonePreviousStyle = clonePreviousStyle;
         return this;
     }
@@ -213,7 +217,7 @@ public class ReportStyle<T extends Serializable> implements Serializable {
         return leftBorderColor;
     }
 
-    public ReportStyle<T> setLeftBorderColor(Color leftBorderColor) {
+    public ReportStyle setLeftBorderColor(Color leftBorderColor) {
         this.leftBorderColor = leftBorderColor;
         return this;
     }
@@ -222,7 +226,7 @@ public class ReportStyle<T extends Serializable> implements Serializable {
         return rightBorderColor;
     }
 
-    public ReportStyle<T> setRightBorderColor(Color rightBorderColor) {
+    public ReportStyle setRightBorderColor(Color rightBorderColor) {
         this.rightBorderColor = rightBorderColor;
         return this;
     }
@@ -231,7 +235,7 @@ public class ReportStyle<T extends Serializable> implements Serializable {
         return topBorderColor;
     }
 
-    public ReportStyle<T> setTopBorderColor(Color topBorderColor) {
+    public ReportStyle setTopBorderColor(Color topBorderColor) {
         this.topBorderColor = topBorderColor;
         return this;
     }
@@ -240,7 +244,7 @@ public class ReportStyle<T extends Serializable> implements Serializable {
         return bottomBorderColor;
     }
 
-    public ReportStyle<T> setBottomBorderColor(Color bottomBorderColor) {
+    public ReportStyle setBottomBorderColor(Color bottomBorderColor) {
         this.bottomBorderColor = bottomBorderColor;
         return this;
     }
@@ -249,7 +253,7 @@ public class ReportStyle<T extends Serializable> implements Serializable {
         return hidden;
     }
 
-    public ReportStyle<T> setHidden(Boolean hidden) {
+    public ReportStyle setHidden(Boolean hidden) {
         this.hidden = hidden;
         return this;
     }
@@ -258,7 +262,7 @@ public class ReportStyle<T extends Serializable> implements Serializable {
         return indentation;
     }
 
-    public ReportStyle<T> setIndentation(Short indentation) {
+    public ReportStyle setIndentation(Short indentation) {
         this.indentation = indentation;
         return this;
     }
@@ -267,7 +271,7 @@ public class ReportStyle<T extends Serializable> implements Serializable {
         return locked;
     }
 
-    public ReportStyle<T> setLocked(Boolean locked) {
+    public ReportStyle setLocked(Boolean locked) {
         this.locked = locked;
         return this;
     }
@@ -276,7 +280,7 @@ public class ReportStyle<T extends Serializable> implements Serializable {
         return quotePrefixed;
     }
 
-    public ReportStyle<T> setQuotePrefixed(Boolean quotePrefixed) {
+    public ReportStyle setQuotePrefixed(Boolean quotePrefixed) {
         this.quotePrefixed = quotePrefixed;
         return this;
     }
@@ -285,7 +289,7 @@ public class ReportStyle<T extends Serializable> implements Serializable {
         return rotation;
     }
 
-    public ReportStyle<T> setRotation(Short rotation) {
+    public ReportStyle setRotation(Short rotation) {
         this.rotation = rotation;
         return this;
     }
@@ -294,12 +298,40 @@ public class ReportStyle<T extends Serializable> implements Serializable {
         return shrinkToFit;
     }
 
-    public ReportStyle<T> setShrinkToFit(Boolean shrinkToFit) {
+    public ReportStyle setShrinkToFit(Boolean shrinkToFit) {
         this.shrinkToFit = shrinkToFit;
         return this;
     }
 
-    public T getRange() {
+    public Float getRowHeight() {
+        return rowHeight;
+    }
+
+    public ReportStyle setRowHeight(Float rowHeight) {
+        this.rowHeight = rowHeight;
+        return this;
+    }
+
+    public Boolean getWrapText() {
+        return wrapText;
+    }
+
+    public ReportStyle setWrapText(Boolean wrapText) {
+        this.wrapText = wrapText;
+        return this;
+    }
+
+    public Integer getColumnWidth() {
+        return columnWidth;
+    }
+
+    public ReportStyle setColumnWidth(Integer columnWidth) {
+        this.columnWidth = columnWidth;
+        return this;
+    }
+
+    public RectangleRange getRange() {
         return range;
     }
+
 }

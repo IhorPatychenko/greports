@@ -10,11 +10,16 @@ public class RectangleRange extends Tuple<VerticalRange, HorizontalRange> implem
         super(verticalRange, horizontalRange);
     }
 
+    @Override
+    public RectangleRange toRectangeRange() {
+        return this;
+    }
+
     public VerticalRange getVerticalRange(){
-        return super.getA();
+        return super.getStart();
     }
 
     public HorizontalRange getHorizontalRange(){
-        return super.getB();
+        return super.getEnd();
     }
 }

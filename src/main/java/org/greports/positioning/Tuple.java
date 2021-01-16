@@ -1,32 +1,33 @@
 package org.greports.positioning;
 
-public abstract class Tuple<T, E> {
+import java.io.Serializable;
 
-    private T a;
-    private E b;
+public abstract class Tuple<T extends Serializable, E extends Serializable> implements Serializable {
 
-    public Tuple(){
+    private static final long serialVersionUID = 8980520714685635759L;
+    private T start;
+    private E end;
 
+    protected Tuple(T start, E end) {
+        this.start = start;
+        this.end = end;
     }
 
-    public Tuple(T a, E b) {
-        this.a = a;
-        this.b = b;
+    public T getStart(){
+        return start;
     }
 
-    protected T getA() {
-        return a;
+    public E getEnd(){
+        return end;
     }
 
-    protected E getB() {
-        return b;
+    public void setStart(T start) {
+        this.start = start;
     }
 
-    protected void setA(T a){
-        this.a = a;
+    public void setEnd(E end) {
+        this.end = end;
     }
 
-    protected void setB(E b) {
-        this.b = b;
-    }
+    public abstract RectangleRange toRectangeRange();
 }

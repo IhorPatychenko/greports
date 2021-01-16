@@ -1,0 +1,313 @@
+package org.greports.styles.stylesbuilders;
+
+import org.apache.poi.ss.usermodel.BorderStyle;
+import org.apache.poi.ss.usermodel.FillPatternType;
+import org.apache.poi.ss.usermodel.FontUnderline;
+import org.apache.poi.ss.usermodel.HorizontalAlignment;
+import org.apache.poi.ss.usermodel.VerticalAlignment;
+import org.greports.positioning.HorizontalRange;
+import org.greports.positioning.Position;
+import org.greports.positioning.RectangleRange;
+import org.greports.positioning.Tuple;
+import org.greports.positioning.VerticalRange;
+import org.greports.styles.ReportStyle;
+
+import java.awt.*;
+import java.io.Serializable;
+
+public class ReportStyleBuilder<E extends Tuple<?, ?>> implements Serializable {
+    private static final long serialVersionUID = 7168319249010545243L;
+    protected Color foregroundColor;
+    protected Color fontColor;
+    protected Short fontSize;
+    protected FillPatternType fillPattern = FillPatternType.SOLID_FOREGROUND;
+    protected Boolean boldFont;
+    protected Boolean italicFont;
+    protected FontUnderline underlineFont;
+    protected Boolean strikeoutFont;
+    protected HorizontalAlignment horizontalAlignment;
+    protected VerticalAlignment verticalAlignment;
+    protected BorderStyle borderTop;
+    protected BorderStyle borderRight;
+    protected BorderStyle borderBottom;
+    protected BorderStyle borderLeft;
+    private Color leftBorderColor;
+    private Color rightBorderColor;
+    private Color topBorderColor;
+    private Color bottomBorderColor;
+    private Boolean hidden;
+    private Short indentation;
+    private Boolean locked;
+    private Boolean quotePrefixed;
+    private Short rotation;
+    private Boolean shrinkToFit;
+    private Float rowHeight;
+    private Boolean wrapText;
+    private Integer columnWidth;
+    protected Color borderColor;
+    protected RectangleRange range;
+    protected final boolean clonePreviousStyle;
+
+    public ReportStyleBuilder(boolean clonePreviousStyle) {
+        this((RectangleRange) null, clonePreviousStyle);
+    }
+
+    public ReportStyleBuilder(RectangleRange range, boolean clonePreviousStyle) {
+        this.range = range;
+        this.clonePreviousStyle = clonePreviousStyle;
+    }
+
+    public ReportStyleBuilder(HorizontalRange range, boolean clonePreviousStyle) {
+        this(range.toRectangeRange(), clonePreviousStyle);
+    }
+
+    public ReportStyleBuilder(VerticalRange range, boolean clonePreviousStyle) {
+        this(range.toRectangeRange(), clonePreviousStyle);
+    }
+
+    public ReportStyleBuilder(Position range, boolean clonePreviousStyle) {
+        this(range.toRectangeRange(), clonePreviousStyle);
+    }
+
+    public ReportStyleBuilder(RectangleRange range, ReportStyleBuilder<?> styleBuilder) {
+        this(range, styleBuilder.clonePreviousStyle);
+        this.foregroundColor = styleBuilder.foregroundColor;
+        this.fontColor = styleBuilder.fontColor;
+        this.fontSize = styleBuilder.fontSize;
+        this.fillPattern = styleBuilder.fillPattern;
+        this.boldFont = styleBuilder.boldFont;
+        this.italicFont = styleBuilder.italicFont;
+        this.underlineFont = styleBuilder.underlineFont;
+        this.strikeoutFont = styleBuilder.strikeoutFont;
+        this.horizontalAlignment = styleBuilder.horizontalAlignment;
+        this.verticalAlignment = styleBuilder.verticalAlignment;
+        this.borderTop = styleBuilder.borderTop;
+        this.borderRight = styleBuilder.borderRight;
+        this.borderBottom = styleBuilder.borderBottom;
+        this.borderLeft = styleBuilder.borderLeft;
+        this.leftBorderColor = styleBuilder.leftBorderColor;
+        this.rightBorderColor = styleBuilder.rightBorderColor;
+        this.topBorderColor = styleBuilder.topBorderColor;
+        this.bottomBorderColor = styleBuilder.bottomBorderColor;
+        this.hidden = styleBuilder.hidden;
+        this.indentation = styleBuilder.indentation;
+        this.locked = styleBuilder.locked;
+        this.quotePrefixed = styleBuilder.quotePrefixed;
+        this.rotation = styleBuilder.rotation;
+        this.shrinkToFit = styleBuilder.shrinkToFit;
+        this.rowHeight = styleBuilder.rowHeight;
+        this.wrapText = styleBuilder.wrapText;
+        this.columnWidth = styleBuilder.columnWidth;
+        this.borderColor = styleBuilder.borderColor;
+    }
+
+    public ReportStyleBuilder(HorizontalRange range, ReportStyleBuilder<?> styleBuilder) {
+        this(range.toRectangeRange(), styleBuilder);
+    }
+
+    public ReportStyleBuilder(VerticalRange range, ReportStyleBuilder<?> styleBuilder) {
+        this(range.toRectangeRange(), styleBuilder);
+    }
+
+    public ReportStyleBuilder(Position position, ReportStyleBuilder<?> styleBuilder) {
+        this(position.toRectangeRange(), styleBuilder);
+    }
+
+    public void setRange(RectangleRange range) {
+        this.range = range;
+    }
+
+    public ReportStyleBuilder<E> setForegroundColor(Color foregroundColor) {
+        this.foregroundColor = foregroundColor;
+        return this;
+    }
+
+    public ReportStyleBuilder<E> setFontColor(Color fontColor) {
+        this.fontColor = fontColor;
+        return this;
+    }
+
+    public ReportStyleBuilder<E> setFontSize(Short fontSize) {
+        this.fontSize = fontSize;
+        return this;
+    }
+
+    public ReportStyleBuilder<E> setFillPattern(FillPatternType fillPattern) {
+        this.fillPattern = fillPattern;
+        return this;
+    }
+
+    public ReportStyleBuilder<E> setBoldFont(Boolean boldFont) {
+        this.boldFont = boldFont;
+        return this;
+    }
+
+    public ReportStyleBuilder<E> setItalicFont(Boolean italicFont) {
+        this.italicFont = italicFont;
+        return this;
+    }
+
+    public ReportStyleBuilder<E> setUnderlineFont(FontUnderline underlineFont) {
+        this.underlineFont = underlineFont;
+        return this;
+    }
+
+    public ReportStyleBuilder<E> setStrikeoutFont(Boolean strikeoutFont) {
+        this.strikeoutFont = strikeoutFont;
+        return this;
+    }
+
+    public ReportStyleBuilder<E> setHorizontalAlignment(HorizontalAlignment horizontalAlignment) {
+        this.horizontalAlignment = horizontalAlignment;
+        return this;
+    }
+
+    public ReportStyleBuilder<E> setVerticalAlignment(VerticalAlignment verticalAlignment) {
+        this.verticalAlignment = verticalAlignment;
+        return this;
+    }
+
+    public ReportStyleBuilder<E> setBorder(BorderStyle border) {
+        setBorderTop(border);
+        setBorderBottom(border);
+        setBorderLeft(border);
+        setBorderRight(border);
+        return this;
+    }
+
+    public ReportStyleBuilder<E> setBorderTop(BorderStyle borderTop) {
+        this.borderTop = borderTop;
+        return this;
+    }
+
+    public ReportStyleBuilder<E> setBorderRight(BorderStyle borderRight) {
+        this.borderRight = borderRight;
+        return this;
+    }
+
+    public ReportStyleBuilder<E> setBorderBottom(BorderStyle borderBottom) {
+        this.borderBottom = borderBottom;
+        return this;
+    }
+
+    public ReportStyleBuilder<E> setBorderLeft(BorderStyle borderLeft) {
+        this.borderLeft = borderLeft;
+        return this;
+    }
+
+    public ReportStyleBuilder<E> setLeftBorderColor(Color color) {
+        this.leftBorderColor = color;
+        return this;
+    }
+
+    public ReportStyleBuilder<E> setRightBorderColor(Color color) {
+        this.rightBorderColor = color;
+        return this;
+    }
+
+    public ReportStyleBuilder<E> setTopBorderColor(Color color) {
+        this.topBorderColor = color;
+        return this;
+    }
+
+    public ReportStyleBuilder<E> setBottomBorderColor(Color color) {
+        this.bottomBorderColor = color;
+        return this;
+    }
+
+    public ReportStyleBuilder<E> setHidden(Boolean hidden) {
+        this.hidden = hidden;
+        return this;
+    }
+
+    public ReportStyleBuilder<E> setIndentation(Short indentation) {
+        this.indentation = indentation;
+        return this;
+    }
+
+    public ReportStyleBuilder<E> setLocked(Boolean locked) {
+        this.locked = locked;
+        return this;
+    }
+
+    public ReportStyleBuilder<E> setQuotePrefixed(Boolean quotePrefixed) {
+        this.quotePrefixed = quotePrefixed;
+        return this;
+    }
+
+    public ReportStyleBuilder<E> setRotation(Short rotation) {
+        this.rotation = rotation;
+        return this;
+    }
+
+    public ReportStyleBuilder<E> setShrinkToFit(Boolean shrinkToFit) {
+        this.shrinkToFit = shrinkToFit;
+        return this;
+    }
+
+    public ReportStyleBuilder<E> setRowHeight(Float rowHeight) {
+        this.rowHeight = rowHeight;
+        return this;
+    }
+
+    public ReportStyleBuilder<E> setColumnWidth(Integer columnWidth) {
+        this.columnWidth = columnWidth;
+        return this;
+    }
+
+    public ReportStyleBuilder<E> setBorderColor(Color color) {
+        this.borderColor = color;
+        return this;
+    }
+
+    public ReportStyleBuilder<E> setWrapText(Boolean wrapText) {
+        this.wrapText = wrapText;
+        return this;
+    }
+
+    public RectangleRange getRange() {
+        return this.range;
+    }
+
+    protected ReportStyle buildStyle() {
+        ReportStyle reportStyle = new ReportStyle(this.range)
+                .setClonePreviousStyle(clonePreviousStyle)
+                .setForegroundColor(foregroundColor)
+                .setFontColor(fontColor)
+                .setFontSize(fontSize)
+                .setFillPattern(fillPattern)
+                .setBoldFont(boldFont)
+                .setItalicFont(italicFont)
+                .setUnderlineFont(underlineFont)
+                .setStrikeoutFont(strikeoutFont)
+                .setHorizontalAlignment(horizontalAlignment)
+                .setVerticalAlignment(verticalAlignment)
+                .setBorderTop(borderTop)
+                .setBorderBottom(borderBottom)
+                .setBorderLeft(borderLeft)
+                .setBorderRight(borderRight)
+                .setHidden(hidden)
+                .setIndentation(indentation)
+                .setLocked(locked)
+                .setQuotePrefixed(quotePrefixed)
+                .setRotation(rotation)
+                .setShrinkToFit(shrinkToFit)
+                .setRowHeight(rowHeight)
+                .setWrapText(wrapText)
+                .setColumnWidth(columnWidth)
+                .setLeftBorderColor(leftBorderColor)
+                .setRightBorderColor(rightBorderColor)
+                .setTopBorderColor(topBorderColor)
+                .setBottomBorderColor(bottomBorderColor)
+                .setBorderColor(borderColor);
+        return setCustomStyles(reportStyle);
+    }
+
+    public ReportStyleBuilder<RectangleRange> toRectangeRangeStyleBuilder() {
+        return new ReportStyleBuilder<>(this.range, this);
+    }
+
+    protected ReportStyle setCustomStyles(final ReportStyle style) {
+        return style;
+    }
+}

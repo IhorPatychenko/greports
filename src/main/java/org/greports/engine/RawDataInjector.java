@@ -19,26 +19,14 @@ import org.greports.content.cell.DataCell;
 import org.greports.content.cell.HeaderCell;
 import org.greports.content.row.DataRow;
 import org.greports.positioning.HorizontalRange;
-import org.greports.positioning.Position;
-import org.greports.positioning.RectangleRange;
 import org.greports.positioning.VerticalRange;
-import org.greports.styles.HorizontalRangedStyle;
-import org.greports.styles.PositionedStyle;
-import org.greports.styles.RectangleRangedStyle;
 import org.greports.styles.ReportStyle;
-import org.greports.styles.VerticalRangedStyle;
 import org.greports.styles.interfaces.StripedRows;
-import org.greports.styles.stylesbuilders.AbstractReportStylesBuilder;
-import org.greports.styles.stylesbuilders.HorizontalRangedStylesBuilder;
-import org.greports.styles.stylesbuilders.PositionedStylesBuilder;
-import org.greports.styles.stylesbuilders.RectangleRangedStylesBuilder;
-import org.greports.styles.stylesbuilders.VerticalRangedStylesBuilder;
 import org.greports.utils.Pair;
 import org.greports.utils.Utils;
 import org.greports.utils.WorkbookUtils;
 
 import java.awt.*;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -48,7 +36,7 @@ import java.util.function.Predicate;
 class RawDataInjector extends DataInjector {
 
     private final ReportData data;
-    private Map<Pair<ReportStyle<?>, String>, XSSFCellStyle> stylesCache = new HashedMap<>();
+    private Map<Pair<ReportStyle, String>, XSSFCellStyle> stylesCache = new HashedMap<>();
 
     public RawDataInjector(XSSFWorkbook currentWorkbook, ReportData reportData, boolean loggerEnabled) {
         super(currentWorkbook, reportData, loggerEnabled);
@@ -255,103 +243,30 @@ class RawDataInjector extends DataInjector {
     }
 
     private void addStyles(Sheet sheet) {
-        for (AbstractReportStylesBuilder.StylePriority priority : AbstractReportStylesBuilder.StylePriority.values()) {
-            if(data.getStyles().getRowStyles() != null && priority.equals(data.getStyles().getRowStyles().getPriority())) {
-                applyRowStyles(sheet, data.getStyles().getRowStyles());
-            }
-            if(data.getStyles().getColumnStyles() != null && priority.equals(data.getStyles().getColumnStyles().getPriority())) {
-                applyColumnStyles(sheet, data.getStyles().getColumnStyles(), data);
-            }
-            if(data.getStyles().getPositionedStyles() != null && priority.equals(data.getStyles().getPositionedStyles().getPriority())) {
-                applyPositionedStyles(sheet, data.getStyles().getPositionedStyles(), data);
-            }
-            if(data.getStyles().getRectangleRangedStylesBuilder() != null && priority.equals(data.getStyles().getRectangleRangedStylesBuilder().getPriority())) {
-                applyRangedStyles(sheet, data.getStyles().getRectangleRangedStylesBuilder(), data);
-            }
-        }
-    }
-
-    private void applyRowStyles(Sheet sheet, VerticalRangedStylesBuilder rowStyles) {
-        final Collection<VerticalRangedStyle> styles = rowStyles.getStyles();
-        for (VerticalRangedStyle style : styles) {
-            final VerticalRange range = style.getRange();
-            checkRange(range, sheet);
-            for (int i = range.getStart() + data.getConfiguration().getVerticalOffset(); i <= range.getEnd() + data.getConfiguration().getVerticalOffset(); i++) {
-                final Row row = sheet.getRow(i);
-                if(row != null) {
-                    for (int y = data.getConfiguration().getHorizontalOffset(); y < row.getLastCellNum() + data.getConfiguration().getHorizontalOffset(); y++) {
-                        cellApplyStyles(row.getCell(y), style);
-                    }
-                    if(style.getRowHeight() != null) {
-                        row.setHeightInPoints(style.getRowHeight());
-                    }
-                }
-            }
-        }
-    }
-
-    private void applyColumnStyles(Sheet sheet, HorizontalRangedStylesBuilder columnStyles, ReportData reportData) {
-        final Collection<HorizontalRangedStyle> styles = columnStyles.getStyles();
-        for (HorizontalRangedStyle style : styles) {
-            for (int i = data.getConfiguration().getVerticalOffset(); i <= sheet.getLastRowNum() + data.getConfiguration().getVerticalOffset(); i++) {
-                final Row row = sheet.getRow(i);
-                if(row != null) {
-                    final HorizontalRange range = style.getRange();
-                    checkRange(range, reportData);
-                    for (int y = range.getStart() + data.getConfiguration().getHorizontalOffset(); y <= range.getEnd() + data.getConfiguration().getHorizontalOffset(); y++) {
-                        cellApplyStyles(row.getCell(y), style);
-                    }
-                }
-            }
-            if(style.getColumnWidth() != null) {
-                for (int i = style.getRange().getStart() + data.getConfiguration().getHorizontalOffset(); i <= style.getRange().getEnd() + data.getConfiguration().getHorizontalOffset(); i++) {
-                    sheet.setColumnWidth(i, style.getColumnWidth() * 256);
-                }
-            }
-        }
-    }
-
-    private void applyPositionedStyles(Sheet sheet, PositionedStylesBuilder positionedStyles, ReportData reportData) {
-        final Collection<PositionedStyle> styles = positionedStyles.getStyles();
-        for (PositionedStyle style : styles) {
-            checkPosition(style.getRange(), sheet, reportData);
-            final Row row = sheet.getRow(style.getRange().getRow() + data.getConfiguration().getVerticalOffset());
-            if(row != null && row.getCell(style.getRange().getColumn() + data.getConfiguration().getHorizontalOffset()) != null) {
-                cellApplyStyles(row.getCell(style.getRange().getColumn() + data.getConfiguration().getHorizontalOffset()), style);
-            }
-        }
-    }
-
-    private void applyRangedStyles(Sheet sheet, RectangleRangedStylesBuilder rectangleRangedStyles, ReportData reportData) {
-        final Collection<RectangleRangedStyle> rangedStyles = rectangleRangedStyles.getStyles();
-        for (RectangleRangedStyle rangedStyle : rangedStyles) {
-            final RectangleRange range = rangedStyle.getRange();
-            final VerticalRange verticalRange = range.getVerticalRange();
+        final List<ReportStyle> styles = data.getStyles().getReportStylesBuilder().getStyles();
+        final short verticalOffset = data.getConfiguration().getVerticalOffset();
+        final short horizontalOffset = data.getConfiguration().getHorizontalOffset();
+        for (ReportStyle reportStyle : styles) {
+            final VerticalRange verticalRange = reportStyle.getRange().getVerticalRange();
             checkRange(verticalRange, sheet);
-            final HorizontalRange horizontalRange = range.getHorizontalRange();
+            final HorizontalRange horizontalRange = reportStyle.getRange().getHorizontalRange();
             checkRange(horizontalRange, reportData);
-            for (int i = verticalRange.getStart() + data.getConfiguration().getVerticalOffset(); i <= verticalRange.getEnd() + data.getConfiguration().getVerticalOffset(); i++) {
+            for (int i = verticalRange.getStart() + verticalOffset; i <= verticalRange.getEnd() + verticalOffset; i++) {
                 final Row row = sheet.getRow(i);
                 if(row != null){
-                    for (int y = horizontalRange.getStart() + data.getConfiguration().getHorizontalOffset(); y <= horizontalRange.getEnd() + data.getConfiguration().getHorizontalOffset(); y++) {
-                        cellApplyStyles(row.getCell(y), rangedStyle);
+                    for (int y = horizontalRange.getStart() + horizontalOffset; y <= horizontalRange.getEnd() + horizontalOffset; y++) {
+                        cellApplyStyles(row.getCell(y), reportStyle);
+                    }
+                    if (reportStyle.getRowHeight() != null) {
+                        row.setHeightInPoints(reportStyle.getRowHeight());
                     }
                 }
             }
-        }
-    }
-
-    private void checkPosition(Position position, Sheet sheet, ReportData reportData) {
-        if(Objects.isNull(position.getRow())) {
-            position.setRow(sheet.getLastRowNum());
-        } else if(position.getRow() < 0) {
-            position.setRow(sheet.getLastRowNum() + position.getRow() + 1);
-        }
-
-        if(Objects.isNull(position.getColumn())) {
-            position.setColumn(reportData.getColumnsCount() - 1);
-        } else if(position.getColumn() < 0) {
-            position.setColumn(reportData.getColumnsCount() + position.getColumn() - 1);
+            if(reportStyle.getColumnWidth() != null) {
+                for (int i = horizontalRange.getStart() + horizontalOffset; i <= horizontalRange.getEnd() + horizontalOffset; i++) {
+                    sheet.setColumnWidth(i, reportStyle.getColumnWidth() * 256);
+                }
+            }
         }
     }
 
@@ -383,10 +298,10 @@ class RawDataInjector extends DataInjector {
         }
     }
 
-    private void cellApplyStyles(Cell cell, ReportStyle<?> style) {
+    private void cellApplyStyles(Cell cell, ReportStyle style) {
         if(cell != null) {
             XSSFCellStyle cellStyle;
-            final Pair<ReportStyle<?>, String> styleKey = Pair.of(style, cell.getCellStyle().getDataFormatString());
+            final Pair<ReportStyle, String> styleKey = Pair.of(style, cell.getCellStyle().getDataFormatString());
             if(!stylesCache.containsKey(styleKey) || style.isClonePreviousStyle()) {
                 cellStyle = currentWorkbook.createCellStyle();
                 cellStyle.setDataFormat(cell.getCellStyle().getDataFormat());
@@ -417,7 +332,7 @@ class RawDataInjector extends DataInjector {
         }
     }
 
-    private void cellApplyOtherStyles(ReportStyle<?> style, XSSFCellStyle cellStyle) {
+    private void cellApplyOtherStyles(ReportStyle style, XSSFCellStyle cellStyle) {
         if(style.getHidden() != null) {
             cellStyle.setHidden(style.getHidden());
         }
@@ -442,12 +357,12 @@ class RawDataInjector extends DataInjector {
             cellStyle.setShrinkToFit(style.getShrinkToFit());
         }
 
-        if(style instanceof HorizontalRangedStyle && Boolean.TRUE.equals(((HorizontalRangedStyle) style).getWrapText())) {
-            cellStyle.setWrapText(true);
+        if(style.getWrapText() != null) {
+            cellStyle.setWrapText(style.getWrapText());
         }
     }
 
-    private void cellApplyAlignmentStyles(ReportStyle<?> style, XSSFCellStyle cellStyle) {
+    private void cellApplyAlignmentStyles(ReportStyle style, XSSFCellStyle cellStyle) {
         if(style.getHorizontalAlignment() != null) {
             cellStyle.setAlignment(style.getHorizontalAlignment());
         }
@@ -456,7 +371,7 @@ class RawDataInjector extends DataInjector {
         }
     }
 
-    private void cellApplyFontStyles(ReportStyle<?> style, XSSFCellStyle cellStyle) {
+    private void cellApplyFontStyles(ReportStyle style, XSSFCellStyle cellStyle) {
         if(Utils.anyNotNull(style.getFontSize(), style.getFontColor(), style.getBoldFont(), style.getItalicFont(), style.getUnderlineFont(), style.getStrikeoutFont())) {
             XSSFFont font = currentWorkbook.createFont();
             if(style.getFontSize() != null) {
@@ -481,7 +396,7 @@ class RawDataInjector extends DataInjector {
         }
     }
 
-    private void cellApplyColorStyles(ReportStyle<?> style, XSSFCellStyle cellStyle) {
+    private void cellApplyColorStyles(ReportStyle style, XSSFCellStyle cellStyle) {
         if(style.getForegroundColor() != null) {
             cellStyle.setFillForegroundColor(new XSSFColor(style.getForegroundColor()));
             cellStyle.setFillPattern(style.getFillPattern());
@@ -511,7 +426,7 @@ class RawDataInjector extends DataInjector {
         }
     }
 
-    private void cellApplyBorderStyles(ReportStyle<?> style, XSSFCellStyle cellStyle) {
+    private void cellApplyBorderStyles(ReportStyle style, XSSFCellStyle cellStyle) {
         if(style.getBorderBottom() != null) {
             cellStyle.setBorderBottom(style.getBorderBottom());
         }

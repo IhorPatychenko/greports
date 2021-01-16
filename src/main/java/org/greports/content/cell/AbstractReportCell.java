@@ -8,7 +8,7 @@ public abstract class AbstractReportCell implements ReportCell, Cloneable {
     private String format;
     private Integer columnIndex;
 
-    public AbstractReportCell(Object value, String format) {
+    protected AbstractReportCell(Object value, String format) {
         this.value = value;
         this.format = format;
     }

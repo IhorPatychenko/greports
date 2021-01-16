@@ -10,20 +10,25 @@ public class Position extends Tuple<Integer, Integer> implements Serializable {
     }
 
     public Integer getRow(){
-        return super.getA();
+        return super.getStart();
     }
 
     public Integer getColumn(){
-        return super.getB();
+        return super.getEnd();
     }
 
     public Position setRow(Integer row) {
-        super.setA(row);
+        super.setStart(row);
         return this;
     }
 
     public Position setColumn(Integer column) {
-        super.setB(column);
+        super.setEnd(column);
         return this;
+    }
+
+    @Override
+    public RectangleRange toRectangeRange() {
+        return new RectangleRange(new VerticalRange(getRow(), getRow()), new HorizontalRange(getColumn(), getColumn()));
     }
 }
