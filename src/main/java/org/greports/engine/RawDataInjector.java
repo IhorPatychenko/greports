@@ -22,6 +22,7 @@ import org.greports.positioning.HorizontalRange;
 import org.greports.positioning.VerticalRange;
 import org.greports.styles.ReportStyle;
 import org.greports.styles.interfaces.StripedRows;
+import org.greports.styles.stylesbuilders.ReportStylesBuilder;
 import org.greports.utils.Pair;
 import org.greports.utils.Utils;
 import org.greports.utils.WorkbookUtils;
@@ -243,28 +244,31 @@ class RawDataInjector extends DataInjector {
     }
 
     private void addStyles(Sheet sheet) {
-        final List<ReportStyle> styles = data.getStyles().getReportStylesBuilder().getStyles();
-        final short verticalOffset = data.getConfiguration().getVerticalOffset();
-        final short horizontalOffset = data.getConfiguration().getHorizontalOffset();
-        for (ReportStyle reportStyle : styles) {
-            final VerticalRange verticalRange = reportStyle.getRange().getVerticalRange();
-            checkRange(verticalRange, sheet);
-            final HorizontalRange horizontalRange = reportStyle.getRange().getHorizontalRange();
-            checkRange(horizontalRange, reportData);
-            for (int i = verticalRange.getStart() + verticalOffset; i <= verticalRange.getEnd() + verticalOffset; i++) {
-                final Row row = sheet.getRow(i);
-                if(row != null){
-                    for (int y = horizontalRange.getStart() + horizontalOffset; y <= horizontalRange.getEnd() + horizontalOffset; y++) {
-                        cellApplyStyles(row.getCell(y), reportStyle);
-                    }
-                    if (reportStyle.getRowHeight() != null) {
-                        row.setHeightInPoints(reportStyle.getRowHeight());
+        final ReportStylesBuilder reportStylesBuilder = data.getStyles().getReportStylesBuilder();
+        if(reportStylesBuilder != null) {
+            final List<ReportStyle> styles = reportStylesBuilder.getStyles();
+            final short verticalOffset = data.getConfiguration().getVerticalOffset();
+            final short horizontalOffset = data.getConfiguration().getHorizontalOffset();
+            for (ReportStyle reportStyle : styles) {
+                final VerticalRange verticalRange = reportStyle.getRange().getVerticalRange();
+                checkRange(verticalRange, sheet);
+                final HorizontalRange horizontalRange = reportStyle.getRange().getHorizontalRange();
+                checkRange(horizontalRange, reportData);
+                for (int i = verticalRange.getStart() + verticalOffset; i <= verticalRange.getEnd() + verticalOffset; i++) {
+                    final Row row = sheet.getRow(i);
+                    if(row != null){
+                        for (int y = horizontalRange.getStart() + horizontalOffset; y <= horizontalRange.getEnd() + horizontalOffset; y++) {
+                            cellApplyStyles(row.getCell(y), reportStyle);
+                        }
+                        if (reportStyle.getRowHeight() != null) {
+                            row.setHeightInPoints(reportStyle.getRowHeight());
+                        }
                     }
                 }
-            }
-            if(reportStyle.getColumnWidth() != null) {
-                for (int i = horizontalRange.getStart() + horizontalOffset; i <= horizontalRange.getEnd() + horizontalOffset; i++) {
-                    sheet.setColumnWidth(i, reportStyle.getColumnWidth() * 256);
+                if(reportStyle.getColumnWidth() != null) {
+                    for (int i = horizontalRange.getStart() + horizontalOffset; i <= horizontalRange.getEnd() + horizontalOffset; i++) {
+                        sheet.setColumnWidth(i, reportStyle.getColumnWidth() * 256);
+                    }
                 }
             }
         }
