@@ -1,5 +1,6 @@
 package org.greports.engine;
 
+import org.apache.commons.lang3.ClassUtils;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellType;
@@ -40,7 +41,6 @@ public class ReportLoader {
     private final ReportLoaderResult loaderResult;
     private ReportLoaderValidator validator;
     private final ReportDataReader reader;
-    private ReportLoaderErrorTreatment errorTreatment;
 
     public ReportLoader(String filePath) throws IOException, InvalidFormatException {
         this(new File(filePath), null);
@@ -77,35 +77,22 @@ public class ReportLoader {
         return bindForClass(clazz, ReportLoaderErrorTreatment.THROW_ERROR, -1, Integer.MAX_VALUE);
     }
 
-    public <T> ReportLoader bindForClass(Class<T> clazz, int fromRow) throws ReportEngineReflectionException {
-        return bindForClass(clazz, ReportLoaderErrorTreatment.THROW_ERROR, fromRow, Integer.MAX_VALUE);
+    public <T> ReportLoader bindForClass(Class<T> clazz, ReportLoaderErrorTreatment errorTreatment) throws ReportEngineReflectionException {
+        return bindForClass(clazz, errorTreatment, -1, Integer.MAX_VALUE);
     }
 
-    public <T> ReportLoader bindForClass(Class<T> clazz, int fromRow, int toRow) throws ReportEngineReflectionException {
-        return bindForClass(clazz, ReportLoaderErrorTreatment.THROW_ERROR, fromRow, toRow);
-    }
-
-    public <T> ReportLoader bindForClass(Class<T> clazz, ReportLoaderErrorTreatment treatment) throws ReportEngineReflectionException {
-        return bindForClass(clazz, treatment, -1, Integer.MAX_VALUE);
-    }
-
-    public <T> ReportLoader bindForClass(Class<T> clazz, ReportLoaderErrorTreatment treatment, int fromRow) throws ReportEngineReflectionException {
-        return bindForClass(clazz, treatment, fromRow, Integer.MAX_VALUE);
-    }
-
-    public <T> ReportLoader bindForClass(Class<T> clazz, ReportLoaderErrorTreatment treatment, int fromRow, int toRow) throws ReportEngineReflectionException {
+    public <T> ReportLoader bindForClass(Class<T> clazz, ReportLoaderErrorTreatment errorTreatment, int fromRow, int toRow) throws ReportEngineReflectionException {
         if(reportName == null) {
             throw new ReportEngineRuntimeException("reportName cannot be null", this.getClass());
         }
         ReportConfiguration configuration = ReportConfigurationLoader.load(clazz, reportName);
         this.validator = new ReportLoaderValidator(configuration);
-        this.errorTreatment = treatment;
         final ReportBlock reportBlock = new ReportBlock(clazz, reportName, null);
         loadBlocks(reportBlock);
         reportBlock
                 .orderBlocks()
                 .setBlockIndexes(0);
-        final List<T> list = bindBlocks(reportBlock, clazz, configuration, new ArrayList<>(), fromRow, toRow);
+        final List<T> list = bindBlocks(reportBlock, clazz, configuration, errorTreatment, new ArrayList<>(), fromRow, toRow);
         this.loaderResult.addResult(clazz, list);
         return this;
     }
@@ -132,7 +119,7 @@ public class ReportLoader {
         }
     }
 
-    protected <T> List<T> bindBlocks(ReportBlock reportBlock, Class<T> clazz, ReportConfiguration configuration, List<Integer> skipRows, int fromRow, int toRow) throws ReportEngineReflectionException {
+    protected <T> List<T> bindBlocks(ReportBlock reportBlock, Class<T> clazz, ReportConfiguration configuration, ReportLoaderErrorTreatment errorTreatment, List<Integer> skipRows, int fromRow, int toRow) throws ReportEngineReflectionException {
         List<T> instancesList = new ArrayList<>();
         final Sheet sheet = currentWorkbook.getSheet(configuration.getSheetName());
         boolean errorThrown = false;
@@ -160,8 +147,8 @@ public class ReportLoader {
                     for (final ReportBlock block : reportBlock.getBlocks()) {
                         if (block.isColumn()) {
                             method = block.getParentMethod();
-                            final Cell cell = row.getCell(block.getStartColumn());
-                            errorThrown = bindCellValueToClassAttr(clazz, method, instance, block, cell);
+                            final Cell cell = row.getCell(block.getStartColumn(), Row.MissingCellPolicy.CREATE_NULL_AS_BLANK);
+                            errorThrown = bindCellValueToClassAttr(clazz, method, instance, block, cell, errorTreatment);
                         }
                     }
                     if (!errorThrown || !ReportLoaderErrorTreatment.SKIP_ROW_ON_ERROR.equals(errorTreatment)) {
@@ -174,7 +161,7 @@ public class ReportLoader {
                 }
             }
 
-            bindSubBlocks(reportBlock, clazz, configuration, skipRows, fromRow, toRow, instancesList, sheet);
+            bindSubBlocks(reportBlock, clazz, configuration, errorTreatment, skipRows, fromRow, toRow, instancesList, sheet);
 
         } catch (NoSuchMethodException e) {
             throw new ReportEngineReflectionException("Error obtaining constructor reference" , e, clazz);
@@ -186,11 +173,11 @@ public class ReportLoader {
         return instancesList;
     }
 
-    private <T> void bindSubBlocks(ReportBlock reportBlock, Class<T> clazz, ReportConfiguration configuration, List<Integer> skipRows, int fromRow, int toRow, List<T> instancesList, Sheet sheet) throws ReportEngineReflectionException, IllegalAccessException, InvocationTargetException {
+    private <T> void bindSubBlocks(ReportBlock reportBlock, Class<T> clazz, ReportConfiguration configuration, ReportLoaderErrorTreatment errorTreatment, List<Integer> skipRows, int fromRow, int toRow, List<T> instancesList, Sheet sheet) throws ReportEngineReflectionException, IllegalAccessException, InvocationTargetException {
         Method method;
         for (final ReportBlock block : reportBlock.getBlocks()) {
             if (block.isSubreport()) {
-                final List<?> objects = bindBlocks(block, block.getBlockClass(), configuration, skipRows, fromRow, toRow);
+                final List<?> objects = bindBlocks(block, block.getBlockClass(), configuration, errorTreatment, skipRows, fromRow, toRow);
                 method = block.getParentMethod();
                 for (int i = 0; i < instancesList.size(); i++) {
                     method.invoke(instancesList.get(i), objects.get(i));
@@ -205,14 +192,14 @@ public class ReportLoader {
         }
     }
 
-    private <T> boolean bindCellValueToClassAttr(Class<T> clazz, Method method, T instance, ReportBlock block, Cell cell) throws ReportEngineReflectionException {
+    private <T> boolean bindCellValueToClassAttr(Class<T> clazz, Method method, T instance, ReportBlock block, Cell cell, ReportLoaderErrorTreatment errorTreatment) throws ReportEngineReflectionException {
         Object value = null;
         try {
             value = getCellValue(method, cell);
             value = ConverterUtils.convertValue(value, block.getSetterConverters(), block.getBlockClass());
             instanceSetValue(method, instance, value, block.getCellValidators());
             block.addValue(value);
-        } catch (ReportEngineValidationException e) {
+        } catch (RuntimeException e) {
             if (ReportLoaderErrorTreatment.THROW_ERROR.equals(errorTreatment)) {
                 throw e;
             } else {
@@ -235,7 +222,7 @@ public class ReportLoader {
     private Object getCellValue(final Method method, final Cell cell) {
         Class<?> parameterType = method.getParameterTypes()[0];
         if (cell != null) {
-            if(parameterType.equals(Boolean.class) || parameterType.getName().equals("boolean")) {
+            if(parameterType.equals(Boolean.class) || "boolean".equals(ClassUtils.getName(parameterType))) {
                 return cell.getBooleanCellValue();
             } else if (CellType.FORMULA.equals(cell.getCellTypeEnum())) {
                 return cell.getCellFormula();
@@ -245,15 +232,15 @@ public class ReportLoader {
                 return Double.toString(cell.getNumericCellValue());
             } else if(parameterType.equals(Date.class)) {
                 return cell.getDateCellValue();
-            } else if (parameterType.equals(Double.class) || parameterType.getName().equals("double")) {
+            } else if (parameterType.equals(Double.class) || "double".equals(ClassUtils.getName(parameterType))) {
                 return cell.getNumericCellValue();
-            } else if (parameterType.equals(Integer.class) || parameterType.getName().equals("int")) {
+            } else if (parameterType.equals(Integer.class) || "int".equals(ClassUtils.getName(parameterType))) {
                 return ((int) cell.getNumericCellValue());
-            } else if (parameterType.equals(Long.class) || parameterType.getName().equals("long")) {
+            } else if (parameterType.equals(Long.class) || "long".equals(ClassUtils.getName(parameterType))) {
                 return ((long) cell.getNumericCellValue());
-            } else if (parameterType.equals(Float.class) || parameterType.getName().equals("float")) {
+            } else if (parameterType.equals(Float.class) || "float".equals(ClassUtils.getName(parameterType))) {
                 return ((float) cell.getNumericCellValue());
-            } else if (parameterType.equals(Short.class) || parameterType.getName().equals("short")) {
+            } else if (parameterType.equals(Short.class) || "short".equals(ClassUtils.getName(parameterType))) {
                 return ((short) cell.getNumericCellValue());
             }
         }
