@@ -1,6 +1,7 @@
 package org.greports.engine;
 
 import com.google.common.base.Stopwatch;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.log4j.Level;
 import org.greports.annotations.Cell;
 import org.greports.content.cell.DataCell;
@@ -10,7 +11,7 @@ import org.greports.exceptions.ReportEngineRuntimeException;
 import org.greports.services.LoggerService;
 import org.greports.utils.AnnotationUtils;
 import org.greports.utils.ConverterUtils;
-import org.greports.utils.Pair;
+import org.greports.utils.ErrorMessages;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -36,7 +37,7 @@ public class ReportSingleDataParser extends ReportParser {
         ReportConfiguration configuration = ReportConfigurationLoader.load(clazz, reportName);
         reportData = new ReportData(reportName, configuration);
         parseData(object, clazz);
-        parseStyles(clazz);
+        super.parseStyles(reportData, clazz);
         loggerService.info(String.format("Report with name \"%s\" successfully parsed. Parse time: %s", reportName, timer.stop()));
         return this;
     }
@@ -74,18 +75,14 @@ public class ReportSingleDataParser extends ReportParser {
                 );
                 dataRow.addCell(dataCell);
             } catch (IllegalAccessException e) {
-                throw new ReportEngineReflectionException("Error invoking the method with no access", e, clazz);
+                throw new ReportEngineReflectionException(ErrorMessages.INV_METHOD_WITH_NO_ACCESS, e, clazz);
             } catch (InvocationTargetException e) {
-                throw new ReportEngineReflectionException("Error invoking the method", e, clazz);
+                throw new ReportEngineReflectionException(ErrorMessages.INV_METHOD, e, clazz);
             }
         }
         for (final Map.Entry<Integer, DataRow> dataRowEntry : rows.entrySet()) {
             reportData.addRow(dataRowEntry.getValue());
         }
-    }
-
-    private <T> void parseStyles(final Class<T> clazz) throws ReportEngineReflectionException {
-        super.parseStyles(reportData, clazz);
     }
 
     ReportData getData(){

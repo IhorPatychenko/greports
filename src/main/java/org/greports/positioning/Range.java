@@ -2,13 +2,13 @@ package org.greports.positioning;
 
 import java.io.Serializable;
 
-public abstract class Tuple<T extends Serializable, E extends Serializable> implements Serializable {
+public abstract class Range<T extends Serializable, E extends Serializable> implements Serializable {
 
     private static final long serialVersionUID = 8980520714685635759L;
     private T start;
     private E end;
 
-    protected Tuple(T start, E end) {
+    protected Range(T start, E end) {
         this.start = start;
         this.end = end;
     }

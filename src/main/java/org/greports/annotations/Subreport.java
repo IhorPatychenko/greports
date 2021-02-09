@@ -1,7 +1,9 @@
 package org.greports.annotations;
 
+import org.apache.commons.lang3.StringUtils;
 import org.greports.engine.ValueType;
 
+import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Repeatable;
 import java.lang.annotation.Retention;
@@ -14,7 +16,8 @@ import java.lang.annotation.Target;
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.FIELD, ElementType.ANNOTATION_TYPE})
-@Repeatable(value = Subreports.class)
+@Repeatable(Subreport.List.class)
+@Documented
 public @interface Subreport {
 
     /**
@@ -41,5 +44,16 @@ public @interface Subreport {
      * @see ValueType#FORMULA
      * @return {@link String}
      */
-    String id() default "";
+    String id() default StringUtils.EMPTY;
+
+    /**
+     * Defines several {@link Subreport} annotations on the same element.
+     * @see Subreport
+     */
+    @Retention(RetentionPolicy.RUNTIME)
+    @Target(ElementType.FIELD)
+    @Documented
+    @interface List {
+        Subreport[] value();
+    }
 }

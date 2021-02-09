@@ -1,6 +1,6 @@
 package org.greports.interfaces;
 
-import org.greports.utils.Pair;
+import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.Map;
 import java.util.function.BooleanSupplier;

@@ -15,6 +15,7 @@ public class ReportStyle implements Serializable {
     private static final long serialVersionUID = 4183157194410162170L;
 
     private final RectangleRange range;
+    private String fontName;
     private Color foregroundColor;
     private Color fontColor;
     private FillPatternType fillPattern;
@@ -49,6 +50,15 @@ public class ReportStyle implements Serializable {
 
     public ReportStyle(RectangleRange range){
         this.range = range;
+    }
+
+    public String getFontName() {
+        return fontName;
+    }
+
+    public ReportStyle setFontName(String fontName) {
+        this.fontName = fontName;
+        return this;
     }
 
     public Color getForegroundColor() {

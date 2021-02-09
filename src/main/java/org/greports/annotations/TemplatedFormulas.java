@@ -1,5 +1,7 @@
 package org.greports.annotations;
 
+import org.apache.commons.lang3.StringUtils;
+
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -23,7 +25,7 @@ public @interface TemplatedFormulas {
      *
      * @return {@link String}
      */
-    String title() default "";
+    String title() default StringUtils.EMPTY;
 
     /**
      * Maximum count of formula columns to evaluate.

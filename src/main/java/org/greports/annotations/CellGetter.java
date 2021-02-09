@@ -1,5 +1,6 @@
 package org.greports.annotations;
 
+import org.apache.commons.lang3.StringUtils;
 import org.greports.engine.ValueType;
 
 import java.lang.annotation.Documented;
@@ -59,7 +60,7 @@ public @interface CellGetter {
      *
      * @return {@link String}
      */
-    String format() default "";
+    String format() default StringUtils.EMPTY;
 
     /**
      * The {@link ValueType} of the column.
@@ -75,7 +76,7 @@ public @interface CellGetter {
      * @see ValueType#FORMULA
      * @return {@link String}
      */
-    String id() default "";
+    String id() default StringUtils.EMPTY;
 
     /**
      * The value indicates whether the column has to fit the width of the longest cell.

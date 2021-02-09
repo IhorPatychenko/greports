@@ -1,5 +1,7 @@
 package org.greports.annotations;
 
+import org.apache.commons.lang3.StringUtils;
+import org.greports.converters.NotImplementedConverter;
 import org.greports.engine.ValueType;
 
 import java.lang.annotation.Documented;
@@ -47,24 +49,18 @@ public @interface Column {
     ColumnValidator[] columnValidators() default {};
 
     /**
-     * An array of {@link Converter} to be applied when the column value is
-     * being obtained. The array cannot contain more than 1 converter
-     * because its not possible to know which one needs to be used to
-     * convert the column value.
+     * A converted to be applied when the column value is being obtained.
      *
-     * @return Converter[]
+     * @return Converter
      */
-    Converter[] getterConverter() default {};
+    Converter getterConverter() default @Converter(converterClass = NotImplementedConverter.class);
 
     /**
-     * An array of {@link Converter} to be applied when the data is
-     * being loaded. The engine will lookup for a {@link Converter}
-     * which fits with a data type coming from excel. If any of these
-     * are valid to make the data conversion, the loaded value will be returned.
+     * A converter to be applied when the data is being loaded.
      *
-     * @return Converter[]
+     * @return Converter
      */
-    Converter[] setterConverters() default {};
+    Converter setterConverters() default @Converter(converterClass = NotImplementedConverter.class);
 
     /**
      * Column title. This text string will be used to search for
@@ -73,7 +69,7 @@ public @interface Column {
      *
      * @return {@link String}
      */
-    String title() default "";
+    String title() default StringUtils.EMPTY;
 
     /**
      * Visualisation format to be displayed.
@@ -82,7 +78,7 @@ public @interface Column {
      *
      * @return {@link String}
      */
-    String format() default "";
+    String format() default StringUtils.EMPTY;
 
     /**
      * The {@link ValueType} of the column.
@@ -98,7 +94,7 @@ public @interface Column {
      * @see ValueType#FORMULA
      * @return {@link String}
      */
-    String id() default "";
+    String id() default StringUtils.EMPTY;
 
     /**
      * The value indicates whether the column has to fit the width of the longest cell.

@@ -1,5 +1,7 @@
 package org.greports.annotations;
 
+import org.apache.commons.lang3.StringUtils;
+import org.greports.converters.NotImplementedConverter;
 import org.greports.engine.ValueType;
 
 import java.lang.annotation.Documented;
@@ -38,17 +40,14 @@ public @interface ColumnGetter {
      *
      * @return {@link String}
      */
-    String title() default "";
+    String title() default StringUtils.EMPTY;
 
     /**
-     * An array of {@link Converter} to be applied when the column value is
-     * being obtained. The array cannot contain more than 1 converter
-     * because its not possible to know which one needs to be used to
-     * convert the column value.
+     * A converter to be applied when the column value is being obtained.
      *
-     * @return Converter[]
+     * @return {@link Converter}
      */
-    Converter[] typeConverter() default {};
+    Converter typeConverter() default @Converter(converterClass = NotImplementedConverter.class);
 
     /**
      * Visualisation format to be displayed.
@@ -57,7 +56,7 @@ public @interface ColumnGetter {
      *
      * @return {@link String}
      */
-    String format() default "";
+    String format() default StringUtils.EMPTY;
 
     /**
      * The {@link ValueType} of the column.
@@ -73,7 +72,7 @@ public @interface ColumnGetter {
      * @see ValueType#FORMULA
      * @return {@link String}
      */
-    String id() default "";
+    String id() default StringUtils.EMPTY;
 
     /**
      * The value indicates whether the column has to fit the width of the longest cell.

@@ -1,6 +1,6 @@
 package org.greports.validators;
 
-import org.greports.utils.Pair;
+import org.apache.commons.lang3.tuple.Pair;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;

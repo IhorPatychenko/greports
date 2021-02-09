@@ -7,30 +7,31 @@ import org.apache.poi.ss.usermodel.HorizontalAlignment;
 import org.apache.poi.ss.usermodel.VerticalAlignment;
 import org.greports.positioning.HorizontalRange;
 import org.greports.positioning.Position;
+import org.greports.positioning.Range;
 import org.greports.positioning.RectangleRange;
-import org.greports.positioning.Tuple;
 import org.greports.positioning.VerticalRange;
 import org.greports.styles.ReportStyle;
 
 import java.awt.*;
 import java.io.Serializable;
 
-public class ReportStyleBuilder<E extends Tuple<?, ?>> implements Serializable {
+public class ReportStyleBuilder<E extends Range<?, ?>> implements Serializable {
     private static final long serialVersionUID = 7168319249010545243L;
-    protected Color foregroundColor;
-    protected Color fontColor;
-    protected Short fontSize;
-    protected FillPatternType fillPattern = FillPatternType.SOLID_FOREGROUND;
-    protected Boolean boldFont;
-    protected Boolean italicFont;
-    protected FontUnderline underlineFont;
-    protected Boolean strikeoutFont;
-    protected HorizontalAlignment horizontalAlignment;
-    protected VerticalAlignment verticalAlignment;
-    protected BorderStyle borderTop;
-    protected BorderStyle borderRight;
-    protected BorderStyle borderBottom;
-    protected BorderStyle borderLeft;
+    private String fontName;
+    private Color foregroundColor;
+    private Color fontColor;
+    private Short fontSize;
+    private FillPatternType fillPattern = FillPatternType.SOLID_FOREGROUND;
+    private Boolean boldFont;
+    private Boolean italicFont;
+    private FontUnderline underlineFont;
+    private Boolean strikeoutFont;
+    private HorizontalAlignment horizontalAlignment;
+    private VerticalAlignment verticalAlignment;
+    private BorderStyle borderTop;
+    private BorderStyle borderRight;
+    private BorderStyle borderBottom;
+    private BorderStyle borderLeft;
     private Color leftBorderColor;
     private Color rightBorderColor;
     private Color topBorderColor;
@@ -44,9 +45,9 @@ public class ReportStyleBuilder<E extends Tuple<?, ?>> implements Serializable {
     private Float rowHeight;
     private Boolean wrapText;
     private Integer columnWidth;
-    protected Color borderColor;
-    protected RectangleRange range;
-    protected final boolean clonePreviousStyle;
+    private Color borderColor;
+    private RectangleRange range;
+    private final boolean clonePreviousStyle;
 
     public ReportStyleBuilder(boolean clonePreviousStyle) {
         this((RectangleRange) null, clonePreviousStyle);
@@ -115,6 +116,11 @@ public class ReportStyleBuilder<E extends Tuple<?, ?>> implements Serializable {
 
     public void setRange(RectangleRange range) {
         this.range = range;
+    }
+
+    public ReportStyleBuilder<E> setFontName(String fontName) {
+        this.fontName = fontName;
+        return this;
     }
 
     public ReportStyleBuilder<E> setForegroundColor(Color foregroundColor) {
@@ -272,6 +278,7 @@ public class ReportStyleBuilder<E extends Tuple<?, ?>> implements Serializable {
     protected ReportStyle buildStyle() {
         ReportStyle reportStyle = new ReportStyle(this.range)
                 .setClonePreviousStyle(clonePreviousStyle)
+                .setFontName(fontName)
                 .setForegroundColor(foregroundColor)
                 .setFontColor(fontColor)
                 .setFontSize(fontSize)

@@ -1,8 +1,8 @@
 package org.greports.styles.interfaces;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.greports.positioning.Position;
 import org.greports.styles.stylesbuilders.ReportStyleBuilder;
-import org.greports.utils.Pair;
 
 import java.util.List;
 import java.util.Map;

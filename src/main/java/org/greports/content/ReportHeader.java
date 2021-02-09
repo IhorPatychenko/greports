@@ -25,8 +25,9 @@ public class ReportHeader implements ReportRow<HeaderCell>, Cloneable, Serializa
         this.cells.add(cell);
     }
 
-    public void addCells(List<HeaderCell> cells) {
+    public ReportHeader addCells(List<HeaderCell> cells) {
         this.cells.addAll(cells);
+        return this;
     }
 
     public boolean isColumnFilter() {

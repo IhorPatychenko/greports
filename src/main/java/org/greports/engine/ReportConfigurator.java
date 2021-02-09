@@ -1,5 +1,6 @@
 package org.greports.engine;
 
+import org.apache.commons.lang3.StringUtils;
 import org.greports.exceptions.ReportEngineRuntimeException;
 
 import java.io.Serializable;
@@ -90,10 +91,13 @@ public class ReportConfigurator implements Serializable {
         return this;
     }
 
-    public String getFormatForClass(final Class<?> clazz) {
+    public String getFormatForClass(final Class<?> clazz, final String defaultFormat) {
         if(clazz == null){
             throw new ReportEngineRuntimeException("clazz parameter cannot be null", this.getClass());
         }
-        return this.formats.getOrDefault(clazz, "");
+        if(StringUtils.isEmpty(defaultFormat)) {
+            return this.formats.getOrDefault(clazz, StringUtils.EMPTY);
+        }
+        return defaultFormat;
     }
 }

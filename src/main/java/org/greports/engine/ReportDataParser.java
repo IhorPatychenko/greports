@@ -1,6 +1,8 @@
 package org.greports.engine;
 
 import com.google.common.base.Stopwatch;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.log4j.Level;
 import org.greports.annotations.Column;
 import org.greports.annotations.Subreport;
@@ -10,6 +12,7 @@ import org.greports.content.cell.HeaderCell;
 import org.greports.content.cell.SpecialDataCell;
 import org.greports.content.row.DataRow;
 import org.greports.content.row.SpecialDataRow;
+import org.greports.converters.NotImplementedConverter;
 import org.greports.exceptions.ReportEngineReflectionException;
 import org.greports.exceptions.ReportEngineRuntimeException;
 import org.greports.interfaces.CollectedFormulaValues;
@@ -26,7 +29,7 @@ import org.greports.styles.stylesbuilders.ReportStyleBuilder;
 import org.greports.styles.stylesbuilders.ReportStylesBuilder;
 import org.greports.utils.AnnotationUtils;
 import org.greports.utils.ConverterUtils;
-import org.greports.utils.Pair;
+import org.greports.utils.ErrorMessages;
 import org.greports.utils.ReflectionUtils;
 import org.greports.utils.TranslationsParser;
 import org.greports.utils.Translator;
@@ -48,7 +51,7 @@ import java.util.function.Predicate;
 
 public final class ReportDataParser extends ReportParser {
 
-    private LoggerService loggerService;
+    private final LoggerService loggerService;
 
     private ReportData reportData;
     private Translator translator;
@@ -64,7 +67,7 @@ public final class ReportDataParser extends ReportParser {
         return parse(clazz, reportName, new ArrayList<>(), null);
     }
 
-    protected <T> ReportDataParser parse(final Class<T> clazz, final String reportName, List<T> collection, ReportConfigurator configurator) throws ReportEngineReflectionException, ReportEngineRuntimeException {
+    protected <T> ReportDataParser parse(final Class<T> clazz, final String reportName, List<T> collection, ReportConfigurator configurator) throws ReportEngineReflectionException {
         loggerService.info("Parsing started...");
         loggerService.info(String.format("Parsing report for class \"%s\" with report name \"%s\"...", clazz.getSimpleName(), reportName));
         Stopwatch timer = Stopwatch.createStarted();
@@ -75,7 +78,7 @@ public final class ReportDataParser extends ReportParser {
         return parser;
     }
 
-    private <T> ReportDataParser parse(final Class<T> clazz, final String reportName, List<T> collection, ReportConfigurator configurator, Float positionIncrement, String idPrefix) throws ReportEngineReflectionException, ReportEngineRuntimeException {
+    private <T> ReportDataParser parse(final Class<T> clazz, final String reportName, List<T> collection, ReportConfigurator configurator, Float positionIncrement, String idPrefix) throws ReportEngineReflectionException {
         reportData = new ReportData(reportName, ReportConfigurationLoader.load(clazz, reportName));
         final Map<String, Object> translations = new TranslationsParser(reportData.getConfiguration()).getTranslations();
         translator = new Translator(translations);
@@ -103,25 +106,19 @@ public final class ReportDataParser extends ReportParser {
         for(int i = 0; i < specialColumns.size(); i++) {
             final ReportSpecialColumn specialColumn = specialColumns.get(i);
             String generateIdPrefix = Utils.generateId(idPrefix, specialColumn.getTitle());
-            if(!"".equals(idPrefix)) {
+            if(!StringUtils.EMPTY.equals(idPrefix)) {
                 generateIdPrefix = Utils.generateId(generateIdPrefix, Integer.toString(i));
             }
-            cells.add(new HeaderCell(
-                    specialColumn.getPosition(),
-                    generateIdPrefix,
-                    specialColumn.getId(),
-                    specialColumn.isAutoSizeColumn(),
-                    specialColumn.getColumnWidth()
-            ));
+            cells.add(new HeaderCell(specialColumn, generateIdPrefix));
         }
 
-        reportData
-                .setHeader(new ReportHeader(
-                        reportData.getConfiguration().isSortableHeader(),
-                        reportData.getConfiguration().isStickyHeader(),
-                        reportData.getConfiguration().getHeaderRowIndex())
-                ).addCells(cells);
+        final ReportHeader reportHeader = new ReportHeader(
+                reportData.getConfiguration().isSortableHeader(),
+                reportData.getConfiguration().isStickyHeader(),
+                reportData.getConfiguration().getHeaderRowIndex()
+        ).addCells(cells);
 
+        reportData.setHeader(reportHeader);
         reportData.setTargetIds();
     }
 
@@ -144,19 +141,14 @@ public final class ReportDataParser extends ReportParser {
                     method.setAccessible(true);
                     Object invokedValue = dto != null ? method.invoke(dto) : null;
 
-                    if(column.getterConverter().length > 1){
-                        throw new ReportEngineRuntimeException("A column cannot have more than 1 getter converter", clazz);
-                    } else if(column.getterConverter().length == 1){
-                        invokedValue = ConverterUtils.convertValue(invokedValue, column.getterConverter()[0]);
+                    if(!column.getterConverter().converterClass().equals(NotImplementedConverter.class)){
+                        invokedValue = ConverterUtils.convertValue(invokedValue, column.getterConverter());
                     }
 
                     String format = column.format();
 
                     if(invokedValue != null) {
-                        final String formatForClass = reportConfigurator.getFormatForClass(invokedValue.getClass());
-                        if(format.isEmpty()){
-                            format = formatForClass;
-                        }
+                        format = reportConfigurator.getFormatForClass(invokedValue.getClass(), format);
                     }
 
                     final DataCell dataCell = new DataCell(
@@ -172,9 +164,9 @@ public final class ReportDataParser extends ReportParser {
                 reportData.addRow(row);
             }
         } catch (IllegalAccessException e) {
-            throw new ReportEngineReflectionException("Error invoking the method with no access", e, clazz);
+            throw new ReportEngineReflectionException(ErrorMessages.INV_METHOD_WITH_NO_ACCESS, e, clazz);
         } catch (InvocationTargetException e) {
-            throw new ReportEngineReflectionException("Error invoking the method", e, clazz);
+            throw new ReportEngineReflectionException(ErrorMessages.INV_METHOD, e, clazz);
         }
     }
 
@@ -184,7 +176,6 @@ public final class ReportDataParser extends ReportParser {
                 final GroupedRows newInstance = (GroupedRows) ReflectionUtils.newInstance(clazz);
                 if(newInstance.isRowCollapsedByDefault() != null && newInstance.isRowCollapsedByDefault().containsKey(reportData.getReportName())){
                     reportData.setGroupedRowsDefaultCollapsed(newInstance.isRowCollapsedByDefault().get(reportData.getReportName()).getAsBoolean());
-                    Pair<Integer, Integer> group;
                     Integer groupStart = null;
                     for(int i = 0; i < list.size(); i++) {
                         GroupedRows groupedRows = (GroupedRows) list.get(i);
@@ -192,13 +183,12 @@ public final class ReportDataParser extends ReportParser {
                             groupStart = i;
                         }
                         if(groupedRows.isGroupEndRow().get(reportData.getReportName()).test(i)) {
-                            group = Pair.of(groupStart, i);
-                            reportData.addGroupedRow(group);
+                            reportData.addGroupedRow(Pair.of(groupStart, i));
                         }
                     }
                 }
             } catch (ReflectiveOperationException e) {
-                throw new ReportEngineReflectionException("Error instantiating an object. The class should have an empty constructor without parameters", e, clazz);
+                throw new ReportEngineReflectionException(String.format(ErrorMessages.SHOULD_HAVE_EMPTY_CONSTRUCTOR, clazz), e, clazz);
             }
         }
     }
@@ -212,7 +202,7 @@ public final class ReportDataParser extends ReportParser {
                     reportData.setGroupedColumns(list);
                 }
             } catch (ReflectiveOperationException e) {
-                throw new ReportEngineReflectionException("Error instantiating an object. The class should have an empty constructor without parameters", e, clazz);
+                throw new ReportEngineReflectionException(String.format(ErrorMessages.SHOULD_HAVE_EMPTY_CONSTRUCTOR, clazz), e, clazz);
             }
         }
     }
@@ -261,7 +251,7 @@ public final class ReportDataParser extends ReportParser {
                                 try {
                                     subreportData.add(componentType.newInstance());
                                 } catch(ReflectiveOperationException e) {
-                                    throw new ReportEngineReflectionException(String.format("The class %s needs to have an empty constuctor", componentType.getName()), this.getClass());
+                                    throw new ReportEngineReflectionException(String.format(ErrorMessages.SHOULD_HAVE_EMPTY_CONSTRUCTOR, componentType.getName()), this.getClass());
                                 }
                             }
                         }
@@ -297,9 +287,9 @@ public final class ReportDataParser extends ReportParser {
         try {
             return method.invoke(collectionEntry);
         } catch (IllegalAccessException e) {
-            throw new ReportEngineReflectionException("Error invoking the method with no access", e, method.getDeclaringClass());
+            throw new ReportEngineReflectionException(ErrorMessages.INV_METHOD_WITH_NO_ACCESS, e, method.getDeclaringClass());
         } catch (InvocationTargetException e) {
-            throw new ReportEngineReflectionException("Error invoking the method", e, method.getDeclaringClass());
+            throw new ReportEngineReflectionException(ErrorMessages.INV_METHOD, e, method.getDeclaringClass());
         }
     }
 
@@ -327,9 +317,9 @@ public final class ReportDataParser extends ReportParser {
                         specialColumn.getColumnWidth()
                     ));
                 } catch (IllegalAccessException e) {
-                    throw new ReportEngineReflectionException("Error invoking the method with no access", e, clazz);
+                    throw new ReportEngineReflectionException(ErrorMessages.INV_METHOD_WITH_NO_ACCESS, e, clazz);
                 } catch (InvocationTargetException e) {
-                    throw new ReportEngineReflectionException("Error invoking the method", e, clazz);
+                    throw new ReportEngineReflectionException(ErrorMessages.INV_METHOD, e, clazz);
                 }
             }
         }
@@ -357,7 +347,7 @@ public final class ReportDataParser extends ReportParser {
                             specialDataRow.addCell(createSpecialDataCell(specialRowCell, value.get(pair)));
                         }
                     } catch (ReflectiveOperationException e) {
-                        throw new ReportEngineReflectionException("Error instantiating an object. The class should have an empty constructor without parameters", e, clazz);
+                        throw new ReportEngineReflectionException(String.format(ErrorMessages.SHOULD_HAVE_EMPTY_CONSTRUCTOR, clazz), e, clazz);
                     }
                 } else if(specialRowCell.getValueType().equals(ValueType.COLLECTED_FORMULA_VALUE) && CollectedFormulaValues.class.isAssignableFrom(clazz)) {
                     Pair<String, String> pair = Pair.of(reportData.getReportName(), specialRowCell.getTargetId());
@@ -409,42 +399,49 @@ public final class ReportDataParser extends ReportParser {
                 }
                 for(int i = 0; i < list.size(); i++) {
                     final T entry = list.get(i);
-                    if(newInstance instanceof ConditionalRowStyles) {
-                        final ConditionalRowStyles conditionalRowStyles = (ConditionalRowStyles) entry;
-                        final Optional<Map<String, IntPredicate>> styledOptional = Optional.ofNullable(conditionalRowStyles.isStyled());
-                        final List<ReportStyleBuilder<HorizontalRange>> horizontalRangedStyleBuilders = conditionalRowStyles.getIndexBasedStyle().getOrDefault(reportData.getReportName(), new ArrayList<>());
-                        final IntPredicate predicate = styledOptional
-                                .orElseThrow(() -> new ReportEngineRuntimeException("The returned map cannot be null", this.getClass()))
-                                .getOrDefault(reportData.getReportName(), null);
-                        if(predicate != null && predicate.test(i)) {
-                            for(ReportStyleBuilder<HorizontalRange> styleBuilder : horizontalRangedStyleBuilders) {
-                                reportStylesBuilder.addStyleBuilder(new ReportStyleBuilder<>(new VerticalRange(startRowIndex + i, startRowIndex + i), styleBuilder.toRectangeRangeStyleBuilder()));
-                            }
-                        }
-                    }
-                    if(newInstance instanceof ConditionalCellStyles){
-                        final ConditionalCellStyles conditionalCellStyles = (ConditionalCellStyles) entry;
-                        final Optional<Map<String, List<Pair<String, Predicate<Integer>>>>> styledOptional = Optional.ofNullable(conditionalCellStyles.isCellStyled());
-                        final List<Pair<String, Predicate<Integer>>> predicatePairs = styledOptional
-                                .orElseThrow(() -> new ReportEngineRuntimeException("The returned map cannot be null", this.getClass()))
-                                .getOrDefault(reportData.getReportName(), null);
-                        final List<Pair<String, ReportStyleBuilder<Position>>> styleBuilders = ((ConditionalCellStyles) entry).getIndexBasedCellStyle().getOrDefault(reportData.getReportName(), null);
-                        for(Pair<String, Predicate<Integer>> predicatePair : predicatePairs) {
-                            if(predicatePair.getRight() != null && predicatePair.getRight().test(i)) {
-                                for(Pair<String, ReportStyleBuilder<Position>> styleBuilderPair : styleBuilders) {
-                                    if(styleBuilderPair.getLeft().equals(predicatePair.getLeft())) {
-                                        final ReportStyleBuilder<Position> positionedStyleBuilder = styleBuilderPair.getRight();
-                                        final Position position = new Position(startRowIndex + i, reportData.getColumnIndexForId(styleBuilderPair.getLeft()));
-                                        reportStylesBuilder.addStyleBuilder(new ReportStyleBuilder<>(position, positionedStyleBuilder));
-                                    }
-                                }
-                            }
+                    parseConfitionalRowStyles(newInstance, startRowIndex, reportStylesBuilder, i, (ConditionalRowStyles) entry);
+                    parseConditionalCellStyles(newInstance, startRowIndex, reportStylesBuilder, i, (ConditionalCellStyles) entry);
+                }
+            }
+        } catch (ReflectiveOperationException e) {
+            throw new ReportEngineReflectionException(String.format(ErrorMessages.SHOULD_HAVE_EMPTY_CONSTRUCTOR, clazz), e, clazz);
+        }
+    }
+
+    private <T> void parseConfitionalRowStyles(T newInstance, int startRowIndex, ReportStylesBuilder reportStylesBuilder, int i, ConditionalRowStyles entry) {
+        if(newInstance instanceof ConditionalRowStyles) {
+            final ConditionalRowStyles conditionalRowStyles = entry;
+            final Optional<Map<String, IntPredicate>> styledOptional = Optional.ofNullable(conditionalRowStyles.isStyled());
+            final List<ReportStyleBuilder<HorizontalRange>> horizontalRangedStyleBuilders = conditionalRowStyles.getIndexBasedStyle().getOrDefault(reportData.getReportName(), new ArrayList<>());
+            final IntPredicate predicate = styledOptional
+                    .orElseThrow(() -> new ReportEngineRuntimeException("The returned map cannot be null", this.getClass()))
+                    .getOrDefault(reportData.getReportName(), null);
+            if(predicate != null && predicate.test(i)) {
+                for(ReportStyleBuilder<HorizontalRange> styleBuilder : horizontalRangedStyleBuilders) {
+                    reportStylesBuilder.addStyleBuilder(new ReportStyleBuilder<>(new VerticalRange(startRowIndex + i, startRowIndex + i), styleBuilder.toRectangeRangeStyleBuilder()));
+                }
+            }
+        }
+    }
+
+    private <T> void parseConditionalCellStyles(T newInstance, int startRowIndex, ReportStylesBuilder reportStylesBuilder, int i, ConditionalCellStyles entry) {
+        if(newInstance instanceof ConditionalCellStyles){
+            final Optional<Map<String, List<Pair<String, Predicate<Integer>>>>> styledOptional = Optional.ofNullable(entry.isCellStyled());
+            final List<Pair<String, Predicate<Integer>>> predicatePairs = styledOptional
+                    .orElseThrow(() -> new ReportEngineRuntimeException("The returned map cannot be null", this.getClass()))
+                    .getOrDefault(reportData.getReportName(), null);
+            final List<Pair<String, ReportStyleBuilder<Position>>> styleBuilders = entry.getIndexBasedCellStyle().getOrDefault(reportData.getReportName(), null);
+            for(Pair<String, Predicate<Integer>> predicatePair : predicatePairs) {
+                if(predicatePair.getRight() != null && predicatePair.getRight().test(i)) {
+                    for(Pair<String, ReportStyleBuilder<Position>> styleBuilderPair : styleBuilders) {
+                        if(styleBuilderPair.getLeft().equals(predicatePair.getLeft())) {
+                            final ReportStyleBuilder<Position> positionedStyleBuilder = styleBuilderPair.getRight();
+                            final Position position = new Position(startRowIndex + i, reportData.getColumnIndexForId(styleBuilderPair.getLeft()));
+                            reportStylesBuilder.addStyleBuilder(new ReportStyleBuilder<>(position, positionedStyleBuilder));
                         }
                     }
                 }
             }
-        } catch (ReflectiveOperationException e) {
-            throw new ReportEngineReflectionException("Error instantiating an object. The class should have an empty constructor without parameters", e, clazz);
         }
     }
 

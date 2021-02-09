@@ -8,7 +8,7 @@ public class StringConverter implements AbstractValueConverter {
     }
 
     @Override
-    public Class getToClass() {
+    public Class<?> getToClass() {
         return String.class;
     }
 }

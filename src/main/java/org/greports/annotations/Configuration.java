@@ -1,5 +1,7 @@
 package org.greports.annotations;
 
+import org.apache.commons.lang3.StringUtils;
+
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -47,14 +49,14 @@ public @interface Configuration {
      *
      * @return {@link String}
      */
-    String templatePath() default "";
+    String templatePath() default StringUtils.EMPTY;
 
     /**
      * Sheet's name. If value is empty, the org.greports.engine will generate the sheet's name automatically.
      *
      * @return {@link String}
      */
-    String sheetName() default "";
+    String sheetName() default StringUtils.EMPTY;
 
     /**
      * The value indicates if the header needs to be created.

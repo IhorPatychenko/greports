@@ -1,5 +1,6 @@
 package org.greports.annotations;
 
+import org.apache.commons.lang3.StringUtils;
 import org.greports.validators.AbstractColumnValidator;
 import org.greports.validators.AbstractValidator;
 
@@ -31,7 +32,7 @@ public @interface ColumnValidator {
      *
      * @return {@link String}
      */
-    String param() default "";
+    String param() default StringUtils.EMPTY;
 
     /**
      * Error message. This text string will be used to search for
@@ -40,5 +41,5 @@ public @interface ColumnValidator {
      *
      * @return {@link String}
      */
-    String errorMessage() default "";
+    String errorMessage() default StringUtils.EMPTY;
 }

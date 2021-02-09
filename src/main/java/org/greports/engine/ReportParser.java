@@ -4,6 +4,7 @@ import org.greports.exceptions.ReportEngineReflectionException;
 import org.greports.styles.ReportStylesContainer;
 import org.greports.styles.interfaces.StripedRows;
 import org.greports.styles.interfaces.StyledReport;
+import org.greports.utils.ErrorMessages;
 import org.greports.utils.ReflectionUtils;
 
 public abstract class ReportParser {
@@ -29,7 +30,7 @@ public abstract class ReportParser {
                 }
             }
         } catch (ReflectiveOperationException e) {
-            throw new ReportEngineReflectionException("Error instantiating an object. The class should have an empty constructor without parameters", e, clazz);
+            throw new ReportEngineReflectionException(String.format(ErrorMessages.SHOULD_HAVE_EMPTY_CONSTRUCTOR, clazz), e, clazz);
         }
     }
 }

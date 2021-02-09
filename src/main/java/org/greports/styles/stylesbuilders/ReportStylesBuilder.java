@@ -27,6 +27,11 @@ public class ReportStylesBuilder implements Serializable {
     private final List<ReportStyleBuilder<RectangleRange>> styleBuilders = new ArrayList<>();
     private ReportStyleBuilder<RectangleRange> styleBuilder;
 
+    public ReportStylesBuilder setFontName(String fontName) {
+        this.styleBuilder.setFontName(fontName);
+        return this;
+    }
+
     public ReportStylesBuilder setForegroundColor(Color foregroundColor) {
         this.styleBuilder.setForegroundColor(foregroundColor);
         return this;

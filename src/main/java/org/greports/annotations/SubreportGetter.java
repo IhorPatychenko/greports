@@ -1,5 +1,6 @@
 package org.greports.annotations;
 
+import org.apache.commons.lang3.StringUtils;
 import org.greports.engine.ValueType;
 
 import java.lang.annotation.Documented;
@@ -39,7 +40,7 @@ public @interface SubreportGetter {
      * @see ValueType#FORMULA
      * @return {@link String}
      */
-    String id() default "";
+    String id() default StringUtils.EMPTY;
 
     /**
      * Defines several {@link SubreportGetter} annotations on the same element.

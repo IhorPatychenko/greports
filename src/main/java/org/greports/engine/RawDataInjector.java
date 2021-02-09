@@ -2,6 +2,7 @@ package org.greports.engine;
 
 import com.google.common.base.Stopwatch;
 import org.apache.commons.collections4.map.HashedMap;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellType;
 import org.apache.poi.ss.usermodel.FillPatternType;
@@ -23,7 +24,6 @@ import org.greports.positioning.VerticalRange;
 import org.greports.styles.ReportStyle;
 import org.greports.styles.interfaces.StripedRows;
 import org.greports.styles.stylesbuilders.ReportStylesBuilder;
-import org.greports.utils.Pair;
 import org.greports.utils.Utils;
 import org.greports.utils.WorkbookUtils;
 
@@ -376,8 +376,11 @@ class RawDataInjector extends DataInjector {
     }
 
     private void cellApplyFontStyles(ReportStyle style, XSSFCellStyle cellStyle) {
-        if(Utils.anyNotNull(style.getFontSize(), style.getFontColor(), style.getBoldFont(), style.getItalicFont(), style.getUnderlineFont(), style.getStrikeoutFont())) {
+        if(Utils.anyNotNull(style.getFontName(), style.getFontSize(), style.getFontColor(), style.getBoldFont(), style.getItalicFont(), style.getUnderlineFont(), style.getStrikeoutFont())) {
             XSSFFont font = currentWorkbook.createFont();
+            if(style.getFontName() != null) {
+                font.setFontName(style.getFontName());
+            }
             if(style.getFontSize() != null) {
                 font.setFontHeightInPoints(style.getFontSize());
             }

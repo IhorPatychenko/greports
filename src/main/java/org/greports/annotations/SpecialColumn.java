@@ -1,5 +1,6 @@
 package org.greports.annotations;
 
+import org.apache.commons.lang3.StringUtils;
 import org.greports.engine.ValueType;
 
 import java.lang.annotation.ElementType;
@@ -31,14 +32,14 @@ public @interface SpecialColumn {
      *
      * @return {@link String}
      */
-    String title() default "";
+    String title() default StringUtils.EMPTY;
 
     /**
      * The value of the column.
      *
      * @return {@link String}
      */
-    String value() default "";
+    String value() default StringUtils.EMPTY;
 
     /**
      * Visualisation format to be displayed.
@@ -47,7 +48,7 @@ public @interface SpecialColumn {
      *
      * @return {@link String}
      */
-    String format() default "";
+    String format() default StringUtils.EMPTY;
 
     /**
      * Column ID which will be used by other column if that one
@@ -56,7 +57,7 @@ public @interface SpecialColumn {
      *
      * @return {@link String}
      */
-    String id() default "";
+    String id() default StringUtils.EMPTY;
 
     /**
      * The {@link ValueType} of the column.

@@ -1,5 +1,6 @@
 package org.greports.annotations;
 
+import org.apache.commons.lang3.StringUtils;
 import org.greports.engine.ValueType;
 
 import java.lang.annotation.ElementType;
@@ -17,7 +18,7 @@ public @interface SpecialRowCell {
      *
      * @return {@link String}
      */
-    String targetId() default "";
+    String targetId() default StringUtils.EMPTY;
 
     /**
      * The {@link ValueType} of the column.
@@ -31,7 +32,7 @@ public @interface SpecialRowCell {
      *
      * @return {@link String}
      */
-    String value();
+    String value() default StringUtils.EMPTY;
 
     /**
      * Visualisation format to be applied.
@@ -40,7 +41,7 @@ public @interface SpecialRowCell {
      *
      * @return {@link String}
      */
-    String format() default "";
+    String format() default StringUtils.EMPTY;
 
     /**
      * This value indicates the number of merged cells.

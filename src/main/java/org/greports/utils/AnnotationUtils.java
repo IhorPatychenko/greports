@@ -1,5 +1,7 @@
 package org.greports.utils;
 
+import org.apache.commons.lang3.reflect.FieldUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.greports.annotations.Cell;
 import org.greports.annotations.CellGetter;
 import org.greports.annotations.CellValidator;
@@ -15,6 +17,8 @@ import org.greports.annotations.Subreport;
 import org.greports.annotations.SubreportGetter;
 import org.greports.annotations.SubreportSetter;
 import org.greports.content.cell.HeaderCell;
+import org.greports.converters.AbstractValueConverter;
+import org.greports.converters.NotImplementedConverter;
 import org.greports.engine.ReportBlock;
 import org.greports.engine.ReportConfiguration;
 import org.greports.engine.ValueType;
@@ -26,6 +30,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -36,8 +41,7 @@ import java.util.function.Predicate;
 
 public class AnnotationUtils {
 
-    private AnnotationUtils() {
-    }
+    private AnnotationUtils() {}
 
     private static Report getReportAnnotation(Class<?> clazz) {
         final Report annotation = clazz.getAnnotation(Report.class);
@@ -63,7 +67,7 @@ public class AnnotationUtils {
     }
 
     public static <T> void methodsWithColumnAnnotations(Class<T> clazz, Function<Pair<Method, Column>, Void> columnFunction, String reportName) throws ReportEngineReflectionException {
-        for (Field declaredField : getAllClassFields(clazz)) {
+        for (Field declaredField : FieldUtils.getAllFieldsList(clazz)) {
             final Column[] columns = declaredField.getAnnotationsByType(Column.class);
             for (Column column : columns) {
                 if (getReportColumnPredicate(reportName).test(column)) {
@@ -85,7 +89,7 @@ public class AnnotationUtils {
     }
 
     public static <T> void cellsWithMethodsFunction(Class<T> clazz, Function<Pair<Cell, Method>, Void> cellFunction, String reportName) throws ReportEngineReflectionException {
-        for (Field declaredField : getAllClassFields(clazz)) {
+        for (Field declaredField : FieldUtils.getAllFieldsList(clazz)) {
             final Cell[] cells = declaredField.getAnnotationsByType(Cell.class);
             for (Cell cell : cells) {
                 if (getReportCellPredicate(reportName).test(cell)) {
@@ -106,25 +110,20 @@ public class AnnotationUtils {
         }
     }
 
-    private static <T> List<Field> getAllClassFields(Class<T> clazz){
-        List<Field> fields = new ArrayList<>(Arrays.asList(clazz.getDeclaredFields()));
-        if(clazz.getSuperclass() != null){
-            fields.addAll(getAllClassFields(clazz.getSuperclass()));
-        }
-        return fields;
-    }
-
     private static <T> List<Method> getAllClassMethods(Class<T> clazz) {
         List<Method> methods = new ArrayList<>(Arrays.asList(clazz.getDeclaredMethods()));
-        if(clazz.getSuperclass() != null){
-            methods.addAll(getAllClassMethods(clazz.getSuperclass()));
+        Class<?> currentClass = clazz;
+        while (currentClass != null) {
+            final Method[] declaredMethods = currentClass.getDeclaredMethods();
+            Collections.addAll(methods, declaredMethods);
+            currentClass = currentClass.getSuperclass();
         }
         return methods;
     }
 
     public static <T> Column getSubreportLastColumn(Class<T> clazz, String reportName) {
         List<Column> list = new ArrayList<>();
-        final List<Field> fields = getAllClassFields(clazz);
+        final List<Field> fields = FieldUtils.getAllFieldsList(clazz);
         for (final Field field : fields) {
             final Column[] columns = field.getAnnotationsByType(Column.class);
             for (final Column columnAnnotation : columns) {
@@ -150,7 +149,7 @@ public class AnnotationUtils {
     public static Map<Annotation, Method> loadBlockAnnotations(final ReportBlock reportBlock) throws ReportEngineReflectionException {
         Map<Annotation, Method> map = new HashMap<>();
         Class<?> clazz = reportBlock.getBlockClass();
-        final List<Field> fields = getAllClassFields(clazz);
+        final List<Field> fields = FieldUtils.getAllFieldsList(clazz);
         for (final Field field : fields) {
             final Optional<Subreport> optionalSubreport = Arrays.stream(field.getAnnotationsByType(Subreport.class))
                     .filter(subreport -> Arrays.asList(subreport.reportName()).contains(reportBlock.getReportName()))
@@ -196,7 +195,7 @@ public class AnnotationUtils {
     }
 
     public static <T> void methodsWithSubreportAnnotations(Class<T> clazz, Function<Pair<Method, Subreport>, Void> columnFunction, String reportName) throws ReportEngineReflectionException {
-        for (Field field : getAllClassFields(clazz)) {
+        for (Field field : FieldUtils.getAllFieldsList(clazz)) {
             final Subreport[] subreports = field.getAnnotationsByType(Subreport.class);
             for (Subreport subreport : subreports) {
                 if (getSubreportPredicate(reportName).test(subreport)) {
@@ -295,13 +294,28 @@ public class AnnotationUtils {
             }
 
             @Override
-            public Converter[] getterConverter() {
-                return columnGetter.typeConverter();
+            public Converter getterConverter() {
+                return new Converter() {
+                    @Override
+                    public Class<? extends Annotation> annotationType() {
+                        return Converter.class;
+                    }
+
+                    @Override
+                    public Class<? extends AbstractValueConverter> converterClass() {
+                        return NotImplementedConverter.class;
+                    }
+
+                    @Override
+                    public String[] params() {
+                        return new String[0];
+                    }
+                };
             }
 
             @Override
-            public Converter[] setterConverters() {
-                return new Converter[0];
+            public Converter setterConverters() {
+                return columnGetter.typeConverter();
             }
 
             @Override
@@ -430,12 +444,28 @@ public class AnnotationUtils {
             }
 
             @Override
-            public Converter[] getterConverter() {
-                return new Converter[0];
+            public Converter getterConverter() {
+                return new Converter() {
+
+                    @Override
+                    public Class<? extends Annotation> annotationType() {
+                        return Converter.class;
+                    }
+
+                    @Override
+                    public Class<? extends AbstractValueConverter> converterClass() {
+                        return NotImplementedConverter.class;
+                    }
+
+                    @Override
+                    public String[] params() {
+                        return new String[0];
+                    }
+                };
             }
 
             @Override
-            public Converter[] setterConverters() {
+            public Converter setterConverters() {
                 return columnSetter.typeConverters();
             }
 

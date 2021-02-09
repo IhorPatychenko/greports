@@ -1,5 +1,6 @@
 package org.greports.engine;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.greports.content.ReportHeader;
 import org.greports.content.cell.DataCell;
 import org.greports.content.cell.HeaderCell;
@@ -8,7 +9,6 @@ import org.greports.content.row.DataRow;
 import org.greports.content.row.ReportRow;
 import org.greports.content.row.SpecialDataRow;
 import org.greports.styles.ReportStylesContainer;
-import org.greports.utils.Pair;
 
 import java.io.Serializable;
 import java.net.URL;

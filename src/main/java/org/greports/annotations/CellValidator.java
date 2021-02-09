@@ -1,5 +1,6 @@
 package org.greports.annotations;
 
+import org.apache.commons.lang3.StringUtils;
 import org.greports.validators.AbstractCellValidator;
 import org.greports.validators.AbstractValidator;
 
@@ -35,7 +36,7 @@ public @interface CellValidator {
      *
      * @return {@link String}
      */
-    String value() default "";
+    String value() default StringUtils.EMPTY;
 
     /**
      * Error message. This text string will be used to search for
@@ -44,5 +45,5 @@ public @interface CellValidator {
      *
      * @return {@link String}
      */
-    String errorMessage() default "";
+    String errorMessage() default StringUtils.EMPTY;
 }
