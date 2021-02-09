@@ -399,8 +399,12 @@ public final class ReportDataParser extends ReportParser {
                 }
                 for(int i = 0; i < list.size(); i++) {
                     final T entry = list.get(i);
-                    parseConfitionalRowStyles(newInstance, startRowIndex, reportStylesBuilder, i, (ConditionalRowStyles) entry);
-                    parseConditionalCellStyles(newInstance, startRowIndex, reportStylesBuilder, i, (ConditionalCellStyles) entry);
+                    if(ConditionalRowStyles.class.isAssignableFrom(clazz)) {
+                        parseConfitionalRowStyles(newInstance, startRowIndex, reportStylesBuilder, i, (ConditionalRowStyles) entry);
+                    }
+                    if(ConditionalCellStyles.class.isAssignableFrom(clazz)) {
+                        parseConditionalCellStyles(newInstance, startRowIndex, reportStylesBuilder, i, (ConditionalCellStyles) entry);
+                    }
                 }
             }
         } catch (ReflectiveOperationException e) {
@@ -410,9 +414,8 @@ public final class ReportDataParser extends ReportParser {
 
     private <T> void parseConfitionalRowStyles(T newInstance, int startRowIndex, ReportStylesBuilder reportStylesBuilder, int i, ConditionalRowStyles entry) {
         if(newInstance instanceof ConditionalRowStyles) {
-            final ConditionalRowStyles conditionalRowStyles = entry;
-            final Optional<Map<String, IntPredicate>> styledOptional = Optional.ofNullable(conditionalRowStyles.isStyled());
-            final List<ReportStyleBuilder<HorizontalRange>> horizontalRangedStyleBuilders = conditionalRowStyles.getIndexBasedStyle().getOrDefault(reportData.getReportName(), new ArrayList<>());
+            final Optional<Map<String, IntPredicate>> styledOptional = Optional.ofNullable(entry.isStyled());
+            final List<ReportStyleBuilder<HorizontalRange>> horizontalRangedStyleBuilders = entry.getIndexBasedStyle().getOrDefault(reportData.getReportName(), new ArrayList<>());
             final IntPredicate predicate = styledOptional
                     .orElseThrow(() -> new ReportEngineRuntimeException("The returned map cannot be null", this.getClass()))
                     .getOrDefault(reportData.getReportName(), null);
