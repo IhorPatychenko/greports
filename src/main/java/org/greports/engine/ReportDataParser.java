@@ -399,8 +399,12 @@ public final class ReportDataParser extends ReportParser {
                 }
                 for(int i = 0; i < list.size(); i++) {
                     final T entry = list.get(i);
-                    parseConfitionalRowStyles(newInstance, startRowIndex, reportStylesBuilder, i, (ConditionalRowStyles) entry);
-                    parseConditionalCellStyles(newInstance, startRowIndex, reportStylesBuilder, i, (ConditionalCellStyles) entry);
+                    if(ConditionalRowStyles.class.isAssignableFrom(clazz)) {
+                        parseConfitionalRowStyles(newInstance, startRowIndex, reportStylesBuilder, i, (ConditionalRowStyles) entry);
+                    }
+                    if(ConditionalCellStyles.class.isAssignableFrom(clazz)) {
+                        parseConditionalCellStyles(newInstance, startRowIndex, reportStylesBuilder, i, (ConditionalCellStyles) entry);
+                    }
                 }
             }
         } catch (ReflectiveOperationException e) {
