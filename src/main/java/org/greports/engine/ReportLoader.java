@@ -163,10 +163,6 @@ public class ReportLoader {
 
             bindSubBlocks(reportBlock, clazz, configuration, errorTreatment, skipRows, fromRow, toRow, instancesList, sheet);
 
-        } catch (NoSuchMethodException e) {
-            throw new ReportEngineReflectionException("Error obtaining constructor reference" , e, clazz);
-        } catch (InstantiationException e) {
-            throw new ReportEngineReflectionException("Error instantiating an object", e, clazz);
         } catch (IllegalAccessException | InvocationTargetException e) {
             throw new ReportEngineReflectionException("Error executing method witch does not have access to the definition of the specified class", e, clazz);
         }

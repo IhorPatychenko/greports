@@ -6,7 +6,7 @@ public class SpecialDataCell extends AbstractReportCell implements ReportCell {
     private final ValueType valueType;
     private final String targetId;
     private final int columnWidth;
-    private Object extraData;
+    private Object valuesById;
 
     public SpecialDataCell(final ValueType valueType, final Object value, final String format, final String targetId) {
         this(valueType, value, format, targetId, 1);
@@ -31,12 +31,12 @@ public class SpecialDataCell extends AbstractReportCell implements ReportCell {
         return columnWidth;
     }
 
-    public Object getExtraData() {
-        return extraData;
+    public Object getValuesById() {
+        return valuesById;
     }
 
-    public SpecialDataCell setExtraData(final Object extraData) {
-        this.extraData = extraData;
+    public SpecialDataCell setValuesById(final Object valuesById) {
+        this.valuesById = valuesById;
         return this;
     }
 }

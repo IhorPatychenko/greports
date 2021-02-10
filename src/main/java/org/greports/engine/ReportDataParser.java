@@ -2,6 +2,7 @@ package org.greports.engine;
 
 import com.google.common.base.Stopwatch;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.reflect.MethodUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.log4j.Level;
 import org.greports.annotations.Column;
@@ -29,13 +30,11 @@ import org.greports.styles.stylesbuilders.ReportStyleBuilder;
 import org.greports.styles.stylesbuilders.ReportStylesBuilder;
 import org.greports.utils.AnnotationUtils;
 import org.greports.utils.ConverterUtils;
-import org.greports.utils.ErrorMessages;
 import org.greports.utils.ReflectionUtils;
 import org.greports.utils.TranslationsParser;
 import org.greports.utils.Translator;
 import org.greports.utils.Utils;
 
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.util.ArrayList;
@@ -130,79 +129,64 @@ public final class ReportDataParser extends ReportParser {
         AnnotationUtils.methodsWithColumnAnnotations(clazz, columnFunction, reportData.getReportName());
 
         List<T> dataList = new ArrayList<>(collection);
+        for (int i = 0; i < dataList.size(); i++) {
+            T dto = dataList.get(i);
+            DataRow row = new DataRow(reportData.getConfiguration().getDataStartRowIndex() + i);
+            for (final Map.Entry<Method, Column> entry : columnsMap.entrySet()) {
+                final Column column = entry.getValue();
+                final Method method = entry.getKey();
+                method.setAccessible(true);
+                Object invokedValue = dto != null ? ReflectionUtils.invokeMethod(method, dto) : null;
 
-        try {
-            for (int i = 0; i < dataList.size(); i++) {
-                T dto = dataList.get(i);
-                DataRow row = new DataRow(reportData.getConfiguration().getDataStartRowIndex() + i);
-                for (final Map.Entry<Method, Column> entry : columnsMap.entrySet()) {
-                    final Column column = entry.getValue();
-                    final Method method = entry.getKey();
-                    method.setAccessible(true);
-                    Object invokedValue = dto != null ? method.invoke(dto) : null;
+                if(!column.getterConverter().converterClass().equals(NotImplementedConverter.class)){
+                    invokedValue = ConverterUtils.convertValue(invokedValue, column.getterConverter());
+                }
 
-                    if(!column.getterConverter().converterClass().equals(NotImplementedConverter.class)){
-                        invokedValue = ConverterUtils.convertValue(invokedValue, column.getterConverter());
-                    }
+                String format = column.format();
 
-                    String format = column.format();
+                if(invokedValue != null) {
+                    format = reportConfigurator.getFormatForClass(invokedValue.getClass(), format);
+                }
 
-                    if(invokedValue != null) {
-                        format = reportConfigurator.getFormatForClass(invokedValue.getClass(), format);
-                    }
-
-                    final DataCell dataCell = new DataCell(
+                final DataCell dataCell = new DataCell(
                         column.position() + positionIncrement,
                         false,
                         format,
                         invokedValue,
                         column.valueType(),
                         column.columnWidth()
-                    );
-                    row.addCell(dataCell);
-                }
-                reportData.addRow(row);
+                );
+                row.addCell(dataCell);
             }
-        } catch (IllegalAccessException e) {
-            throw new ReportEngineReflectionException(ErrorMessages.INV_METHOD_WITH_NO_ACCESS, e, clazz);
-        } catch (InvocationTargetException e) {
-            throw new ReportEngineReflectionException(ErrorMessages.INV_METHOD, e, clazz);
+            reportData.addRow(row);
         }
     }
 
     private <T> void parseGroupRows(final Class<T> clazz, final List<T> list) throws ReportEngineReflectionException {
         if(GroupedRows.class.isAssignableFrom(clazz)){
-            try {
-                final GroupedRows newInstance = (GroupedRows) ReflectionUtils.newInstance(clazz);
-                if(newInstance.isRowCollapsedByDefault() != null && newInstance.isRowCollapsedByDefault().containsKey(reportData.getReportName())){
-                    reportData.setGroupedRowsDefaultCollapsed(newInstance.isRowCollapsedByDefault().get(reportData.getReportName()).getAsBoolean());
-                    Integer groupStart = null;
-                    for(int i = 0; i < list.size(); i++) {
-                        GroupedRows groupedRows = (GroupedRows) list.get(i);
-                        if(groupedRows.isGroupStartRow().get(reportData.getReportName()).test(i)){
-                            groupStart = i;
-                        }
-                        if(groupedRows.isGroupEndRow().get(reportData.getReportName()).test(i)) {
-                            reportData.addGroupedRow(Pair.of(groupStart, i));
-                        }
+            final GroupedRows newInstance = (GroupedRows) ReflectionUtils.newInstance(clazz);
+            if(newInstance.isRowCollapsedByDefault() != null && newInstance.isRowCollapsedByDefault().containsKey(reportData.getReportName())){
+                reportData.setGroupedRowsDefaultCollapsed(newInstance.isRowCollapsedByDefault().get(reportData.getReportName()).getAsBoolean());
+                Integer groupStart = null;
+                for(int i = 0; i < list.size(); i++) {
+                    GroupedRows groupedRows = (GroupedRows) list.get(i);
+                    if(groupedRows.isGroupStartRow().get(reportData.getReportName()).test(i)){
+                        groupStart = i;
+                    }
+                    if(groupedRows.isGroupEndRow().get(reportData.getReportName()).test(i)) {
+                        reportData.addGroupedRow(Pair.of(groupStart, i));
                     }
                 }
-            } catch (ReflectiveOperationException e) {
-                throw new ReportEngineReflectionException(String.format(ErrorMessages.SHOULD_HAVE_EMPTY_CONSTRUCTOR, clazz), e, clazz);
             }
         }
     }
 
     private <T> void parseGroupColumns(final Class<T> clazz) throws ReportEngineReflectionException {
         if(GroupedColumns.class.isAssignableFrom(clazz)){
-            try {
-                final GroupedColumns newInstance = (GroupedColumns) ReflectionUtils.newInstance(clazz);
-                if(newInstance.isColumnsCollapsedByDefault() != null && newInstance.isColumnsCollapsedByDefault().containsKey(reportData.getReportName())) {
-                    final List<Pair<Integer, Integer>> list = newInstance.getColumnGroupRanges().getOrDefault(reportData.getReportName(), new ArrayList<>());
-                    reportData.setGroupedColumns(list);
-                }
-            } catch (ReflectiveOperationException e) {
-                throw new ReportEngineReflectionException(String.format(ErrorMessages.SHOULD_HAVE_EMPTY_CONSTRUCTOR, clazz), e, clazz);
+            final GroupedColumns newInstance = (GroupedColumns) ReflectionUtils.newInstance(clazz);
+            if(newInstance.isColumnsCollapsedByDefault() != null && newInstance.isColumnsCollapsedByDefault().containsKey(reportData.getReportName())) {
+                final List<Pair<Integer, Integer>> list = newInstance.getColumnGroupRanges().getOrDefault(reportData.getReportName(), new ArrayList<>());
+                reportData.setGroupedColumns(list);
             }
         }
     }
@@ -216,65 +200,73 @@ public final class ReportDataParser extends ReportParser {
         for (Map.Entry<Method, Subreport> entry : subreportMap.entrySet()) {
             final Method method = entry.getKey();
             final Subreport subreportAnnotation = entry.getValue();
-            Class<?> returnType = method.getReturnType();
-            Class<?> componentType = returnType;
+            Class<?> componentType = method.getReturnType();
             method.setAccessible(true);
 
-            if(ReflectionUtils.isListOrArray(returnType)){
-                List<List<?>> subreportsList = new ArrayList<>();
-                if(returnType.isArray()){
-                    componentType = returnType.getComponentType();
-                } else {
-                    ParameterizedType parameterizedType = (ParameterizedType) method.getGenericReturnType();
-                    componentType = (Class<?>) parameterizedType.getActualTypeArguments()[0];
-                }
-                float subreportPositionalIncrement = Math.max(AnnotationUtils.getSubreportLastColumn(componentType, reportData.getReportName()).position(), SUBREPORT_POSITIONAL_INCREMENT) + SUBREPORT_POSITIONAL_INCREMENT;
-
-                for (T collectionEntry : collection) {
-                    final Object invokeResult = subreportInvokeMethod(method, collectionEntry);
-                    if(returnType.isArray()){
-                        subreportsList.add(new ArrayList<>(Arrays.asList((Object[]) invokeResult)));
-                    } else {
-                        subreportsList.add((List<?>) invokeResult);
-                    }
-                }
-
-                if(!subreportsList.isEmpty()){
-                    float positionalIncrement = subreportPositionalIncrement;
-                    final int subreportsInEveryList = subreportsList.stream().map(List::size).max(Integer::compareTo).orElse(0);
-                    for (int i = 0; i < subreportsInEveryList; i++) {
-                        final List<Object> subreportData = new ArrayList<>();
-                        for (final List<?> list : subreportsList) {
-                            if(list.size() > i) {
-                                subreportData.add(list.get(i));
-                            } else {
-                                try {
-                                    subreportData.add(componentType.newInstance());
-                                } catch(ReflectiveOperationException e) {
-                                    throw new ReportEngineReflectionException(String.format(ErrorMessages.SHOULD_HAVE_EMPTY_CONSTRUCTOR, componentType.getName()), this.getClass());
-                                }
-                            }
-                        }
-                        parseSubreportData(
-                                reportDataParser,
-                                componentType,
-                                subreportData,
-                                positionalIncrement + subreportAnnotation.position(),
-                                Utils.generateId(Utils.generateId(idPrefix, subreportAnnotation.id()), Integer.toString(i))
-                        );
-                        positionalIncrement += subreportPositionalIncrement;
-                    }
-                }
+            if(ReflectionUtils.isListOrArray(componentType)){
+                parseIterableSubreports(collection, idPrefix, reportDataParser, method, subreportAnnotation, componentType);
             } else {
-                float subreportPositionalIncrement = AnnotationUtils.getSubreportLastColumn(componentType, reportData.getReportName()).position() + SUBREPORT_POSITIONAL_INCREMENT;
-                final List<Object> subreportData = new ArrayList<>();
-                for (T collectionEntry : collection) {
-                    final Object invokeResult = subreportInvokeMethod(method, collectionEntry);
-                    subreportData.add(invokeResult);
-                }
-                parseSubreportData(reportDataParser, returnType, subreportData, subreportPositionalIncrement + subreportAnnotation.position(), Utils.generateId(idPrefix, subreportAnnotation.id()));
+                parseSubreport(collection, idPrefix, reportDataParser, method, subreportAnnotation, componentType);
             }
         }
+    }
+
+    private <T> void parseIterableSubreports(List<T> collection, String idPrefix, ReportDataParser reportDataParser, Method method, Subreport subreportAnnotation, Class<?> returnType) throws ReportEngineReflectionException {
+        Class<?> componentType;
+        List<List<?>> subreportsList = new ArrayList<>();
+        if(returnType.isArray()){
+            componentType = returnType.getComponentType();
+        } else {
+            ParameterizedType parameterizedType = (ParameterizedType) method.getGenericReturnType();
+            componentType = (Class<?>) parameterizedType.getActualTypeArguments()[0];
+        }
+        float subreportPositionalIncrement = Math.max(AnnotationUtils.getSubreportLastColumn(componentType, reportData.getReportName()).position(), SUBREPORT_POSITIONAL_INCREMENT) + SUBREPORT_POSITIONAL_INCREMENT;
+
+        for (T collectionEntry : collection) {
+            final Object invokeResult = ReflectionUtils.invokeMethod(method, collectionEntry);
+            if(returnType.isArray()){
+                subreportsList.add(new ArrayList<>(Arrays.asList((Object[]) invokeResult)));
+            } else {
+                subreportsList.add((List<?>) invokeResult);
+            }
+        }
+
+        parseIterableSubreports(idPrefix, reportDataParser, subreportAnnotation, componentType, subreportsList, subreportPositionalIncrement);
+    }
+
+    private void parseIterableSubreports(String idPrefix, ReportDataParser reportDataParser, Subreport subreportAnnotation, Class<?> componentType, List<List<?>> subreportsList, float subreportPositionalIncrement) throws ReportEngineReflectionException {
+        if(!subreportsList.isEmpty()){
+            float positionalIncrement = subreportPositionalIncrement;
+            final int subreportsInEveryList = subreportsList.stream().map(List::size).max(Integer::compareTo).orElse(0);
+            for (int i = 0; i < subreportsInEveryList; i++) {
+                final List<Object> subreportData = new ArrayList<>();
+                for (final List<?> list : subreportsList) {
+                    if(list.size() > i) {
+                        subreportData.add(list.get(i));
+                    } else {
+                        subreportData.add(ReflectionUtils.newInstance(componentType));
+                    }
+                }
+                parseSubreportData(
+                    reportDataParser,
+                    componentType,
+                    subreportData,
+                    positionalIncrement + subreportAnnotation.position(),
+                    Utils.generateId(Utils.generateId(idPrefix, subreportAnnotation.id()), Integer.toString(i))
+                );
+                positionalIncrement += subreportPositionalIncrement;
+            }
+        }
+    }
+
+    private <T> void parseSubreport(List<T> collection, String idPrefix, ReportDataParser reportDataParser, Method method, Subreport subreportAnnotation, Class<?> returnType) throws ReportEngineReflectionException {
+        float subreportPositionalIncrement = AnnotationUtils.getSubreportLastColumn(returnType, reportData.getReportName()).position() + SUBREPORT_POSITIONAL_INCREMENT;
+        final List<Object> subreportData = new ArrayList<>();
+        for (T collectionEntry : collection) {
+            final Object invokeResult = ReflectionUtils.invokeMethod(method, collectionEntry);
+            subreportData.add(invokeResult);
+        }
+        parseSubreportData(reportDataParser, returnType, subreportData, subreportPositionalIncrement + subreportAnnotation.position(), Utils.generateId(idPrefix, subreportAnnotation.id()));
     }
 
     @SuppressWarnings("unchecked")
@@ -283,44 +275,28 @@ public final class ReportDataParser extends ReportParser {
         subreportsData.add(data);
     }
 
-    private <T> Object subreportInvokeMethod(Method method, T collectionEntry) throws ReportEngineReflectionException {
-        try {
-            return method.invoke(collectionEntry);
-        } catch (IllegalAccessException e) {
-            throw new ReportEngineReflectionException(ErrorMessages.INV_METHOD_WITH_NO_ACCESS, e, method.getDeclaringClass());
-        } catch (InvocationTargetException e) {
-            throw new ReportEngineReflectionException(ErrorMessages.INV_METHOD, e, method.getDeclaringClass());
-        }
-    }
-
     private <T> void parseSpecialColumns(final Class<T> clazz, List<T> collection) throws ReportEngineReflectionException {
         List<T> list = new ArrayList<>(collection);
         for (ReportSpecialColumn specialColumn : reportData.getConfiguration().getSpecialColumns()) {
             Method method = null;
             if(ValueType.METHOD.equals(specialColumn.getValueType())){
-                method = ReflectionUtils.getMethodWithName(clazz, specialColumn.getValue(), new Class<?>[]{});
+                method = MethodUtils.getMatchingMethod(clazz, specialColumn.getValue());
             }
             for (int i = 0; i < list.size(); i++) {
                 Object value = specialColumn.getValue();
-                try {
-                    if(method != null) {
-                        final T listElement = list.get(i);
-                        method.setAccessible(true);
-                        value = method.invoke(listElement);
-                    }
-                    reportData.getDataRows().get(i).addCell(new DataCell(
+                if(method != null) {
+                    final T listElement = list.get(i);
+                    method.setAccessible(true);
+                    value = ReflectionUtils.invokeMethod(method, listElement);
+                }
+                reportData.getDataRows().get(i).addCell(new DataCell(
                         specialColumn.getPosition(),
                         false,
                         specialColumn.getFormat(),
                         value,
                         specialColumn.getValueType(),
                         specialColumn.getColumnWidth()
-                    ));
-                } catch (IllegalAccessException e) {
-                    throw new ReportEngineReflectionException(ErrorMessages.INV_METHOD_WITH_NO_ACCESS, e, clazz);
-                } catch (InvocationTargetException e) {
-                    throw new ReportEngineReflectionException(ErrorMessages.INV_METHOD, e, clazz);
-                }
+                ));
             }
         }
     }
@@ -332,47 +308,51 @@ public final class ReportDataParser extends ReportParser {
                 if(!specialRowCell.getValueType().equals(ValueType.COLLECTED_VALUE) && !specialRowCell.getValueType().equals(ValueType.COLLECTED_FORMULA_VALUE)) {
                     specialDataRow.addCell(createSpecialDataCell(specialRowCell, specialRowCell.getValue()));
                 } else if(specialRowCell.getValueType().equals(ValueType.COLLECTED_VALUE) && CollectedValues.class.isAssignableFrom(clazz)){
-                    try {
-                        final T newInstance = ReflectionUtils.newInstance(clazz);
-                        Pair<String, String> pair = Pair.of(reportData.getReportName(), specialRowCell.getValue());
-                        if(CollectedValues.class.isAssignableFrom(clazz)){
-                            final List<Object> list = new ArrayList<>();
-                            for (final T t : collection) {
-                                final CollectedValues<?,?> values = (CollectedValues<?,?>) t;
-                                if(values.isCollectedValue().get(pair).getAsBoolean()){
-                                    list.add(values.getCollectedValue().get(pair));
-                                }
-                            }
-                            final Map<Pair<String, String>, Object> value = ((CollectedValues) newInstance).getCollectedValuesResult(list);
-                            specialDataRow.addCell(createSpecialDataCell(specialRowCell, value.get(pair)));
-                        }
-                    } catch (ReflectiveOperationException e) {
-                        throw new ReportEngineReflectionException(String.format(ErrorMessages.SHOULD_HAVE_EMPTY_CONSTRUCTOR, clazz), e, clazz);
-                    }
+                    parseSpecialRowCollectedValue(clazz, collection, specialDataRow, specialRowCell);
                 } else if(specialRowCell.getValueType().equals(ValueType.COLLECTED_FORMULA_VALUE) && CollectedFormulaValues.class.isAssignableFrom(clazz)) {
-                    Pair<String, String> pair = Pair.of(reportData.getReportName(), specialRowCell.getTargetId());
-                    Map<String, List<Integer>> valuesById = new HashMap<>();
-                    List<T> list = new ArrayList<>(collection);
-                    for (int i = 0; i < list.size(); i++) {
-                        CollectedFormulaValues collectedFormulaValues = (CollectedFormulaValues) list.get(i);
-                        if(collectedFormulaValues.isCollectedFormulaValue().get(pair).getAsBoolean()){
-                            if(!valuesById.containsKey(pair.getRight())){
-                                valuesById.put(pair.getRight(), new ArrayList<>());
-                            }
-                            valuesById.get(pair.getRight()).add(i);
-                        }
-                    }
-                    SpecialDataCell specialDataCell = new SpecialDataCell(
-                        specialRowCell.getValueType(),
-                        specialRowCell.getValue(),
-                        specialRowCell.getFormat(),
-                        specialRowCell.getTargetId()
-                    ).setExtraData(valuesById);
-
-                    specialDataRow.addCell(specialDataCell);
+                    parseSpecialRowCollectedFormulaValue(collection, specialDataRow, specialRowCell);
                 }
             }
             reportData.addSpecialRow(specialDataRow);
+        }
+    }
+
+    private <T> void parseSpecialRowCollectedFormulaValue(List<T> collection, SpecialDataRow specialDataRow, ReportSpecialRowCell specialRowCell) {
+        Pair<String, String> pair = Pair.of(reportData.getReportName(), specialRowCell.getTargetId());
+        Map<String, List<Integer>> valuesById = new HashMap<>();
+        List<T> list = new ArrayList<>(collection);
+        for (int i = 0; i < list.size(); i++) {
+            CollectedFormulaValues collectedFormulaValues = (CollectedFormulaValues) list.get(i);
+            if(collectedFormulaValues.isCollectedFormulaValue().get(pair).getAsBoolean()){
+                if(!valuesById.containsKey(pair.getRight())){
+                    valuesById.put(pair.getRight(), new ArrayList<>());
+                }
+                valuesById.get(pair.getRight()).add(i);
+            }
+        }
+        SpecialDataCell specialDataCell = new SpecialDataCell(
+            specialRowCell.getValueType(),
+            specialRowCell.getValue(),
+            specialRowCell.getFormat(),
+            specialRowCell.getTargetId()
+        ).setValuesById(valuesById);
+
+        specialDataRow.addCell(specialDataCell);
+    }
+
+    private <T> void parseSpecialRowCollectedValue(Class<T> clazz, List<T> collection, SpecialDataRow specialDataRow, ReportSpecialRowCell specialRowCell) throws ReportEngineReflectionException {
+        final T newInstance = ReflectionUtils.newInstance(clazz);
+        Pair<String, String> pair = Pair.of(reportData.getReportName(), specialRowCell.getValue());
+        if(CollectedValues.class.isAssignableFrom(clazz)){
+            final List<Object> list = new ArrayList<>();
+            for (final T t : collection) {
+                final CollectedValues<?,?> values = (CollectedValues<?,?>) t;
+                if(values.isCollectedValue().get(pair).getAsBoolean()){
+                    list.add(values.getCollectedValue().get(pair));
+                }
+            }
+            final Map<Pair<String, String>, Object> value = ((CollectedValues) newInstance).getCollectedValuesResult(list);
+            specialDataRow.addCell(createSpecialDataCell(specialRowCell, value.get(pair)));
         }
     }
 
@@ -388,60 +368,51 @@ public final class ReportDataParser extends ReportParser {
 
     private <T> void parseStyles(Class<T> clazz, List<T> collection) throws ReportEngineReflectionException {
         super.parseStyles(reportData, clazz);
-        try {
-            if(ConditionalRowStyles.class.isAssignableFrom(clazz) || ConditionalCellStyles.class.isAssignableFrom(clazz)){
-                final T newInstance = ReflectionUtils.newInstance(clazz);
-                final List<T> list = new ArrayList<>(collection);
-                final int startRowIndex = reportData.getConfiguration().getDataStartRowIndex();
-                ReportStylesBuilder reportStylesBuilder = reportData.getStyles().getReportStylesBuilder();
-                if(reportStylesBuilder == null){
-                    reportStylesBuilder = reportData.getStyles().createReportStylesBuilder();
-                }
-                for(int i = 0; i < list.size(); i++) {
-                    final T entry = list.get(i);
-                    if(ConditionalRowStyles.class.isAssignableFrom(clazz)) {
-                        parseConfitionalRowStyles(newInstance, startRowIndex, reportStylesBuilder, i, (ConditionalRowStyles) entry);
-                    }
-                    if(ConditionalCellStyles.class.isAssignableFrom(clazz)) {
-                        parseConditionalCellStyles(newInstance, startRowIndex, reportStylesBuilder, i, (ConditionalCellStyles) entry);
-                    }
-                }
+        if(ConditionalRowStyles.class.isAssignableFrom(clazz) || ConditionalCellStyles.class.isAssignableFrom(clazz)){
+            final List<T> list = new ArrayList<>(collection);
+            final int startRowIndex = reportData.getConfiguration().getDataStartRowIndex();
+            ReportStylesBuilder reportStylesBuilder = reportData.getStyles().getReportStylesBuilder();
+            if(reportStylesBuilder == null){
+                reportStylesBuilder = reportData.getStyles().createReportStylesBuilder();
             }
-        } catch (ReflectiveOperationException e) {
-            throw new ReportEngineReflectionException(String.format(ErrorMessages.SHOULD_HAVE_EMPTY_CONSTRUCTOR, clazz), e, clazz);
-        }
-    }
-
-    private <T> void parseConfitionalRowStyles(T newInstance, int startRowIndex, ReportStylesBuilder reportStylesBuilder, int i, ConditionalRowStyles entry) {
-        if(newInstance instanceof ConditionalRowStyles) {
-            final Optional<Map<String, IntPredicate>> styledOptional = Optional.ofNullable(entry.isStyled());
-            final List<ReportStyleBuilder<HorizontalRange>> horizontalRangedStyleBuilders = entry.getIndexBasedStyle().getOrDefault(reportData.getReportName(), new ArrayList<>());
-            final IntPredicate predicate = styledOptional
-                    .orElseThrow(() -> new ReportEngineRuntimeException("The returned map cannot be null", this.getClass()))
-                    .getOrDefault(reportData.getReportName(), null);
-            if(predicate != null && predicate.test(i)) {
-                for(ReportStyleBuilder<HorizontalRange> styleBuilder : horizontalRangedStyleBuilders) {
-                    reportStylesBuilder.addStyleBuilder(new ReportStyleBuilder<>(new VerticalRange(startRowIndex + i, startRowIndex + i), styleBuilder.toRectangeRangeStyleBuilder()));
+            for(int i = 0; i < list.size(); i++) {
+                final T entry = list.get(i);
+                if(ConditionalRowStyles.class.isAssignableFrom(clazz)) {
+                    parseConfitionalRowStyles(startRowIndex, reportStylesBuilder, i, (ConditionalRowStyles) entry);
+                }
+                if(ConditionalCellStyles.class.isAssignableFrom(clazz)) {
+                    parseConditionalCellStyles(startRowIndex, reportStylesBuilder, i, (ConditionalCellStyles) entry);
                 }
             }
         }
     }
 
-    private <T> void parseConditionalCellStyles(T newInstance, int startRowIndex, ReportStylesBuilder reportStylesBuilder, int i, ConditionalCellStyles entry) {
-        if(newInstance instanceof ConditionalCellStyles){
-            final Optional<Map<String, List<Pair<String, Predicate<Integer>>>>> styledOptional = Optional.ofNullable(entry.isCellStyled());
-            final List<Pair<String, Predicate<Integer>>> predicatePairs = styledOptional
-                    .orElseThrow(() -> new ReportEngineRuntimeException("The returned map cannot be null", this.getClass()))
-                    .getOrDefault(reportData.getReportName(), null);
-            final List<Pair<String, ReportStyleBuilder<Position>>> styleBuilders = entry.getIndexBasedCellStyle().getOrDefault(reportData.getReportName(), null);
-            for(Pair<String, Predicate<Integer>> predicatePair : predicatePairs) {
-                if(predicatePair.getRight() != null && predicatePair.getRight().test(i)) {
-                    for(Pair<String, ReportStyleBuilder<Position>> styleBuilderPair : styleBuilders) {
-                        if(styleBuilderPair.getLeft().equals(predicatePair.getLeft())) {
-                            final ReportStyleBuilder<Position> positionedStyleBuilder = styleBuilderPair.getRight();
-                            final Position position = new Position(startRowIndex + i, reportData.getColumnIndexForId(styleBuilderPair.getLeft()));
-                            reportStylesBuilder.addStyleBuilder(new ReportStyleBuilder<>(position, positionedStyleBuilder));
-                        }
+    private void parseConfitionalRowStyles(int startRowIndex, ReportStylesBuilder reportStylesBuilder, int i, ConditionalRowStyles entry) {
+        final Optional<Map<String, IntPredicate>> styledOptional = Optional.ofNullable(entry.isStyled());
+        final List<ReportStyleBuilder<HorizontalRange>> horizontalRangedStyleBuilders = entry.getIndexBasedStyle().getOrDefault(reportData.getReportName(), new ArrayList<>());
+        final IntPredicate predicate = styledOptional
+                .orElseThrow(() -> new ReportEngineRuntimeException("The returned map cannot be null", this.getClass()))
+                .getOrDefault(reportData.getReportName(), null);
+        if(predicate != null && predicate.test(i)) {
+            for(ReportStyleBuilder<HorizontalRange> styleBuilder : horizontalRangedStyleBuilders) {
+                reportStylesBuilder.addStyleBuilder(new ReportStyleBuilder<>(new VerticalRange(startRowIndex + i, startRowIndex + i), styleBuilder.toRectangeRangeStyleBuilder()));
+            }
+        }
+    }
+
+    private void parseConditionalCellStyles(int startRowIndex, ReportStylesBuilder reportStylesBuilder, int i, ConditionalCellStyles entry) {
+        final Optional<Map<String, List<Pair<String, Predicate<Integer>>>>> styledOptional = Optional.ofNullable(entry.isCellStyled());
+        final List<Pair<String, Predicate<Integer>>> predicatePairs = styledOptional
+                .orElseThrow(() -> new ReportEngineRuntimeException("The returned map cannot be null", this.getClass()))
+                .getOrDefault(reportData.getReportName(), null);
+        final List<Pair<String, ReportStyleBuilder<Position>>> styleBuilders = entry.getIndexBasedCellStyle().getOrDefault(reportData.getReportName(), null);
+        for(Pair<String, Predicate<Integer>> predicatePair : predicatePairs) {
+            if(predicatePair.getRight() != null && predicatePair.getRight().test(i)) {
+                for(Pair<String, ReportStyleBuilder<Position>> styleBuilderPair : styleBuilders) {
+                    if(styleBuilderPair.getLeft().equals(predicatePair.getLeft())) {
+                        final ReportStyleBuilder<Position> positionedStyleBuilder = styleBuilderPair.getRight();
+                        final Position position = new Position(startRowIndex + i, reportData.getColumnIndexForId(styleBuilderPair.getLeft()));
+                        reportStylesBuilder.addStyleBuilder(new ReportStyleBuilder<>(position, positionedStyleBuilder));
                     }
                 }
             }

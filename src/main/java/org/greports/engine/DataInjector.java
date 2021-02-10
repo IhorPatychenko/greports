@@ -1,5 +1,6 @@
 package org.greports.engine;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellType;
 import org.apache.poi.ss.usermodel.CreationHelper;
@@ -15,9 +16,11 @@ import org.greports.services.LoggerService;
 import org.greports.utils.WorkbookUtils;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 public abstract class DataInjector {
 
@@ -43,7 +46,7 @@ public abstract class DataInjector {
     }
 
     protected void setCellFormat(Cell cell, String format) {
-        if(format != null && !format.isEmpty()){
+        if(!StringUtils.isEmpty(format)){
             XSSFCellStyle cellStyle;
             if(!formatsCache.containsKey(format)){
                 cellStyle = currentWorkbook.createCellStyle();
@@ -76,73 +79,89 @@ public abstract class DataInjector {
 
     protected void createSpecialRows(Sheet sheet) {
         final List<SpecialDataRow> specialRows = reportData.getSpecialRows();
-        int countBottomRows = 0;
+        Integer countBottomRows = 0;
         for(SpecialDataRow specialRow : specialRows) {
-            if(specialRow.getRowIndex() == Integer.MAX_VALUE) {
-                specialRow.setRowIndex(
-                    reportData.getConfiguration().getVerticalOffset() +
-                    reportData.getDataStartRow() +
-                    reportData.getRowsCount() +
-                    countBottomRows++
-                );
-            } else {
-                specialRow.setRowIndex(specialRow.getRowIndex() + reportData.getConfiguration().getVerticalOffset());
-            }
+            countBottomRows = specialRowSetRowIndex(countBottomRows, specialRow);
             for(final SpecialDataCell specialCell : specialRow.getCells()) {
-                Row row = sheet.getRow(specialRow.getRowIndex());
-                if(row == null) {
-                    row = sheet.createRow(specialRow.getRowIndex());
+                final ValueType valueType = specialCell.getValueType();
+                if(ValueType.TEMPLATED_FORMULA.equals(valueType)) {
+                    continue;
                 }
+                Row row = getOrCreateRow(sheet, specialRow.getRowIndex());
                 final int columnIndexForTarget = reportData.getColumnIndexForId(specialCell.getTargetId()) + reportData.getConfiguration().getHorizontalOffset();
                 Cell cell = row.createCell(columnIndexForTarget);
                 createColumnsToMerge(sheet, row, columnIndexForTarget, specialCell.getColumnWidth());
-                final ValueType valueType = specialCell.getValueType();
-                if(!ValueType.FORMULA.equals(valueType) &&
-                        !ValueType.COLLECTED_FORMULA_VALUE.equals(valueType) &&
-                        !ValueType.TEMPLATED_FORMULA.equals(valueType)) {
+
+                if(!Arrays.asList(ValueType.FORMULA, ValueType.COLLECTED_FORMULA_VALUE, ValueType.TEMPLATED_FORMULA).contains(valueType)) {
                     WorkbookUtils.setCellValue(cell, specialCell.getValue());
                 } else {
                     String formulaString = specialCell.getValue().toString();
                     if(ValueType.FORMULA.equals(valueType)) {
                         createSpecialFormulaCell(sheet, specialCell, cell, formulaString);
                     } else {
-                        Map<String, List<Integer>> extraData = (Map<String, List<Integer>>) specialCell.getExtraData();
-                        if(extraData != null) {
-                            for(final Map.Entry<String, List<Integer>> entry : extraData.entrySet()) {
-                                String id = entry.getKey();
-                                List<Integer> rowIndexes = entry.getValue();
-                                List<String> cellReferences = new ArrayList<>();
-                                for(final Integer rowIndex : rowIndexes) {
-                                    CellReference cellReference = this.getCellReferenceForTargetId(
-                                            sheet.getRow(reportData.getDataStartRow() + rowIndex + reportData.getConfiguration().getVerticalOffset()),
-                                            specialCell.getTargetId()
-                                    );
-                                    cellReferences.add(cellReference.formatAsString() + ":" + cellReference.formatAsString());
-                                }
-                                String joinedReferences = String.join(",", cellReferences);
-                                formulaString = formulaString.replaceAll(id, joinedReferences);
-                                cell.setCellFormula(formulaString);
-                            }
-                        }
+                        createCollectedFormulaValueCell(sheet, specialCell, cell, formulaString);
                     }
                 }
                 setCellFormat(cell, specialCell.getFormat());
             }
-            if(specialRow.isStickyRow()) {
-                sheet.createFreezePane(0, specialRow.getRowIndex() + 1, 0, specialRow.getRowIndex() + 1);
+            checkIfStickyRow(sheet, specialRow);
+        }
+    }
+
+    private Row getOrCreateRow(Sheet sheet, Integer rowIndex) {
+        return Optional.ofNullable(sheet.getRow(rowIndex)).orElse(sheet.createRow(rowIndex));
+    }
+
+    private void createCollectedFormulaValueCell(Sheet sheet, SpecialDataCell specialCell, Cell cell, String formulaString) {
+        Map<String, List<Integer>> valuesById = (Map<String, List<Integer>>) specialCell.getValuesById();
+        if(valuesById != null) {
+            for(final Map.Entry<String, List<Integer>> entry : valuesById.entrySet()) {
+                String id = entry.getKey();
+                List<Integer> rowIndexes = entry.getValue();
+                List<String> cellReferences = new ArrayList<>();
+                for(final Integer rowIndex : rowIndexes) {
+                    CellReference cellReference = this.getCellReferenceForTargetId(
+                            getOrCreateRow(sheet, reportData.getDataStartRow() + rowIndex + reportData.getConfiguration().getVerticalOffset()),
+                            specialCell.getTargetId()
+                    );
+                    cellReferences.add(cellReference.formatAsString() + ":" + cellReference.formatAsString());
+                }
+                String joinedReferences = String.join(",", cellReferences);
+                formulaString = formulaString.replaceAll(id, joinedReferences);
+                cell.setCellFormula(formulaString);
             }
         }
+    }
+
+    private void checkIfStickyRow(Sheet sheet, SpecialDataRow specialRow) {
+        if(specialRow.isStickyRow()) {
+            sheet.createFreezePane(0, specialRow.getRowIndex() + 1, 0, specialRow.getRowIndex() + 1);
+        }
+    }
+
+    private Integer specialRowSetRowIndex(Integer countBottomRows, SpecialDataRow specialRow) {
+        if(specialRow.getRowIndex() == Integer.MAX_VALUE) {
+            specialRow.setRowIndex(
+                reportData.getConfiguration().getVerticalOffset() +
+                reportData.getDataStartRow() +
+                reportData.getRowsCount() +
+                countBottomRows++
+            );
+        } else {
+            specialRow.setRowIndex(specialRow.getRowIndex() + reportData.getConfiguration().getVerticalOffset());
+        }
+        return countBottomRows;
     }
 
     private void createSpecialFormulaCell(Sheet sheet, SpecialDataCell specialCell, Cell cell, String formulaString) {
         if(sheet.getLastRowNum() >= reportData.getDataStartRow()) {
             for (Map.Entry<String, Integer> entry : reportData.getTargetIndexes().entrySet()) {
                 CellReference firstCellReference = this.getCellReferenceForTargetId(
-                        sheet.getRow(reportData.getDataStartRow() + reportData.getConfiguration().getVerticalOffset()),
+                        getOrCreateRow(sheet, reportData.getDataStartRow() + reportData.getConfiguration().getVerticalOffset()),
                         specialCell.getTargetId()
                 );
                 CellReference lastCellReference = this.getCellReferenceForTargetId(
-                        sheet.getRow(reportData.getDataStartRow() + reportData.getRowsCount() + reportData.getConfiguration().getVerticalOffset() - 1),
+                        getOrCreateRow(sheet,reportData.getDataStartRow() + reportData.getRowsCount() + reportData.getConfiguration().getVerticalOffset() - 1),
                         specialCell.getTargetId()
                 );
                 formulaString = formulaString.replaceAll(entry.getKey(), firstCellReference.formatAsString() + ":" + lastCellReference.formatAsString());
