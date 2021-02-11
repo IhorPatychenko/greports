@@ -20,7 +20,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 public abstract class DataInjector {
 
@@ -108,8 +107,9 @@ public abstract class DataInjector {
         }
     }
 
-    private Row getOrCreateRow(Sheet sheet, Integer rowIndex) {
-        return Optional.ofNullable(sheet.getRow(rowIndex)).orElse(sheet.createRow(rowIndex));
+    protected Row getOrCreateRow(Sheet sheet, Integer rowIndex) {
+        final Row row = sheet.getRow(rowIndex);
+        return row != null ? row : sheet.createRow(rowIndex);
     }
 
     private void createCollectedFormulaValueCell(Sheet sheet, SpecialDataCell specialCell, Cell cell, String formulaString) {
@@ -121,7 +121,7 @@ public abstract class DataInjector {
                 List<String> cellReferences = new ArrayList<>();
                 for(final Integer rowIndex : rowIndexes) {
                     CellReference cellReference = this.getCellReferenceForTargetId(
-                            getOrCreateRow(sheet, reportData.getDataStartRow() + rowIndex + reportData.getConfiguration().getVerticalOffset()),
+                            getOrCreateRow(sheet, reportData.getDataRealStartRow() + rowIndex),
                             specialCell.getTargetId()
                     );
                     cellReferences.add(cellReference.formatAsString() + ":" + cellReference.formatAsString());
@@ -157,11 +157,11 @@ public abstract class DataInjector {
         if(sheet.getLastRowNum() >= reportData.getDataStartRow()) {
             for (Map.Entry<String, Integer> entry : reportData.getTargetIndexes().entrySet()) {
                 CellReference firstCellReference = this.getCellReferenceForTargetId(
-                        getOrCreateRow(sheet, reportData.getDataStartRow() + reportData.getConfiguration().getVerticalOffset()),
+                        getOrCreateRow(sheet, reportData.getDataRealStartRow()),
                         specialCell.getTargetId()
                 );
                 CellReference lastCellReference = this.getCellReferenceForTargetId(
-                        getOrCreateRow(sheet,reportData.getDataStartRow() + reportData.getRowsCount() + reportData.getConfiguration().getVerticalOffset() - 1),
+                        getOrCreateRow(sheet,reportData.getDataRealStartRow() + reportData.getRowsCount() - 1),
                         specialCell.getTargetId()
                 );
                 formulaString = formulaString.replaceAll(entry.getKey(), firstCellReference.formatAsString() + ":" + lastCellReference.formatAsString());

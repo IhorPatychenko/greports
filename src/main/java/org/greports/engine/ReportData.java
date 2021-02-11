@@ -249,6 +249,10 @@ public class ReportData implements Cloneable, Serializable {
         return dataStartRow;
     }
 
+    public int getDataRealStartRow() {
+        return dataStartRow + configuration.getVerticalOffset();
+    }
+
     public ReportData setDataStartRow(int dataStartRow) {
         this.dataStartRow = dataStartRow;
         return this;

@@ -108,10 +108,7 @@ class RawDataInjector extends DataInjector {
     private void createHeader(Sheet sheet) {
         if(data.isCreateHeader()) {
             final ReportHeader header = data.getHeader();
-            Row headerRow = sheet.getRow(header.getRowIndex() + data.getConfiguration().getVerticalOffset());
-            if(headerRow == null) {
-                headerRow = sheet.createRow(header.getRowIndex() + data.getConfiguration().getVerticalOffset());
-            }
+            Row headerRow = super.getOrCreateRow(sheet, header.getRowIndex() + data.getConfiguration().getVerticalOffset());
             int mergeCount = 0;
             for (int i = 0; i < header.getCells().size(); i++) {
                 final HeaderCell headerCell = header.getCells().get(i);
@@ -149,10 +146,7 @@ class RawDataInjector extends DataInjector {
     private void createCells(Sheet sheet, Predicate<DataCell> predicate) {
         for (int i = 0; i < data.getDataRows().size(); i++) {
             final DataRow dataRow = data.getDataRow(i);
-            Row row = sheet.getRow(data.getDataStartRow() + data.getConfiguration().getVerticalOffset() + i);
-            if(row == null) {
-                row = sheet.createRow(data.getDataStartRow() + data.getConfiguration().getVerticalOffset() + i);
-            }
+            Row row = super.getOrCreateRow(sheet, data.getDataRealStartRow() + i);
             int mergedCellsCount = 0;
             for (int y = 0; y < dataRow.getCells().size(); y++) {
                 final DataCell dataCell = dataRow.getCell(y);
