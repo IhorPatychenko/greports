@@ -35,7 +35,7 @@ public class ReflectionUtils {
             if(clazz.getSuperclass() != null){
                 return getMethodWithName(clazz.getSuperclass(), methodName, parameters);
             }
-            throw new ReportEngineReflectionException(e.getMessage(), e, clazz);
+            return null;
         }
     }
 
