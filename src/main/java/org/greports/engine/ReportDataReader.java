@@ -38,15 +38,15 @@ public class ReportDataReader {
         return sheet.getLastRowNum();
     }
 
-    public Object getCellValue(int sheetIndex, int rowNumber, int cellNumber) {
+    public Object getCellValue(int sheetIndex, Integer rowNumber, int cellNumber) {
         return this.getCellValue(sheetIndex, rowNumber, cellNumber, Row.MissingCellPolicy.CREATE_NULL_AS_BLANK);
     }
 
-    public Object getCellValue(int sheetIndex, int rowNumber, int cellNumber, Row.MissingCellPolicy missingCellPolicy) {
+    public Object getCellValue(int sheetIndex, Integer rowNumber, int cellNumber, Row.MissingCellPolicy missingCellPolicy) {
         return this.getCellValue(sheetIndex, rowNumber, cellNumber, missingCellPolicy, Object.class);
     }
 
-    public <T> T getCellValue(int sheetIndex, int rowNumber, int cellNumber, Row.MissingCellPolicy missingCellPolicy, Class<T> bindToClass) {
+    public <T> T getCellValue(int sheetIndex, Integer rowNumber, int cellNumber, Row.MissingCellPolicy missingCellPolicy, Class<T> bindToClass) {
         if(sheetIndex < 0 || sheetIndex >= workbook.getNumberOfSheets()) {
             throw new ReportEngineRuntimeException("sheetIndex cannot be lower than zeo and greater than workbook number of sheets", this.getClass());
         }
@@ -54,15 +54,19 @@ public class ReportDataReader {
         return bindToClass.cast(this.getCellValue(this.workbook.getSheetAt(sheetIndex), rowNumber, cellNumber, missingCellPolicy));
     }
 
-    public Object getCellValue(String sheetName, int rowNumber, int cellNumber) {
+    public Object getCellValue(String sheetName, Integer rowNumber, int cellNumber) {
         return this.getCellValue(sheetName, rowNumber, cellNumber, Row.MissingCellPolicy.CREATE_NULL_AS_BLANK);
     }
 
-    public Object getCellValue(String sheetName, int rowNumber, int cellNumber, Row.MissingCellPolicy missingCellPolicy) {
+    public Object getCellValue(String sheetName, Integer rowNumber, int cellNumber, Row.MissingCellPolicy missingCellPolicy) {
         return this.getCellValue(sheetName, rowNumber, cellNumber, missingCellPolicy, Object.class);
     }
 
-    public <T> T getCellValue(String sheetName, int rowNumber, int cellNumber, Row.MissingCellPolicy missingCellPolicy, Class<T> bindToClass) {
+    public <T> T getCellValue(String sheetName, Integer rowNumber, int cellNumber, Class<T> bindToClass) {
+        return this.getCellValue(sheetName, rowNumber, cellNumber, Row.MissingCellPolicy.CREATE_NULL_AS_BLANK, bindToClass);
+    }
+
+    public <T> T getCellValue(String sheetName, Integer rowNumber, int cellNumber, Row.MissingCellPolicy missingCellPolicy, Class<T> bindToClass) {
         if(StringUtils.isEmpty(sheetName)) {
             throw new ReportEngineRuntimeException("sheetName cannot be null.", this.getClass());
         }
@@ -76,13 +80,17 @@ public class ReportDataReader {
         return bindToClass.cast(this.getCellValue(sheet, rowNumber, cellNumber, missingCellPolicy));
     }
 
-    public Object getCellValue(XSSFSheet sheet, int rowNumber, int cellNumber, Row.MissingCellPolicy missingCellPolicy) {
+    public Object getCellValue(XSSFSheet sheet, Integer rowNumber, int cellNumber, Row.MissingCellPolicy missingCellPolicy) {
         return this.getCellValue(sheet, rowNumber, cellNumber, missingCellPolicy, Object.class);
     }
 
-    public <T> T getCellValue(XSSFSheet sheet, int rowNumber, int cellNumber, Row.MissingCellPolicy missingCellPolicy, Class<T> bindToClass) {
+    public <T> T getCellValue(XSSFSheet sheet, Integer rowNumber, int cellNumber, Row.MissingCellPolicy missingCellPolicy, Class<T> bindToClass) {
+        if(rowNumber == null) {
+            rowNumber = getLastRowNum(sheet) - 1;
+        }
+
         if(rowNumber < 0) {
-            throw new ReportEngineRuntimeException("Row index cannot be lower than zero.", this.getClass());
+            rowNumber = getLastRowNum(sheet) - 1 + rowNumber;
         }
 
         if(cellNumber < 0) {

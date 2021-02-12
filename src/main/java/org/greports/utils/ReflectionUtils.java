@@ -1,6 +1,5 @@
 package org.greports.utils;
 
-import org.apache.commons.lang3.reflect.MethodUtils;
 import org.greports.exceptions.ReportEngineReflectionException;
 
 import java.lang.reflect.Constructor;
@@ -29,10 +28,21 @@ public class ReflectionUtils {
         }
     }
 
+    public static <T> Method getMethodWithName(Class<T> clazz, String methodName, Class<?>... parameters) throws ReportEngineReflectionException {
+        try {
+            return clazz.getDeclaredMethod(methodName, parameters);
+        } catch (NoSuchMethodException e) {
+            if(clazz.getSuperclass() != null){
+                return getMethodWithName(clazz.getSuperclass(), methodName, parameters);
+            }
+            throw new ReportEngineReflectionException(e.getMessage(), e, clazz);
+        }
+    }
+
     public static <T> Method fetchFieldGetter(Field field, Class<T> clazz) throws ReportEngineReflectionException {
         List<String> getterPossibleNames = generateMethodNames(field, gettersPrefixes);
         for (String getterPossibleName : getterPossibleNames) {
-            final Method method = MethodUtils.getMatchingMethod(clazz, getterPossibleName);
+            final Method method = getMethodWithName(clazz, getterPossibleName);
             if (method != null) {
                 return method;
             }
@@ -46,7 +56,7 @@ public class ReflectionUtils {
     public static <T> Method fetchFieldSetter(Field field, Class<T> clazz) throws ReportEngineReflectionException {
         List<String> setterPossibleNames = generateMethodNames(field, settersPrefixes);
         for (String setterPossibleName : setterPossibleNames) {
-            final Method method = MethodUtils.getMatchingMethod(clazz, setterPossibleName);
+            final Method method = getMethodWithName(clazz, setterPossibleName, field.getType());
             if (method != null) {
                 return method;
             }
