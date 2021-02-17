@@ -1,7 +1,7 @@
 package org.greports.engine;
 
 import com.google.common.base.Stopwatch;
-import org.apache.logging.log4j.Level;
+import org.apache.log4j.Level;
 import org.greports.exceptions.ReportEngineRuntimeException;
 import org.greports.services.LoggerService;
 

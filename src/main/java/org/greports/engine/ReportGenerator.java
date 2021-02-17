@@ -1,7 +1,7 @@
 package org.greports.engine;
 
 import org.apache.commons.lang3.tuple.Pair;
-import org.apache.logging.log4j.Level;
+import org.apache.log4j.Level;
 import org.greports.exceptions.ReportEngineReflectionException;
 import org.greports.exceptions.ReportEngineRuntimeException;
 

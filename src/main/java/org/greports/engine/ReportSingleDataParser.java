@@ -2,7 +2,7 @@ package org.greports.engine;
 
 import com.google.common.base.Stopwatch;
 import org.apache.commons.lang3.tuple.Pair;
-import org.apache.logging.log4j.Level;
+import org.apache.log4j.Level;
 import org.greports.annotations.Cell;
 import org.greports.content.cell.DataCell;
 import org.greports.content.row.DataRow;

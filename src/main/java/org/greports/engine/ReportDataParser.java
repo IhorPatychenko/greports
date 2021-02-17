@@ -4,7 +4,7 @@ import com.google.common.base.Stopwatch;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.reflect.MethodUtils;
 import org.apache.commons.lang3.tuple.Pair;
-import org.apache.logging.log4j.Level;
+import org.apache.log4j.Level;
 import org.greports.annotations.Column;
 import org.greports.annotations.Subreport;
 import org.greports.content.ReportHeader;
