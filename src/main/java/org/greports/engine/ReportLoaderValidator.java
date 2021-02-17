@@ -20,7 +20,7 @@ public class ReportLoaderValidator {
     private final Translator translator;
 
     public ReportLoaderValidator(ReportConfiguration configuration) {
-        final Map<String, Object> translations = new TranslationsParser(configuration.getLocale(), configuration.getTranslationsDir()).getTranslations();
+        final Map<String, Object> translations = new TranslationsParser(configuration.getLocale(), configuration.getTranslationsDir(), configuration.getTranslationFileExtension()).getTranslations();
         this.translator = new Translator(translations);
     }
 

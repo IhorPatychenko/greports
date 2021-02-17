@@ -23,7 +23,7 @@ import java.util.function.BooleanSupplier;
         @SpecialRow(rowIndex = Integer.MAX_VALUE, cells = {
             @SpecialRowCell(targetId = "brand", value = "Total"),
             @SpecialRowCell(targetId = "model", valueType = ValueType.COLLECTED_VALUE, value = "model", columnWidth = 4),
-            @SpecialRowCell(targetId = "price", valueType = ValueType.COLLECTED_VALUE, value = "price", format = Formats.FLOAT_2_DEC)
+            @SpecialRowCell(targetId = "price", valueType = ValueType.COLLECTED_VALUE, value = "price", format = Formats.FLOAT_2_DEC, comment = "translation.price.total")
         }),
         @SpecialRow(rowIndex = Integer.MAX_VALUE, cells = {
             @SpecialRowCell(targetId = "price", valueType = ValueType.COLLECTED_VALUE, value = "price", format = Formats.FLOAT_2_DEC)
@@ -31,6 +31,7 @@ import java.util.function.BooleanSupplier;
     })
 })
 public class Car implements CollectedValues<Object, Object>, DefaultStyles {
+
     public static final String REPORT_NAME = "Car";
 
     @Column(reportName = REPORT_NAME, position = 1, title = "Brand", format = Formats.TEXT, autoSizeColumn = true, id = "brand")

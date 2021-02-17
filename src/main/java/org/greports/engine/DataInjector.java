@@ -5,7 +5,10 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Level;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellType;
+import org.apache.poi.ss.usermodel.ClientAnchor;
+import org.apache.poi.ss.usermodel.Comment;
 import org.apache.poi.ss.usermodel.CreationHelper;
+import org.apache.poi.ss.usermodel.Drawing;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.util.CellRangeAddress;
@@ -46,8 +49,17 @@ public abstract class DataInjector {
         return new CellReference(row.getCell(reportData.getColumnIndexForId(id), Row.MissingCellPolicy.CREATE_NULL_AS_BLANK));
     }
 
-    private void setCellComment(Cell cell) {
-        // TODO
+    private void setCellComment(Sheet sheet, Cell cell, SpecialDataCell specialCell) {
+        if(!StringUtils.EMPTY.equals(specialCell.getComment())) {
+            final Drawing<?> drawingPatriarch = sheet.createDrawingPatriarch();
+            final ClientAnchor clientAnchor = creationHelper.createClientAnchor();
+            clientAnchor.setCol1(cell.getColumnIndex());
+            clientAnchor.setCol2(cell.getColumnIndex() + specialCell.getCommentWidth());
+            clientAnchor.setRow1(cell.getRowIndex());
+            clientAnchor.setRow2(cell.getRowIndex() + specialCell.getCommentHeight());
+            final Comment cellComment = drawingPatriarch.createCellComment(clientAnchor);
+            cellComment.setString(creationHelper.createRichTextString(specialCell.getComment()));
+        }
     }
 
     protected void setCellFormat(Cell cell, String format) {
@@ -116,7 +128,7 @@ public abstract class DataInjector {
                         createCollectedFormulaValueCell(sheet, specialCell, cell, formulaString);
                     }
                 }
-                setCellComment(cell);
+                setCellComment(sheet, cell, specialCell);
                 setCellFormat(cell, specialCell.getFormat());
             }
             checkIfStickyRow(sheet, specialRow);

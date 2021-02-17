@@ -27,13 +27,14 @@ public class TranslationsParser {
         }
     }
 
-    private FileExtensions fileExtension = FileExtensions.YML;
     private final String locale;
     private final String translationsDir;
+    private FileExtensions fileExtension;
 
-    public TranslationsParser(String locale, String translationsDir) {
+    public TranslationsParser(String locale, String translationsDir, FileExtensions fileExtension) {
         this.locale = locale;
         this.translationsDir = translationsDir;
+        this.fileExtension = fileExtension;
     }
 
     public Map<String, Object> getTranslations() {

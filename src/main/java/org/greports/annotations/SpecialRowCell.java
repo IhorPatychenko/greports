@@ -43,7 +43,23 @@ public @interface SpecialRowCell {
      */
     String format() default StringUtils.EMPTY;
 
+    /**
+     * A cell comment text.
+     * @return {@link String}
+     */
     String comment() default StringUtils.EMPTY;
+
+    /**
+     * Default comment width in columns.
+     * @return {@code short}
+     */
+    short commentWidth() default 2;
+
+    /**
+     * Default comment height in rows.
+     * @return {@code short}
+     */
+    short commentHeight() default 2;
 
     /**
      * This value indicates the number of merged cells.

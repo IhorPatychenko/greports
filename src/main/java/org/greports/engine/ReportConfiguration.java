@@ -1,6 +1,7 @@
 package org.greports.engine;
 
 import org.greports.annotations.Configuration;
+import org.greports.utils.TranslationsParser;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -16,6 +17,7 @@ public class ReportConfiguration implements Cloneable, Serializable {
     private String[] reportName = new String[]{};
     private String translationsDir = "i18n/";
     private String locale = "en_US";
+    private TranslationsParser.FileExtensions translationFileExtension;
     private String templatePath = "";
     private boolean createHeader = true;
     private boolean stickyHeader = false;
@@ -32,6 +34,7 @@ public class ReportConfiguration implements Cloneable, Serializable {
     ReportConfiguration(Configuration configuration) {
         this.reportName = configuration.reportName();
         this.translationsDir = configuration.translationsDir();
+        this.translationFileExtension = configuration.translationFileExtension();
         this.locale = configuration.locale();
         this.templatePath = configuration.templatePath();
         this.sheetName = configuration.sheetName();
@@ -62,6 +65,10 @@ public class ReportConfiguration implements Cloneable, Serializable {
 
     public String getLocale() {
         return locale;
+    }
+
+    public TranslationsParser.FileExtensions getTranslationFileExtension() {
+        return translationFileExtension;
     }
 
     public String getTemplatePath() {
@@ -128,6 +135,11 @@ public class ReportConfiguration implements Cloneable, Serializable {
 
     public ReportConfiguration setLocale(final String locale) {
         this.locale = locale;
+        return this;
+    }
+
+    public ReportConfiguration setTranslationFileExtension(TranslationsParser.FileExtensions translationFileExtension) {
+        this.translationFileExtension = translationFileExtension;
         return this;
     }
 

@@ -7,13 +7,17 @@ public class SpecialDataCell extends AbstractReportCell implements ReportCell {
     private final String targetId;
     private final int columnWidth;
     private final String comment;
+    private final short commentWidth;
+    private final short commentHeight;
     private Object valuesById;
 
-    public SpecialDataCell(final ValueType valueType, final Object value, final String format, final String targetId, final String comment, final int columnWidth) {
+    public SpecialDataCell(final ValueType valueType, final Object value, final String format, final String targetId, final String comment, final short commentWidth, final short commentHeight, final int columnWidth) {
         super(value, format);
         this.valueType = valueType;
         this.targetId = targetId;
         this.comment = comment;
+        this.commentWidth = commentWidth;
+        this.commentHeight = commentHeight;
         this.columnWidth = columnWidth;
     }
 
@@ -35,6 +39,14 @@ public class SpecialDataCell extends AbstractReportCell implements ReportCell {
 
     public String getComment() {
         return comment;
+    }
+
+    public short getCommentWidth() {
+        return commentWidth;
+    }
+
+    public short getCommentHeight() {
+        return commentHeight;
     }
 
     public SpecialDataCell setValuesById(final Object valuesById) {

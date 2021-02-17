@@ -12,6 +12,8 @@ public class ReportSpecialRowCell implements Cloneable, Serializable {
     private String value;
     private String format;
     private String comment;
+    private short commentWidth;
+    private short commentHeight;
     private int columnWidth = 1;
 
     ReportSpecialRowCell(SpecialRowCell specialRowCell) {
@@ -20,16 +22,20 @@ public class ReportSpecialRowCell implements Cloneable, Serializable {
             specialRowCell.value(),
             specialRowCell.format(),
             specialRowCell.comment(),
+            specialRowCell.commentWidth(),
+            specialRowCell.commentHeight(),
             specialRowCell.columnWidth()
         );
     }
 
-    public ReportSpecialRowCell(final String targetId, final ValueType valueType, final String value, final String format, final String comment, final int columnWidth) {
+    public ReportSpecialRowCell(final String targetId, final ValueType valueType, final String value, final String format, final String comment, short commentWidth, short commentHeight, final int columnWidth) {
         this.targetId = targetId;
         this.valueType = valueType;
         this.value = value;
         this.format = format;
         this.comment = comment;
+        this.commentWidth = commentWidth;
+        this.commentHeight = commentHeight;
         this.columnWidth = columnWidth;
     }
 
@@ -75,6 +81,24 @@ public class ReportSpecialRowCell implements Cloneable, Serializable {
 
     public ReportSpecialRowCell setComment(String comment) {
         this.comment = comment;
+        return this;
+    }
+
+    public short getCommentWidth() {
+        return commentWidth;
+    }
+
+    public ReportSpecialRowCell setCommentWidth(short commentWidth) {
+        this.commentWidth = commentWidth;
+        return this;
+    }
+
+    public short getCommentHeight() {
+        return commentHeight;
+    }
+
+    public ReportSpecialRowCell setCommentHeight(short commentHeight) {
+        this.commentHeight = commentHeight;
         return this;
     }
 

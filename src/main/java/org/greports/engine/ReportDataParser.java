@@ -78,7 +78,11 @@ public final class ReportDataParser<T> extends ReportParser {
         currentContainer = container;
 
         final ReportConfiguration configuration = container.getReportData().getConfiguration();
-        final Map<String, Object> translations = new TranslationsParser(configuration.getLocale(), configuration.getTranslationsDir()).getTranslations();
+        final Map<String, Object> translations = new TranslationsParser(
+                configuration.getLocale(),
+                configuration.getTranslationsDir(),
+                configuration.getTranslationFileExtension()
+        ).getTranslations();
 
         container.setData(list)
                 .setTranslator(new Translator(translations))
@@ -101,7 +105,7 @@ public final class ReportDataParser<T> extends ReportParser {
         return this;
     }
 
-    private <T> void parseReportHeader(final ReportListDataContainer<T> container, Float positionIncrement, String idPrefix) throws ReportEngineReflectionException {
+    private void parseReportHeader(final ReportListDataContainer<T> container, Float positionIncrement, String idPrefix) throws ReportEngineReflectionException {
         final ReportData reportData = container.getReportData();
         final Translator translator = container.getTranslator();
         reportData.setCreateHeader(reportData.getConfiguration().isCreateHeader());
@@ -328,7 +332,7 @@ public final class ReportDataParser<T> extends ReportParser {
             final SpecialDataRow specialDataRow = new SpecialDataRow(specialRow.getRowIndex(), specialRow.isStickyRow());
             for (final ReportSpecialRowCell specialRowCell : specialRow.getCells()) {
                 if(!specialRowCell.getValueType().equals(ValueType.COLLECTED_VALUE) && !specialRowCell.getValueType().equals(ValueType.COLLECTED_FORMULA_VALUE)) {
-                    specialDataRow.addCell(createSpecialDataCell(specialRowCell, specialRowCell.getValue()));
+                    specialDataRow.addCell(createSpecialDataCell(container, specialRowCell, specialRowCell.getValue()));
                 } else if(specialRowCell.getValueType().equals(ValueType.COLLECTED_VALUE) && CollectedValues.class.isAssignableFrom(clazz)){
                     parseSpecialRowCollectedValue(container, specialDataRow, specialRowCell);
                 } else if(specialRowCell.getValueType().equals(ValueType.COLLECTED_FORMULA_VALUE) && CollectedFormulaValues.class.isAssignableFrom(clazz)) {
@@ -352,7 +356,7 @@ public final class ReportDataParser<T> extends ReportParser {
                 valuesById.get(pair.getRight()).add(i);
             }
         }
-        SpecialDataCell specialDataCell = createSpecialDataCell(specialRowCell, specialRowCell.getValue()).setValuesById(valuesById);
+        SpecialDataCell specialDataCell = createSpecialDataCell(container, specialRowCell, specialRowCell.getValue()).setValuesById(valuesById);
         specialDataRow.addCell(specialDataCell);
     }
 
@@ -370,17 +374,19 @@ public final class ReportDataParser<T> extends ReportParser {
                 }
             }
             final Map<Pair<String, String>, Object> value = ((CollectedValues) newInstance).getCollectedValuesResult(list);
-            specialDataRow.addCell(createSpecialDataCell(specialRowCell, value.get(pair)));
+            specialDataRow.addCell(createSpecialDataCell(container, specialRowCell, value.get(pair)));
         }
     }
 
-    private static SpecialDataCell createSpecialDataCell(ReportSpecialRowCell specialRowCell, Object value) {
+    private static <T> SpecialDataCell createSpecialDataCell(final ReportListDataContainer<T> container, ReportSpecialRowCell specialRowCell, Object value) {
         return new SpecialDataCell(
                 specialRowCell.getValueType(),
                 value,
                 specialRowCell.getFormat(),
                 specialRowCell.getTargetId(),
-                specialRowCell.getComment(),
+                container.getTranslator().translate(specialRowCell.getComment()),
+                specialRowCell.getCommentWidth(),
+                specialRowCell.getCommentHeight(),
                 specialRowCell.getColumnWidth()
         );
     }

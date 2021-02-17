@@ -1,6 +1,7 @@
 package org.greports.annotations;
 
 import org.apache.commons.lang3.StringUtils;
+import org.greports.utils.TranslationsParser;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -22,19 +23,26 @@ public @interface Configuration {
     /**
      * Relative route to directory containing translations.
      * This directory needs to be placed in resource folder of the project.
-     * Every translations file need to have the follow name: messages.[reportLang].yml
-     * Valid examples: i18n/messages.en.yml
+     * Every translations file need to have the follow name: messages.[reportLang].(yml|yaml)
+     * Valid examples for .yml:
+     *                 i18n/messages.en.yml
      *                 i18n/messages.es.yml
      *                 i18n/messages.de.yml
 
-     * Invalid example: i18n/messages.en.yaml
+     * Valid example .yaml:
+     *                  i18n/messages.en.yaml
      *                  i18n/messages.es.yaml
      *                  i18n/messages.de.yaml
-     *                  i18n/translations.yml
      *
      * @return {@link String}
      */
     String translationsDir() default "i18n/";
+
+    /**
+     * Translation file extension.
+     * @return {@link TranslationsParser.FileExtensions}
+     */
+    TranslationsParser.FileExtensions translationFileExtension() default TranslationsParser.FileExtensions.YML;
 
     /**
      * Locale string representation.
