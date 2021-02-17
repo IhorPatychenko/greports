@@ -8,7 +8,9 @@ import org.greports.utils.ReflectionUtils;
 
 public abstract class ReportParser {
 
-    protected  <T> void parseStyles(ReportData reportData, Class<T> clazz) throws ReportEngineReflectionException {
+    protected  <T> void parseStyles(final ReportGenericDataContainer<T> container) throws ReportEngineReflectionException {
+        final Class<T> clazz = container.getClazz();
+        final ReportData reportData = container.getReportData();
         if(StyledReport.class.isAssignableFrom(clazz) || StripedRows.class.isAssignableFrom(clazz)) {
             final T newInstance = ReflectionUtils.newInstance(clazz);
             final ReportStylesContainer reportStylesContainer = reportData.getStyles();

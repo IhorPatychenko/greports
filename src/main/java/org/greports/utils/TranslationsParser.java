@@ -1,6 +1,5 @@
 package org.greports.utils;
 
-import org.greports.engine.ReportConfiguration;
 import org.greports.exceptions.ReportEngineRuntimeException;
 import org.yaml.snakeyaml.Yaml;
 
@@ -29,20 +28,22 @@ public class TranslationsParser {
     }
 
     private FileExtensions fileExtension = FileExtensions.YML;
-    private final ReportConfiguration reportConfiguration;
+    private final String locale;
+    private final String translationsDir;
 
-    public TranslationsParser(ReportConfiguration reportConfiguration) {
-        this.reportConfiguration = reportConfiguration;
+    public TranslationsParser(String locale, String translationsDir) {
+        this.locale = locale;
+        this.translationsDir = translationsDir;
     }
 
     public Map<String, Object> getTranslations() {
-        return parse(Utils.getLocale(reportConfiguration.getLocale()));
+        return parse(Utils.getLocale(locale));
     }
 
     public Map<String, Object> parse(Locale locale) {
         Yaml yaml = new Yaml();
         InputStream inputStream;
-        final String fileURL = String.format("%smessages.%s.%s", reportConfiguration.getTranslationsDir(), locale.getLanguage(), fileExtension.toString());
+        final String fileURL = String.format("%smessages.%s.%s", translationsDir, locale.getLanguage(), fileExtension.toString());
         final URL resource = getClass().getClassLoader().getResource(fileURL);
         try {
             if(resource != null){

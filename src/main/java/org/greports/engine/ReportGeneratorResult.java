@@ -1,7 +1,7 @@
 package org.greports.engine;
 
 import com.google.common.base.Stopwatch;
-import org.apache.log4j.Level;
+import org.apache.logging.log4j.Level;
 import org.greports.exceptions.ReportEngineRuntimeException;
 import org.greports.services.LoggerService;
 
@@ -10,23 +10,23 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class ReportGeneratorResult implements Serializable {
     private static final long serialVersionUID = 8220764494072805634L;
+
+    private static final Map<String, ReportResultChanger> _resultChangers = new HashMap<>();
 
     private final transient LoggerService loggerService;
     private final List<ReportData> reportData = new ArrayList<>();
     private final transient ReportInjector reportInjector;
     private final List<String> deleteSheets = new ArrayList<>();
 
-    public ReportGeneratorResult() {
-        this(false, Level.ALL, new ArrayList<>(), false);
-    }
-
-    public ReportGeneratorResult(boolean loggerEnabled, Level level, List<CustomFunction> functions, boolean evaluateFormulas) {
+    public ReportGeneratorResult(List<CustomFunction> functions, boolean evaluateFormulas, boolean loggerEnabled, Level level) {
         loggerService = new LoggerService(ReportGeneratorResult.class, loggerEnabled, level);
-        reportInjector = new ReportInjector(reportData, deleteSheets, loggerEnabled, functions, evaluateFormulas);
+        reportInjector = new ReportInjector(reportData, deleteSheets, loggerEnabled, functions, evaluateFormulas, level);
     }
 
     protected void addData(ReportData data){
@@ -49,7 +49,10 @@ public class ReportGeneratorResult implements Serializable {
         if(reportDataBySheetName == null){
             throw new ReportEngineRuntimeException(String.format("Sheet with name %s does not exist", sheetName), this.getClass());
         }
-        return new ReportResultChanger(reportDataBySheetName, this);
+        if(!_resultChangers.containsKey(sheetName)) {
+            _resultChangers.put(sheetName, new ReportResultChanger(reportDataBySheetName, this));
+        }
+        return _resultChangers.get(sheetName);
     }
 
     public ReportGeneratorResult deleteSheet(final String sheetName) {
@@ -69,17 +72,6 @@ public class ReportGeneratorResult implements Serializable {
     }
 
     /**
-     * Deprecated. Use {@link ReportGeneratorResult#writeToPath(String)} instead.
-     *
-     * @param filePath File path
-     * @throws IOException exception opening the stream to write to
-     */
-    @Deprecated
-    public void writeToFile(String filePath) throws IOException {
-        writeToPath(filePath);
-    }
-
-    /**
      * @param filePath File path
      * @throws IOException exception opening the stream to write to
      */
@@ -92,18 +84,7 @@ public class ReportGeneratorResult implements Serializable {
      * @throws IOException exception opening the stream to write to
      */
     public void writeToFile(File file) throws IOException {
-        writeToFile(new FileOutputStream(file));
-    }
-
-    /**
-     * Deprecated. Use {@link ReportGeneratorResult#writeToOutputStream(FileOutputStream)} instead.
-     *
-     * @param outputStream Output stream
-     * @throws IOException exception opening the stream to write to
-     */
-    @Deprecated
-    public void writeToFile(FileOutputStream outputStream) throws IOException {
-        writeToOutputStream(outputStream);
+        writeToOutputStream(new FileOutputStream(file));
     }
 
     /**
@@ -111,10 +92,7 @@ public class ReportGeneratorResult implements Serializable {
      * @throws IOException exception opening the stream to write to
      */
     public void writeToOutputStream(FileOutputStream outputStream) throws IOException {
-        Stopwatch injectStopwatch = Stopwatch.createStarted();
-        loggerService.info("Data inject started...");
         reportInjector.inject();
-        loggerService.info("Data inject successfully finished. Inject time: " + injectStopwatch.stop());
 
         loggerService.info("Write to file started...");
         final Stopwatch writeToStreamStopwatch = Stopwatch.createStarted();

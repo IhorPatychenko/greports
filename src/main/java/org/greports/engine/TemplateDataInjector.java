@@ -1,5 +1,6 @@
 package org.greports.engine;
 
+import org.apache.logging.log4j.Level;
 import org.apache.poi.ss.formula.EvaluationWorkbook;
 import org.apache.poi.ss.formula.FormulaParser;
 import org.apache.poi.ss.formula.FormulaParsingWorkbook;
@@ -26,8 +27,8 @@ import org.openxmlformats.schemas.spreadsheetml.x2006.main.CTTable;
 
 public class TemplateDataInjector extends DataInjector {
 
-    public TemplateDataInjector(XSSFWorkbook targetWorkbook, ReportData data, boolean loggerEnabled) {
-        super(targetWorkbook, data, loggerEnabled);
+    public TemplateDataInjector(XSSFWorkbook targetWorkbook, ReportData data, boolean loggerEnabled, Level level) {
+        super(targetWorkbook, data, loggerEnabled, level);
     }
 
     @Override

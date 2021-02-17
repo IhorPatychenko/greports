@@ -8,29 +8,28 @@ public class ReportSpecialRowCell implements Cloneable, Serializable {
     private static final long serialVersionUID = -4555194088608860976L;
 
     private String targetId;
-    private ValueType valueType = ValueType.PLAIN_VALUE;
+    private ValueType valueType;
     private String value;
-    private String format = "";
+    private String format;
+    private String comment;
     private int columnWidth = 1;
 
     ReportSpecialRowCell(SpecialRowCell specialRowCell) {
-        this.targetId = specialRowCell.targetId();
-        this.valueType = specialRowCell.valueType();
-        this.value = specialRowCell.value();
-        this.format = specialRowCell.format();
-        this.columnWidth = specialRowCell.columnWidth();
+        this(specialRowCell.targetId(),
+            specialRowCell.valueType(),
+            specialRowCell.value(),
+            specialRowCell.format(),
+            specialRowCell.comment(),
+            specialRowCell.columnWidth()
+        );
     }
 
-    public ReportSpecialRowCell(final String targetId, final String value) {
-        this.targetId = targetId;
-        this.value = value;
-    }
-
-    public ReportSpecialRowCell(final String targetId, final ValueType valueType, final String value, final String format, final int columnWidth) {
+    public ReportSpecialRowCell(final String targetId, final ValueType valueType, final String value, final String format, final String comment, final int columnWidth) {
         this.targetId = targetId;
         this.valueType = valueType;
         this.value = value;
         this.format = format;
+        this.comment = comment;
         this.columnWidth = columnWidth;
     }
 
@@ -67,6 +66,15 @@ public class ReportSpecialRowCell implements Cloneable, Serializable {
 
     public ReportSpecialRowCell setFormat(final String format) {
         this.format = format;
+        return this;
+    }
+
+    public String getComment() {
+        return comment;
+    }
+
+    public ReportSpecialRowCell setComment(String comment) {
+        this.comment = comment;
         return this;
     }
 

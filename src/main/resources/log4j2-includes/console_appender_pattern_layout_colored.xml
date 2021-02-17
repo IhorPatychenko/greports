@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Console name="greportsConsoleAppender" target="SYSTEM_OUT">
+    <PatternLayout pattern="%style{%date{yyyy-MM-dd HH:mm:ss.SSS}}{cyan} %highlight{%-5level}{TRACE=blue} %style{%c{1}:%L}{yellow} - %message%n"/>
+</Console>

@@ -1,6 +1,7 @@
 package org.greports.annotations;
 
 import org.apache.commons.lang3.StringUtils;
+import org.greports.converters.NotImplementedConverter;
 import org.greports.engine.ValueType;
 
 import java.lang.annotation.Documented;
@@ -44,14 +45,11 @@ public @interface CellGetter {
     CellValidator[] cellValidators() default {};
 
     /**
-     * An array of {@link Converter} to be applied when the column value is
-     * being obtained. The array cannot contain more than 1 converter
-     * because its not possible to know which one needs to be used to
-     * convert the column value.
+     * A converted to be applied when the column value is being obtained.
      *
-     * @return Converter[]
+     * @return Converter
      */
-    Converter[] getterConverter() default {};
+    Converter getterConverter() default @Converter(converterClass = NotImplementedConverter.class);
 
     /**
      * Visualisation format to be displayed.

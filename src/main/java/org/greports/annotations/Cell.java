@@ -1,6 +1,7 @@
 package org.greports.annotations;
 
 import org.apache.commons.lang3.StringUtils;
+import org.greports.converters.NotImplementedConverter;
 import org.greports.engine.ValueType;
 
 import java.lang.annotation.Documented;
@@ -45,24 +46,18 @@ public @interface Cell {
     CellValidator[] cellValidators() default {};
 
     /**
-     * An array of {@link Converter} to be applied when the column value is
-     * being obtained. The array cannot contain more than 1 converter
-     * because its not possible to know which one needs to be used to
-     * convert the column value.
+     * A converted to be applied when the column value is being obtained.
      *
-     * @return Converter[]
+     * @return Converter
      */
-    Converter[] getterConverter() default {};
+    Converter getterConverter() default @Converter(converterClass = NotImplementedConverter.class);
 
     /**
-     * An array of {@link Converter} to be applied when the data is
-     * being loaded. The engine will lookup for a {@link Converter}
-     * which fits with a data type coming from excel. If any of these
-     * are valid to make the data conversion, the loaded value will be returned.
+     * A converter to be applied when the data is being loaded.
      *
-     * @return Converter[]
+     * @return Converter
      */
-    Converter[] setterConverters() default {};
+    Converter setterConverter() default @Converter(converterClass = NotImplementedConverter.class);
 
     /**
      * Visualisation format to be displayed.

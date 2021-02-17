@@ -1,7 +1,7 @@
 package org.greports.engine;
 
 import org.apache.commons.lang3.tuple.Pair;
-import org.apache.log4j.Level;
+import org.apache.logging.log4j.Level;
 import org.greports.exceptions.ReportEngineReflectionException;
 import org.greports.exceptions.ReportEngineRuntimeException;
 
@@ -14,8 +14,8 @@ public class ReportGenerator {
 
     private static final Map<Pair<Class<?>, String>, ReportConfigurator> _configurators = new HashMap<>();
 
-    private final ReportDataParser reportDataParser;
-    private final ReportSingleDataParser reportSingleDataParser;
+    private final boolean loggerEnabled;
+    private final Level level;
     private final ReportGeneratorResult reportGeneratorResult;
     private final List<CustomFunction> functions = new ArrayList<>();
 
@@ -24,19 +24,21 @@ public class ReportGenerator {
     }
 
     public ReportGenerator(boolean loggerEnabled, Level level) {
-        reportDataParser = new ReportDataParser(loggerEnabled, level);
-        reportSingleDataParser = new ReportSingleDataParser(loggerEnabled, level);
-        reportGeneratorResult = new ReportGeneratorResult(loggerEnabled, level, this.functions, false);
+        this.loggerEnabled = loggerEnabled;
+        this.level = level;
+        reportGeneratorResult = new ReportGeneratorResult(this.functions, false, loggerEnabled, level);
     }
 
-    public <T> ReportGenerator parse(final List<T> collection, final String reportName, Class<T> clazz) throws ReportEngineReflectionException {
-        final ReportData data = reportDataParser.parse(clazz, reportName, collection, getConfigurator(clazz, reportName)).getData();
-        reportGeneratorResult.addData(data);
+    public <T> ReportGenerator parse(final List<T> list, final String reportName, Class<T> clazz) throws ReportEngineReflectionException {
+        ReportDataParser<T> reportDataParser = new ReportDataParser<>(this.loggerEnabled, this.level);
+        final ReportData reportData = reportDataParser.parse(list, reportName, clazz, getConfigurator(clazz, reportName)).getContainer().getReportData();
+        reportGeneratorResult.addData(reportData);
         return this;
     }
 
     public <T> ReportGenerator parseSingleObject(final T object, final String reportName, Class<T> clazz) throws ReportEngineReflectionException {
-        final ReportData data = reportSingleDataParser.parse(object, reportName, clazz).getData();
+        ReportSingleDataParser<T> reportSingleDataParser = new ReportSingleDataParser<>(this.loggerEnabled, this.level);
+        final ReportData data = reportSingleDataParser.parse(object, reportName, clazz, getConfigurator(clazz, reportName)).getContainer().getReportData();
         reportGeneratorResult.addData(data);
         return this;
     }

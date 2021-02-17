@@ -3,6 +3,7 @@ package org.greports.engine;
 import com.google.common.base.Stopwatch;
 import org.apache.commons.collections4.map.HashedMap;
 import org.apache.commons.lang3.tuple.Pair;
+import org.apache.logging.log4j.Level;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellType;
 import org.apache.poi.ss.usermodel.FillPatternType;
@@ -39,8 +40,8 @@ class RawDataInjector extends DataInjector {
     private final ReportData data;
     private Map<Pair<ReportStyle, String>, XSSFCellStyle> stylesCache = new HashedMap<>();
 
-    public RawDataInjector(XSSFWorkbook currentWorkbook, ReportData reportData, boolean loggerEnabled) {
-        super(currentWorkbook, reportData, loggerEnabled);
+    public RawDataInjector(XSSFWorkbook currentWorkbook, ReportData reportData, boolean loggerEnabled, Level level) {
+        super(currentWorkbook, reportData, loggerEnabled, level);
         this.data = reportData;
     }
 
@@ -62,50 +63,21 @@ class RawDataInjector extends DataInjector {
     }
 
     protected void injectData(Sheet sheet) {
-        loggerService.trace("Creating headers...");
-        final Stopwatch headersStopwatch = Stopwatch.createStarted();
         createHeader(sheet);
-        loggerService.trace("Headers created. Time: " + headersStopwatch.stop());
-
-        loggerService.trace("Creating data rows...");
-        final Stopwatch dataRowsStopwatch = Stopwatch.createStarted();
         createDataRows(sheet);
-        loggerService.trace("Data rows created. Time: " + dataRowsStopwatch.stop());
-
-        loggerService.trace("Creating special rows...");
-        final Stopwatch specialRowsStopwatch = Stopwatch.createStarted();
         super.createSpecialRows(sheet);
-        loggerService.trace("Special rows created. Time: " + specialRowsStopwatch.stop());
-
-        loggerService.trace("Creating row's groups...");
-        final Stopwatch rowsGroup = Stopwatch.createStarted();
         createRowsGroups(sheet);
-        loggerService.trace("Row's groups created. Time: " + rowsGroup.stop());
-
-        loggerService.trace("Creating row's groups...");
-        final Stopwatch columnsGroup = Stopwatch.createStarted();
         createColumnsGroups(sheet);
-        loggerService.trace("Column's groups created. Time: " + columnsGroup.stop());
-
-        loggerService.trace("Adding striped row styles...");
-        final Stopwatch stripedRowsStopwatch = Stopwatch.createStarted();
         addStripedRows(sheet);
-        loggerService.trace("Striped row styles added. Time: " + stripedRowsStopwatch.stop());
-
-        loggerService.trace("Adding styles...");
-        final Stopwatch stylesStopwatch = Stopwatch.createStarted();
         addStyles(sheet);
-        loggerService.trace("Styles added. Time: " + stylesStopwatch.stop());
-
-        loggerService.trace("Adjusting columns...");
-        final Stopwatch adjustColumnsStopwatch = Stopwatch.createStarted();
         super.adjustColumns(sheet);
-        loggerService.trace("Columns adjusted. Time: " + adjustColumnsStopwatch.stop());
-
         setGridlines(sheet);
     }
 
     private void createHeader(Sheet sheet) {
+        loggerService.trace("Creating header...", data.isCreateHeader());
+        final Stopwatch headersStopwatch = Stopwatch.createStarted();
+
         if(data.isCreateHeader()) {
             final ReportHeader header = data.getHeader();
             Row headerRow = super.getOrCreateRow(sheet, header.getRowIndex() + data.getConfiguration().getVerticalOffset());
@@ -132,15 +104,21 @@ class RawDataInjector extends DataInjector {
                 sheet.createFreezePane(0, headerRow.getRowNum() + 1, 0, headerRow.getRowNum() + 1);
             }
         }
+        loggerService.trace("Header created. Time: " + headersStopwatch.stop(), data.isCreateHeader());
     }
 
     private void createDataRows(Sheet sheet) {
+        loggerService.trace("Creating data rows...");
+        final Stopwatch dataRowsStopwatch = Stopwatch.createStarted();
+
         // First create cells with data
         final Predicate<DataCell> dataCellsPredicate = (DataCell dataCell) -> !dataCell.getValueType().equals(ValueType.FORMULA) && !dataCell.getValueType().equals(ValueType.TEMPLATED_FORMULA);
         // After create cells with formulas to can evaluate them
         final Predicate<DataCell> formulaCellsPredicate = (DataCell dataCell) -> dataCell.getValueType().equals(ValueType.FORMULA);
         this.createCells(sheet, dataCellsPredicate);
         this.createCells(sheet, formulaCellsPredicate);
+
+        loggerService.trace("Data rows created. Time: " + dataRowsStopwatch.stop());
     }
 
     private void createCells(Sheet sheet, Predicate<DataCell> predicate) {
@@ -201,28 +179,41 @@ class RawDataInjector extends DataInjector {
 
     private void createRowsGroups(final Sheet sheet) {
         List<Pair<Integer, Integer>> groupedRows = data.getGroupedRows();
+
+        loggerService.trace("Creating row's groups...", !groupedRows.isEmpty());
+        final Stopwatch rowsGroup = Stopwatch.createStarted();
+
         for(final Pair<Integer, Integer> groupedRow : groupedRows) {
             int startGroup = data.getDataStartRow() + groupedRow.getLeft() + data.getConfiguration().getDataStartRowIndex();
             int endGroup = data.getDataStartRow() + groupedRow.getRight()  + data.getConfiguration().getDataStartRowIndex();
             sheet.groupRow(startGroup, endGroup);
             sheet.setRowGroupCollapsed(startGroup, data.isGroupedRowsDefaultCollapsed());
         }
+        loggerService.trace("Row's groups created. Time: " + rowsGroup.stop(), !groupedRows.isEmpty());
     }
 
     private void createColumnsGroups(final Sheet sheet) {
         final List<Pair<Integer, Integer>> groupedColumns = data.getGroupedColumns();
+
+        loggerService.trace("Creating row's groups...", !groupedColumns.isEmpty());
+        final Stopwatch columnsGroup = Stopwatch.createStarted();
+
         for(final Pair<Integer, Integer> groupedColumn : groupedColumns) {
             final int left = groupedColumn.getLeft() + data.getConfiguration().getHorizontalOffset();
             final int right = groupedColumn.getRight() + data.getConfiguration().getHorizontalOffset();
             sheet.groupColumn(left, right);
             sheet.setColumnGroupCollapsed(left, data.isGroupedColumnsDefaultCollapsed());
         }
+        loggerService.trace("Column's groups created. Time: " + columnsGroup.stop(), !groupedColumns.isEmpty());
     }
 
     private void addStripedRows(Sheet sheet) {
         final StripedRows.StripedRowsIndex stripedRowsIndex = data.getStyles().getStripedRowsIndex();
         final Color stripedRowsColor = data.getStyles().getStripedRowsColor();
         if(stripedRowsIndex != null && stripedRowsColor != null) {
+            loggerService.trace("Adding striped row styles...");
+            final Stopwatch stripedRowsStopwatch = Stopwatch.createStarted();
+
             for (int i = stripedRowsIndex.getIndex() + data.getConfiguration().getVerticalOffset(); i <= sheet.getLastRowNum() + data.getConfiguration().getVerticalOffset(); i += 2) {
                 final Row row = sheet.getRow(i);
                 for (int y = row.getFirstCellNum(); y < row.getLastCellNum(); y++) {
@@ -234,12 +225,16 @@ class RawDataInjector extends DataInjector {
                     cell.setCellStyle(cellStyle);
                 }
             }
+            loggerService.trace("Striped row styles added. Time: " + stripedRowsStopwatch.stop());
         }
     }
 
     private void addStyles(Sheet sheet) {
         final ReportStylesBuilder reportStylesBuilder = data.getStyles().getReportStylesBuilder();
         if(reportStylesBuilder != null) {
+            loggerService.trace("Adding styles...");
+            final Stopwatch stylesStopwatch = Stopwatch.createStarted();
+
             final List<ReportStyle> styles = reportStylesBuilder.getStyles();
             final short verticalOffset = data.getConfiguration().getVerticalOffset();
             final short horizontalOffset = data.getConfiguration().getHorizontalOffset();
@@ -265,6 +260,7 @@ class RawDataInjector extends DataInjector {
                     }
                 }
             }
+            loggerService.trace("Styles added. Time: " + stylesStopwatch.stop());
         }
     }
 

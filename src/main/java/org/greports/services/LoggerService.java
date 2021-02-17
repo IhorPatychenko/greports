@@ -1,7 +1,9 @@
 package org.greports.services;
 
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.core.config.Configurator;
 
 public class LoggerService {
 
@@ -9,14 +11,11 @@ public class LoggerService {
     private final Level level;
     private final boolean enabled;
 
-    public LoggerService(Class<?> clazz, boolean enabled) {
-        this(clazz, enabled, Level.ALL);
-    }
-
     public LoggerService(Class<?> clazz, boolean enabled, Level level) {
-        this.logger = Logger.getLogger(clazz);
-        this.enabled = enabled;
+        this.logger = LogManager.getLogger(clazz);
+        Configurator.setLevel("org.greports", level);
         this.level = level;
+        this.enabled = enabled;
     }
 
     public static LoggerService forClass(Class<?> clazz, boolean enabled, Level level) {
@@ -32,42 +31,74 @@ public class LoggerService {
     }
 
     public void trace(Object message) {
-        if(this.enabled && level.isGreaterOrEqual(Level.TRACE)) this.logger.trace(message);
+        this.trace(message, true);
+    }
+
+    public void trace(Object message, boolean printIfTrue) {
+        if(this.enabled && printIfTrue) this.logger.trace(message);
     }
 
     public void trace(Object message, Throwable cause) {
-        if(this.enabled && level.isGreaterOrEqual(Level.TRACE)) this.logger.trace(message, cause);
-    }
-
-    public void info(Object message){
-        if(this.enabled && level.isGreaterOrEqual(Level.INFO)) this.logger.info(message);
-    }
-
-    public void info(Object message, Throwable cause){
-        if(this.enabled && level.isGreaterOrEqual(Level.INFO)) this.logger.info(message, cause);
+        if(this.enabled) this.logger.trace(message, cause);
     }
 
     public void debug(Object message) {
-        if(this.enabled && level.isGreaterOrEqual(Level.DEBUG)) this.logger.debug(message);
+        this.debug(message, true);
+    }
+
+    public void debug(Object message, boolean printIfTrue) {
+        if(this.enabled && printIfTrue) this.logger.debug(message);
     }
 
     public void debug(Object message, Throwable cause) {
-        if(this.enabled && level.isGreaterOrEqual(Level.DEBUG)) this.logger.debug(message, cause);
+        if(this.enabled) this.logger.debug(message, cause);
+    }
+
+    public void info(Object message) {
+        this.info(message, true);
+    }
+
+    public void info(Object message, boolean printIfTrue){
+        if(this.enabled && printIfTrue) this.logger.info(message);
+    }
+
+    public void info(Object message, Throwable cause){
+        if(this.enabled) this.logger.info(message, cause);
+    }
+
+    public void warn(Object message){
+        this.warn(message, true);
+    }
+
+    public void warn(Object message, boolean printIfTrue){
+        if(this.enabled && printIfTrue) this.logger.warn(message);
+    }
+
+    public void warn(Object message, Throwable cause){
+        if(this.enabled) this.logger.warn(message, cause);
     }
 
     public void error(Object message) {
-        if(this.enabled && level.isGreaterOrEqual(Level.ERROR)) this.logger.error(message);
+        this.error(message, true);
+    }
+
+    public void error(Object message, boolean printIfTrue) {
+        if(this.enabled && printIfTrue) this.logger.error(message);
     }
 
     public void error(Object message, Throwable cause) {
-        if(this.enabled && level.isGreaterOrEqual(Level.ERROR)) this.logger.error(message, cause);
+        if(this.enabled) this.logger.error(message, cause);
     }
 
     public void fatal(Object message) {
-        if(this.enabled && level.isGreaterOrEqual(Level.FATAL)) this.logger.fatal(message);
+        this.fatal(message, true);
+    }
+
+    public void fatal(Object message, boolean printIfTrue) {
+        if(this.enabled && printIfTrue) this.logger.fatal(message);
     }
 
     public void fatal(Object message, Throwable cause) {
-        if(this.enabled && level.isGreaterOrEqual(Level.FATAL)) this.logger.fatal(message, cause);
+        if(this.enabled) this.logger.fatal(message, cause);
     }
 }

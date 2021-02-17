@@ -21,6 +21,24 @@ public class AnnotationsConverter {
 
     private AnnotationsConverter(){}
 
+    private static final Converter notImplementedConveter =  new Converter() {
+
+        @Override
+        public Class<? extends Annotation> annotationType() {
+            return Converter.class;
+        }
+
+        @Override
+        public Class<? extends AbstractValueConverter> converterClass() {
+            return NotImplementedConverter.class;
+        }
+
+        @Override
+        public String[] params() {
+            return new String[0];
+        }
+    };
+
     public static Subreport convert(final SubreportGetter subreportGetter) {
         return new Subreport() {
 
@@ -100,22 +118,7 @@ public class AnnotationsConverter {
 
             @Override
             public Converter getterConverter() {
-                return new Converter() {
-                    @Override
-                    public Class<? extends Annotation> annotationType() {
-                        return Converter.class;
-                    }
-
-                    @Override
-                    public Class<? extends AbstractValueConverter> converterClass() {
-                        return NotImplementedConverter.class;
-                    }
-
-                    @Override
-                    public String[] params() {
-                        return new String[0];
-                    }
-                };
+                return notImplementedConveter;
             }
 
             @Override
@@ -185,13 +188,13 @@ public class AnnotationsConverter {
             }
 
             @Override
-            public Converter[] getterConverter() {
+            public Converter getterConverter() {
                 return cellGetter.getterConverter();
             }
 
             @Override
-            public Converter[] setterConverters() {
-                return new Converter[0];
+            public Converter setterConverter() {
+                return notImplementedConveter;
             }
 
             @Override
@@ -250,23 +253,7 @@ public class AnnotationsConverter {
 
             @Override
             public Converter getterConverter() {
-                return new Converter() {
-
-                    @Override
-                    public Class<? extends Annotation> annotationType() {
-                        return Converter.class;
-                    }
-
-                    @Override
-                    public Class<? extends AbstractValueConverter> converterClass() {
-                        return NotImplementedConverter.class;
-                    }
-
-                    @Override
-                    public String[] params() {
-                        return new String[0];
-                    }
-                };
+                return notImplementedConveter;
             }
 
             @Override
@@ -305,5 +292,4 @@ public class AnnotationsConverter {
             }
         };
     }
-
 }

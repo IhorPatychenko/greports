@@ -1,6 +1,6 @@
 package org.greports.engine;
 
-import org.apache.log4j.Level;
+import org.apache.logging.log4j.Level;
 import org.apache.poi.xssf.usermodel.XSSFCell;
 import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
@@ -89,9 +89,9 @@ public class ReportTemplateNormalizer {
         return this;
     }
 
-    private ReportData getReportData(Class<?> clazz, String reportName) throws ReportEngineReflectionException {
-        ReportDataParser dataParser = new ReportDataParser(true, Level.INFO);
-        return dataParser.parse(clazz, reportName).getData();
+    private <T> ReportData getReportData(Class<T> clazz, String reportName) throws ReportEngineReflectionException {
+        ReportDataParser<T> dataParser = new ReportDataParser<>(true, Level.INFO);
+        return dataParser.parse(clazz, reportName).getContainer().getReportData();
     }
 
     private XSSFSheet getSheet(ReportConfiguration configuration) {

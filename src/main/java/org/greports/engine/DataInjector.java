@@ -1,6 +1,8 @@
 package org.greports.engine;
 
+import com.google.common.base.Stopwatch;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.Level;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellType;
 import org.apache.poi.ss.usermodel.CreationHelper;
@@ -33,15 +35,19 @@ public abstract class DataInjector {
 
     protected abstract void injectData(Sheet sheet);
 
-    protected DataInjector(XSSFWorkbook currentWorkbook, ReportData reportData, boolean loggerEnabled) {
+    protected DataInjector(XSSFWorkbook currentWorkbook, ReportData reportData, boolean loggerEnabled, Level level) {
         this.currentWorkbook = currentWorkbook;
         this.reportData = reportData;
         this.creationHelper = this.currentWorkbook.getCreationHelper();
-        this.loggerService = new LoggerService(this.getClass(), loggerEnabled);
+        this.loggerService = new LoggerService(this.getClass(), loggerEnabled, level);
     }
 
     protected CellReference getCellReferenceForTargetId(Row row, String id) {
         return new CellReference(row.getCell(reportData.getColumnIndexForId(id), Row.MissingCellPolicy.CREATE_NULL_AS_BLANK));
+    }
+
+    private void setCellComment(Cell cell) {
+        // TODO
     }
 
     protected void setCellFormat(Cell cell, String format) {
@@ -67,9 +73,16 @@ public abstract class DataInjector {
     }
 
     protected void adjustColumns(Sheet sheet) {
-        for (Integer autoSizedColumn : reportData.getAutoSizedColumns()) {
+        final List<Integer> autoSizedColumns = reportData.getAutoSizedColumns();
+
+        loggerService.trace("Adjusting columns...", !autoSizedColumns.isEmpty());
+        final Stopwatch adjustColumnsStopwatch = Stopwatch.createStarted();
+
+        for (Integer autoSizedColumn : autoSizedColumns) {
             sheet.autoSizeColumn(autoSizedColumn + reportData.getConfiguration().getHorizontalOffset());
         }
+
+        loggerService.trace("Columns adjusted. Time: " + adjustColumnsStopwatch.stop(), !autoSizedColumns.isEmpty());
     }
 
     protected void setGridlines(Sheet sheet) {
@@ -79,6 +92,8 @@ public abstract class DataInjector {
     protected void createSpecialRows(Sheet sheet) {
         final List<SpecialDataRow> specialRows = reportData.getSpecialRows();
         Integer countBottomRows = 0;
+        loggerService.trace("Creating special rows...", !specialRows.isEmpty());
+        final Stopwatch specialRowsStopwatch = Stopwatch.createStarted();
         for(SpecialDataRow specialRow : specialRows) {
             countBottomRows = specialRowSetRowIndex(countBottomRows, specialRow);
             for(final SpecialDataCell specialCell : specialRow.getCells()) {
@@ -101,10 +116,12 @@ public abstract class DataInjector {
                         createCollectedFormulaValueCell(sheet, specialCell, cell, formulaString);
                     }
                 }
+                setCellComment(cell);
                 setCellFormat(cell, specialCell.getFormat());
             }
             checkIfStickyRow(sheet, specialRow);
         }
+        loggerService.trace("Special rows created. Time: " + specialRowsStopwatch.stop(), !specialRows.isEmpty());
     }
 
     protected Row getOrCreateRow(Sheet sheet, Integer rowIndex) {

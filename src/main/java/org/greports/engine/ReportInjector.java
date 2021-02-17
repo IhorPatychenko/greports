@@ -1,5 +1,7 @@
 package org.greports.engine;
 
+import com.google.common.base.Stopwatch;
+import org.apache.logging.log4j.Level;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.ss.formula.functions.FreeRefFunction;
 import org.apache.poi.ss.formula.udf.AggregatingUDFFinder;
@@ -9,6 +11,7 @@ import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.apache.poi.xssf.usermodel.XSSFFormulaEvaluator;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.greports.exceptions.ReportEngineRuntimeException;
+import org.greports.services.LoggerService;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -19,6 +22,7 @@ public class ReportInjector {
     private XSSFWorkbook currentWorkbook;
     private final List<ReportData> reportData;
     private final boolean loggerEnabled;
+    protected LoggerService loggerService;
     private final List<String> deleteSheet;
     private final List<CustomFunction> functions;
     private boolean evaluateFormulas;
@@ -28,16 +32,20 @@ public class ReportInjector {
                           final List<String> deleteSheet,
                           boolean loggerEnabled,
                           List<CustomFunction> functions,
-                          boolean evaluateFormulas) {
+                          boolean evaluateFormulas,
+                          Level level) {
         this.reportData = reportData;
         this.loggerEnabled = loggerEnabled;
         this.deleteSheet = deleteSheet;
         this.functions = functions;
         this.evaluateFormulas = evaluateFormulas;
+        this.loggerService = new LoggerService(ReportInjector.class, this.loggerEnabled, level);
     }
 
     public void inject() {
         try {
+            Stopwatch injectStopwatch = Stopwatch.createStarted();
+            loggerService.info("Report(s) inject started...");
             for (ReportData data : reportData) {
                 if(currentWorkbook == null) {
                     if(data.isReportWithTemplate()) {
@@ -48,11 +56,15 @@ public class ReportInjector {
                     this.registerFunctions();
                 }
 
+                loggerService.info(String.format("Starting injecting data for report with name %s", data.getReportName()));
+
                 if(data.isReportWithTemplate() || data.getConfiguration().isTemplatedInject()) {
-                    new TemplateDataInjector(currentWorkbook, data, loggerEnabled).inject();
+                    new TemplateDataInjector(currentWorkbook, data, loggerEnabled, loggerService.getLevel()).inject();
                 } else {
-                    new RawDataInjector(currentWorkbook, data, loggerEnabled).inject();
+                    new RawDataInjector(currentWorkbook, data, loggerEnabled, loggerService.getLevel()).inject();
                 }
+
+                loggerService.info(String.format("Report data for report with name %s was successfully injected", data.getReportName()));
             }
 
             for(final String sheetToDelete : deleteSheet) {
@@ -66,6 +78,8 @@ public class ReportInjector {
             if(forceFormulaRecalculation) {
                 currentWorkbook.setForceFormulaRecalculation(true);
             }
+
+            loggerService.info("Report(s) inject successfully finished. Inject time: " + injectStopwatch.stop());
 
         } catch (InvalidFormatException e) {
             throw new ReportEngineRuntimeException("Error creating a workbook", e, this.getClass());

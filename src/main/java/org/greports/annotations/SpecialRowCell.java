@@ -43,6 +43,8 @@ public @interface SpecialRowCell {
      */
     String format() default StringUtils.EMPTY;
 
+    String comment() default StringUtils.EMPTY;
+
     /**
      * This value indicates the number of merged cells.
      * A count of merged cells needs to be grater o equals than 1.
