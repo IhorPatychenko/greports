@@ -115,7 +115,7 @@ public abstract class DataInjector {
                 }
                 Row row = getOrCreateRow(sheet, specialRow.getRowIndex());
                 final int columnIndexForTarget = reportData.getColumnIndexForId(specialCell.getTargetId()) + reportData.getConfiguration().getHorizontalOffset();
-                Cell cell = row.createCell(columnIndexForTarget);
+                Cell cell = getOrCreateCell(row, columnIndexForTarget);
                 createColumnsToMerge(sheet, row, columnIndexForTarget, specialCell.getColumnWidth());
 
                 if(!Arrays.asList(ValueType.FORMULA, ValueType.COLLECTED_FORMULA_VALUE, ValueType.TEMPLATED_FORMULA).contains(valueType)) {
@@ -139,6 +139,11 @@ public abstract class DataInjector {
     protected Row getOrCreateRow(Sheet sheet, Integer rowIndex) {
         final Row row = sheet.getRow(rowIndex);
         return row != null ? row : sheet.createRow(rowIndex);
+    }
+
+    protected Cell getOrCreateCell(Row row, Integer cellIndex) {
+        final Cell cell = row.getCell(cellIndex);
+        return cell != null ? cell : row.createCell(cellIndex);
     }
 
     private void createCollectedFormulaValueCell(Sheet sheet, SpecialDataCell specialCell, Cell cell, String formulaString) {
