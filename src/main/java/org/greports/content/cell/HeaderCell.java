@@ -1,6 +1,7 @@
 package org.greports.content.cell;
 
 import org.greports.engine.ReportSpecialColumn;
+import org.greports.engine.ValueType;
 
 public class HeaderCell extends AbstractReportCell implements PositionedCell {
     private final String id;
@@ -27,7 +28,7 @@ public class HeaderCell extends AbstractReportCell implements PositionedCell {
     }
 
     public HeaderCell(Float position, String title, String format, String id, boolean autoSizeColumn, int columnWidth) {
-        super(title, format);
+        super(title, format, ValueType.PLAIN_VALUE);
         this.position = position;
         this.id = id;
         this.autoSizeColumn = autoSizeColumn;

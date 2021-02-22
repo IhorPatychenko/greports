@@ -1,5 +1,7 @@
 package org.greports.content.cell;
 
+import org.greports.engine.ValueType;
+
 /**
  * An abstract cell. Contains the common data of all cells in the report.
  */
@@ -7,10 +9,12 @@ public abstract class AbstractReportCell implements ReportCell, Cloneable {
     private Object value;
     private String format;
     private Integer columnIndex;
+    private ValueType valueType;
 
-    protected AbstractReportCell(Object value, String format) {
+    protected AbstractReportCell(Object value, String format, ValueType valueType) {
         this.value = value;
         this.format = format;
+        this.valueType = valueType;
     }
 
     public Object getValue() {
@@ -21,14 +25,26 @@ public abstract class AbstractReportCell implements ReportCell, Cloneable {
         return format;
     }
 
-    @Override
-    public void setValue(Object newValue) {
-        this.value = newValue;
+    public ValueType getValueType() {
+        return valueType;
     }
 
     @Override
-    public void setFormat(final String newFormat) {
+    public ReportCell setValue(Object newValue) {
+        this.value = newValue;
+        return this;
+    }
+
+    @Override
+    public ReportCell setFormat(final String newFormat) {
         this.format = newFormat;
+        return this;
+    }
+
+    @Override
+    public ReportCell setValueType(ValueType valueType) {
+        this.valueType = valueType;
+        return this;
     }
 
     public Integer getColumnIndex() {

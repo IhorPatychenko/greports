@@ -4,7 +4,6 @@ import com.google.common.base.Stopwatch;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Level;
 import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.CellType;
 import org.apache.poi.ss.usermodel.ClientAnchor;
 import org.apache.poi.ss.usermodel.Comment;
 import org.apache.poi.ss.usermodel.CreationHelper;
@@ -207,7 +206,7 @@ public abstract class DataInjector {
     protected void createColumnsToMerge(final Sheet sheet, final Row row, final int cellIndex, final int columnWidth) {
         if(columnWidth > 1) {
             for (int i = 1; i < columnWidth; i++) {
-                row.createCell(cellIndex + i, CellType.BLANK);
+                getOrCreateCell(row, cellIndex + i);
             }
             sheet.addMergedRegion(new CellRangeAddress(row.getRowNum(), row.getRowNum(), cellIndex, cellIndex + columnWidth - 1));
         }

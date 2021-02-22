@@ -27,8 +27,14 @@ public class ReportResultChanger {
     }
 
     public ReportResultChanger changeCellValue(final int rowIndex, final int columnIndex, final Object newValue) {
+        return this.changeCellValue(rowIndex, columnIndex, newValue, ValueType.PLAIN_VALUE);
+    }
+
+    public ReportResultChanger changeCellValue(final int rowIndex, final int columnIndex, final Object newValue, final ValueType valueType) {
         if(reportData.isCellExist(rowIndex, columnIndex)){
-            reportData.getPhysicalRow(rowIndex).getCell(columnIndex).setValue(newValue);
+            reportData.getPhysicalRow(rowIndex).getCell(columnIndex)
+                    .setValue(newValue)
+                    .setValueType(valueType);
         }
         return this;
     }

@@ -3,7 +3,6 @@ package org.greports.content.cell;
 import org.greports.engine.ValueType;
 
 public class SpecialDataCell extends AbstractReportCell implements ReportCell {
-    private final ValueType valueType;
     private final String targetId;
     private final int columnWidth;
     private final String comment;
@@ -12,17 +11,12 @@ public class SpecialDataCell extends AbstractReportCell implements ReportCell {
     private Object valuesById;
 
     public SpecialDataCell(final ValueType valueType, final Object value, final String format, final String targetId, final String comment, final short commentWidth, final short commentHeight, final int columnWidth) {
-        super(value, format);
-        this.valueType = valueType;
+        super(value, format, valueType);
         this.targetId = targetId;
         this.comment = comment;
         this.commentWidth = commentWidth;
         this.commentHeight = commentHeight;
         this.columnWidth = columnWidth;
-    }
-
-    public ValueType getValueType() {
-        return valueType;
     }
 
     public String getTargetId() {

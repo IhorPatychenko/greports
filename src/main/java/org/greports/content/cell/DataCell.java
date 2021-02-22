@@ -9,7 +9,6 @@ public class DataCell extends AbstractReportCell implements PositionedCell {
 
     private final Float position;
     private final boolean physicalPosition;
-    private final ValueType valueType;
     private int columnWidth;
 
     public DataCell(final Float position, final boolean physicalPosition, final String format, final Object value, final ValueType valueType) {
@@ -17,10 +16,9 @@ public class DataCell extends AbstractReportCell implements PositionedCell {
     }
 
     public DataCell(final Float position, final boolean physicalPosition, final String format, final Object value, final ValueType valueType, final int columnWidth) {
-        super(value, format);
+        super(value, format, valueType);
         this.position = position;
         this.physicalPosition = physicalPosition;
-        this.valueType = valueType;
         this.columnWidth = columnWidth;
     }
 
@@ -31,10 +29,6 @@ public class DataCell extends AbstractReportCell implements PositionedCell {
 
     public boolean isPhysicalPosition() {
         return physicalPosition;
-    }
-
-    public ValueType getValueType() {
-        return valueType;
     }
 
     public int getColumnWidth() {

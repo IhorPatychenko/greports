@@ -1,8 +1,11 @@
 package org.greports.content.cell;
 
+import org.greports.engine.ValueType;
+
 public interface ReportCell extends Cloneable {
-    void setValue(final Object newValue);
-    void setFormat(final String newFormat);
+    ReportCell setValue(final Object newValue);
+    ReportCell setFormat(final String newFormat);
+    ReportCell setValueType(final ValueType valueType);
     Object clone() throws CloneNotSupportedException;
     Integer getColumnIndex();
 }
