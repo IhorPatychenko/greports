@@ -17,7 +17,6 @@ import org.greports.utils.ConverterUtils;
 import org.greports.utils.ReflectionUtils;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
@@ -28,6 +27,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 
 public class ReportLoader {
@@ -51,11 +51,11 @@ public class ReportLoader {
     }
 
     public ReportLoader(File file) throws IOException, InvalidFormatException {
-        this(new FileInputStream(file), null);
+        this(file, null);
     }
 
     public ReportLoader(File file, String reportName) throws IOException, InvalidFormatException {
-        this(new FileInputStream(file), reportName);
+        this((XSSFWorkbook) WorkbookFactory.create(file), reportName);
     }
 
     public ReportLoader(InputStream inputStream) throws IOException, InvalidFormatException {
@@ -249,5 +249,11 @@ public class ReportLoader {
 
     public ReportLoaderResult getLoaderResult() {
         return loaderResult;
+    }
+
+    public void close() throws IOException {
+        if(!Objects.isNull(this.currentWorkbook)) {
+            this.currentWorkbook.close();
+        }
     }
 }
