@@ -48,7 +48,7 @@ public class ReportLoaderValidator {
 
     private void validateColumn(final AbstractColumnValidator validatorInstance, final List<Object> values, final String errorMessageKey) {
         if (!validatorInstance.isValid(values)) {
-            String errorMessage = translator.translate(errorMessageKey, validatorInstance.getValidatorValue());
+            String errorMessage = translator.translate(errorMessageKey, validatorInstance.getParams());
             final Integer errorRowIndex = validatorInstance.getErrorRowIndex(values);
             throw new ReportEngineValidationException(errorMessage, validatorInstance.getClass(), errorRowIndex, (Serializable) validatorInstance.getErrorValue());
         }
@@ -56,7 +56,7 @@ public class ReportLoaderValidator {
 
     private void validateCell(final AbstractCellValidator validatorInstance, final Object value, final String errorMessageKey) {
         if (!validatorInstance.isValid(value)) {
-            String errorMessage = translator.translate(errorMessageKey, validatorInstance.getValidatorValue());
+            String errorMessage = translator.translate(errorMessageKey, validatorInstance.getParams());
             throw new ReportEngineValidationException(errorMessage, validatorInstance.getClass());
         }
     }

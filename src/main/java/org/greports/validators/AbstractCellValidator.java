@@ -2,12 +2,9 @@ package org.greports.validators;
 
 public abstract class AbstractCellValidator extends AbstractValidator {
 
-    protected AbstractCellValidator(final String validatorValue) {
-        super(validatorValue);
+    protected AbstractCellValidator(final String params) {
+        super(params);
     }
 
-    @Override
-    public boolean isValid(final Object object) {
-        return false;
-    }
+    public abstract boolean isValid(final Object object);
 }

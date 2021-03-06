@@ -1,7 +1,7 @@
 package org.greports.engine;
 
 import org.apache.commons.lang3.StringUtils;
-import org.greports.exceptions.ReportEngineRuntimeException;
+import org.greports.utils.Utils;
 
 import java.io.Serializable;
 import java.net.URL;
@@ -43,29 +43,32 @@ public class ReportConfigurator implements Serializable {
     }
 
     public ReportConfigurator setOverriddenTitles(final Map<Integer, String> overriddenTitles) {
+        Utils.validateNotNull(overriddenTitles);
         this.overriddenTitles = overriddenTitles;
         return this;
     }
 
     public ReportConfigurator setRemovedColumns(final List<Integer> removedColumns) {
+        Utils.validateNotNull(removedColumns);
         this.removedColumns = removedColumns;
         return this;
     }
 
     public ReportConfigurator setAutosizedColumns(List<Integer> autosizedColumns) {
+        Utils.validateNotNull(autosizedColumns);
         this.autosizedColumns = autosizedColumns;
         return this;
     }
 
     public ReportConfigurator overrideTitle(final Integer columnIndex, final String title) {
+        Utils.validateNotNull(columnIndex);
+        Utils.validateNotNull(title);
         this.overriddenTitles.put(columnIndex, title);
         return this;
     }
 
     public ReportConfigurator setSheetName(final String newName) {
-        if(newName == null){
-            throw new ReportEngineRuntimeException("newName parameter cannot be null", this.getClass());
-        }
+        Utils.validateNotNull(newName);
         this.sheetName = newName;
         return this;
     }
@@ -75,6 +78,7 @@ public class ReportConfigurator implements Serializable {
     }
 
     public ReportConfigurator setTemplateUrl(final URL templateUrl) {
+        Utils.validateNotNull(templateUrl);
         this.templateUrl = templateUrl;
         return this;
     }
@@ -84,17 +88,14 @@ public class ReportConfigurator implements Serializable {
     }
 
     public ReportConfigurator setFormatForClass(final Class<?> clazz, final String format) {
-        if(clazz == null || format == null){
-            throw new ReportEngineRuntimeException("clazz and format parameters cannot be null", this.getClass());
-        }
+        Utils.validateNotNull(clazz);
+        Utils.validateNotNull(format);
         this.formats.put(clazz, format);
         return this;
     }
 
     public String getFormatForClass(final Class<?> clazz, final String defaultFormat) {
-        if(clazz == null){
-            throw new ReportEngineRuntimeException("clazz parameter cannot be null", this.getClass());
-        }
+        Utils.validateNotNull(clazz);
         if(StringUtils.isEmpty(defaultFormat)) {
             return this.formats.getOrDefault(clazz, StringUtils.EMPTY);
         }

@@ -7,19 +7,19 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.apache.log4j.Level;
 import org.greports.annotations.Column;
 import org.greports.annotations.Subreport;
-import org.greports.content.ReportHeader;
 import org.greports.content.cell.DataCell;
 import org.greports.content.cell.HeaderCell;
 import org.greports.content.cell.SpecialDataCell;
+import org.greports.content.header.ReportHeader;
 import org.greports.content.row.DataRow;
 import org.greports.content.row.SpecialDataRow;
 import org.greports.converters.NotImplementedConverter;
 import org.greports.exceptions.ReportEngineReflectionException;
 import org.greports.exceptions.ReportEngineRuntimeException;
-import org.greports.interfaces.CollectedFormulaValues;
-import org.greports.interfaces.CollectedValues;
-import org.greports.interfaces.GroupedColumns;
-import org.greports.interfaces.GroupedRows;
+import org.greports.interfaces.collectedvalues.CollectedFormulaValues;
+import org.greports.interfaces.collectedvalues.CollectedValues;
+import org.greports.interfaces.group.GroupedColumns;
+import org.greports.interfaces.group.GroupedRows;
 import org.greports.positioning.HorizontalRange;
 import org.greports.positioning.Position;
 import org.greports.positioning.VerticalRange;
@@ -64,6 +64,8 @@ public final class ReportDataParser<T> extends ReportParser {
     }
 
     protected ReportDataParser<T> parse(List<T> list, final String reportName, final Class<T> clazz, ReportConfigurator configurator) throws ReportEngineReflectionException {
+        Utils.validateNotNull(list);
+
         loggerService.info("Parsing started...");
         loggerService.info(String.format("Parsing report for class \"%s\" with report name \"%s\"...", clazz.getSimpleName(), reportName));
         Stopwatch timer = Stopwatch.createStarted();
@@ -73,7 +75,7 @@ public final class ReportDataParser<T> extends ReportParser {
     }
 
     private ReportDataParser<T> parse(List<T> list, final String reportName, final Class<T> clazz, ReportConfigurator configurator, Float positionIncrement, String idPrefix) throws ReportEngineReflectionException {
-         ReportListDataContainer<T> container = new  ReportListDataContainer<>(new ReportData(reportName, ReportConfigurationLoader.load(clazz, reportName)), clazz);
+        ReportListDataContainer<T> container = new  ReportListDataContainer<>(new ReportData(reportName, ReportConfigurationLoader.load(clazz, reportName)), clazz);
 
         currentContainer = container;
 

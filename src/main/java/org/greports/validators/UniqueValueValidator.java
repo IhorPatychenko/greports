@@ -7,22 +7,18 @@ import java.util.Set;
 
 public class UniqueValueValidator extends AbstractColumnValidator {
 
-    protected UniqueValueValidator(final String validatorValue) {
-        super(validatorValue);
+    public UniqueValueValidator(final String params) {
+        super(params);
     }
 
     @Override
-    @SuppressWarnings("unchecked")
-    public boolean isValid(final Object object) {
-        List<Object> list = (List<Object>) object;
+    public boolean isValid(final List<Object> list) {
         Set<Object> set = new HashSet<>(list);
         return set.size() == list.size();
     }
 
     @Override
-    @SuppressWarnings("unchecked")
-    public int getErrorRowIndex(final Object object) {
-        final List<Object> list = (List<Object>) object;
+    public int getErrorRowIndex(final List<Object> list) {
         final List<Object> setList = new ArrayList<>(new HashSet<>(list));
         for (int i = 0; i < setList.size(); i++) {
             if(!setList.get(i).equals(list.get(i))){

@@ -2,15 +2,14 @@ package org.greports.validators;
 
 public abstract class AbstractValidator {
 
-    protected final String validatorValue;
+    protected final String params;
 
-    protected AbstractValidator(final String validatorValue) {
-        this.validatorValue = validatorValue;
+    protected AbstractValidator(final String params) {
+        this.params = params;
     }
 
-    public String getValidatorValue() {
-        return validatorValue;
+    public String getParams() {
+        return params;
     }
 
-    public abstract boolean isValid(Object object);
 }

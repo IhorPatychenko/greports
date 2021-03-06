@@ -1,12 +1,18 @@
 package org.greports.utils;
 
 import org.apache.commons.lang3.LocaleUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.log4j.Level;
+import org.greports.exceptions.ReportEngineRuntimeException;
+import org.greports.services.LoggerService;
 
 import java.util.Locale;
 import java.util.Objects;
 import java.util.StringJoiner;
 
 public class Utils {
+
+    private static final LoggerService _logger = new LoggerService(Utils.class, true, Level.ALL);
 
     private Utils() {
     }
@@ -28,14 +34,21 @@ public class Utils {
         return null;
     }
 
-    public static Locale getLocale(String localeString) {
+    public static Locale getLocale(final String localeString) {
         return LocaleUtils.toLocale(localeString);
     }
 
-    public static String generateId(String idPrefix, String id) {
-        if("".equals(idPrefix)) {
+    public static String generateId(final String idPrefix, final String id) {
+        if(StringUtils.EMPTY.equals(idPrefix)) {
             return id;
         }
         return new StringJoiner("_").add(idPrefix).add(id).toString();
+    }
+
+    public static void validateNotNull(final Object object) {
+        if(Objects.isNull(object)) {
+            _logger.fatal("The object is null");
+            throw new ReportEngineRuntimeException("The object is null", Utils.class);
+        }
     }
 }

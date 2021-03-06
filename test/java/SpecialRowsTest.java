@@ -1,23 +1,24 @@
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class SpecialRowsTest extends AbstractTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+class SpecialRowsTest extends AbstractTest {
 
     @Test
-    public void specialRowTotalKeyTest() {
+    void specialRowTotalKeyTest() {
         final Object cellValue = reportDataReader.getCellValue("Cars", null, 0);
-        Assert.assertEquals("Total", cellValue);
+        assertEquals("Total", cellValue);
     }
 
     @Test
-    public void specialRowTotalModelsTest() {
+    void specialRowTotalModelsTest() {
         final Number cellValue = reportDataReader.getCellValue("Cars", null, 1, Number.class);
-        Assert.assertEquals(4, cellValue.intValue());
+        assertEquals(4, cellValue.intValue());
     }
 
     @Test
-    public void specialRowTotalPriceTest() {
+    void specialRowTotalPriceTest() {
         final Double cellValue = reportDataReader.getCellValue("Cars", null, 5, Double.class);
-        Assert.assertEquals(471360.0, cellValue, 5);
+        assertEquals(471360.0, cellValue, 5);
     }
 }

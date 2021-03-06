@@ -9,7 +9,7 @@ import org.greports.annotations.Report;
 import org.greports.annotations.SpecialRow;
 import org.greports.annotations.SpecialRowCell;
 import org.greports.engine.ValueType;
-import org.greports.interfaces.CollectedValues;
+import org.greports.interfaces.collectedvalues.CollectedValues;
 import styles.DefaultStyles;
 
 import java.util.Date;
