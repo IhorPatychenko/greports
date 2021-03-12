@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.greports</groupId>
     <artifactId>greports</artifactId>
-    <version>3.1.7</version>
+    <version>3.1.8</version>
     <packaging>jar</packaging>
 
     <parent>

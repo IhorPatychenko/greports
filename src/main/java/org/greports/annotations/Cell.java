@@ -5,6 +5,7 @@ import org.greports.engine.ValueType;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
+import java.lang.annotation.Inherited;
 import java.lang.annotation.Repeatable;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -13,6 +14,7 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.FIELD, ElementType.ANNOTATION_TYPE})
 @Repeatable(Cell.List.class)
+@Inherited
 @Documented
 public @interface Cell {
 
@@ -116,6 +118,7 @@ public @interface Cell {
      */
     @Retention(RetentionPolicy.RUNTIME)
     @Target(ElementType.FIELD)
+    @Inherited
     @Documented
     @interface List {
         Cell[] value();
