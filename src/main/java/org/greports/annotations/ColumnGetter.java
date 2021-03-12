@@ -6,6 +6,7 @@ import org.greports.engine.ValueType;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
+import java.lang.annotation.Inherited;
 import java.lang.annotation.Repeatable;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -14,6 +15,7 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.METHOD, ElementType.ANNOTATION_TYPE})
 @Repeatable(ColumnGetter.List.class)
+@Inherited
 @Documented
 public @interface ColumnGetter {
     /**
@@ -101,6 +103,7 @@ public @interface ColumnGetter {
      */
     @Retention(RetentionPolicy.RUNTIME)
     @Target(ElementType.METHOD)
+    @Inherited
     @Documented
     @interface List {
         ColumnGetter[] value();
