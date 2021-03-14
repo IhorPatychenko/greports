@@ -106,6 +106,9 @@ public @interface ColumnGetter {
     @Inherited
     @Documented
     @interface List {
+        /**
+         * @return {@link ColumnGetter} array
+         */
         ColumnGetter[] value();
     }
 

@@ -17,6 +17,10 @@ import org.greports.engine.ValueType;
 
 import java.lang.annotation.Annotation;
 
+/**
+ * Annotation converter class.
+ * This one is for internal use of greports engine.
+ */
 public class AnnotationsConverter {
 
     private AnnotationsConverter(){}

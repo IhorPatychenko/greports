@@ -128,6 +128,9 @@ public @interface Column {
     @Inherited
     @Documented
     @interface List {
+        /**
+         * @return {@link Column} array
+         */
         Column[] value();
     }
 }

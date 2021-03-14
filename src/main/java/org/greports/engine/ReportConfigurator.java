@@ -13,21 +13,21 @@ import java.util.Map;
 public class ReportConfigurator implements Serializable {
 
     private static final long serialVersionUID = 396420494885876888L;
-    private transient ReportGenerator reportGenerator;
+    private final transient ReportGenerator reportGenerator;
 
     private Map<Integer, String> overriddenTitles = new HashMap<>();
     private String sheetName;
-    private Map<Class<?>, String> formats = new HashMap<>();
+    private final Map<Class<?>, String> formats = new HashMap<>();
     private URL templateUrl;
     private List<Integer> removedColumns = new ArrayList<>();
     private List<Integer> autosizedColumns;
 
-    protected ReportGenerator getReportGenerator() {
-        return reportGenerator;
-    }
-
     protected ReportConfigurator(final ReportGenerator reportGenerator) {
         this.reportGenerator = reportGenerator;
+    }
+
+    protected ReportGenerator getReportGenerator() {
+        return reportGenerator;
     }
 
     public Map<Integer, String> getOverriddenTitles() {

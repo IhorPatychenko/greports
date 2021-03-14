@@ -116,6 +116,10 @@ public @interface Cell {
     @Inherited
     @Documented
     @interface List {
+        /**
+         *
+         * @return {@link Cell} array
+         */
         Cell[] value();
     }
 

@@ -53,6 +53,9 @@ public @interface SubreportSetter {
     @Inherited
     @Documented
     @interface List {
+        /**
+         * @return {@link SubreportSetter} array
+         */
         SubreportSetter[] value();
     }
 

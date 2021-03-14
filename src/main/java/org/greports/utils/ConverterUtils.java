@@ -6,6 +6,9 @@ import org.greports.exceptions.ReportEngineReflectionException;
 
 import java.util.List;
 
+/**
+ * Converter utils class. This one is for internal use of greports engine.
+ */
 public class ConverterUtils {
 
     private ConverterUtils() {}

@@ -57,6 +57,9 @@ public @interface Subreport {
     @Inherited
     @Documented
     @interface List {
+        /**
+         * @return {@link Subreport} array
+         */
         Subreport[] value();
     }
 }

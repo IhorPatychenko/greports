@@ -31,6 +31,9 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
+/**
+ * Annotation utils class. This one is for internal use of greports engine
+ */
 public class AnnotationUtils {
 
     private AnnotationUtils() {}

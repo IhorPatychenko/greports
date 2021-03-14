@@ -124,6 +124,9 @@ public @interface ColumnSetter {
     @Inherited
     @Documented
     @interface List {
+        /**
+         * @return {@link ColumnSetter} array
+         */
         ColumnSetter[] value();
     }
 

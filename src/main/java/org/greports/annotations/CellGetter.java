@@ -108,6 +108,10 @@ public @interface CellGetter {
     @Inherited
     @Documented
     @interface List {
+        /**
+         *
+         * @return {@link CellGetter} array
+         */
         CellGetter[] value();
     }
 
