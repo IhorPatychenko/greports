@@ -15,6 +15,7 @@ import org.greports.exceptions.ReportEngineValidationException;
 import org.greports.utils.AnnotationUtils;
 import org.greports.utils.ConverterUtils;
 import org.greports.utils.ReflectionUtils;
+import org.greports.utils.Translator;
 
 import java.io.File;
 import java.io.IOException;
@@ -41,6 +42,7 @@ public class ReportLoader {
     private final ReportLoaderResult loaderResult;
     private ReportLoaderValidator validator;
     private final ReportDataReader reader;
+    private Translator tranlator;
 
     public ReportLoader(String filePath) throws IOException, InvalidFormatException {
         this(new File(filePath), null);
@@ -86,6 +88,7 @@ public class ReportLoader {
             throw new ReportEngineRuntimeException("reportName cannot be null", this.getClass());
         }
         ReportConfiguration configuration = ReportConfigurationLoader.load(clazz, reportName);
+        this.tranlator = new Translator(configuration.getLocale(), configuration.getTranslationsDir(), configuration.getTranslationFileExtension());
         this.validator = new ReportLoaderValidator(configuration);
         final ReportBlock reportBlock = new ReportBlock(clazz, reportName, null);
         loadBlocks(reportBlock);
@@ -182,7 +185,7 @@ public class ReportLoader {
                 try {
                     validator.checkColumnValidations(block.getValues(), block.getColumnValidators());
                 } catch (ReportEngineValidationException e) {
-                    loaderResult.addError(clazz, sheet.getSheetName(), e.getRowIndex() + configuration.getDataStartRowIndex(), block.getStartColumn(), block.getAsColumn().title(), e.getMessage(), (Serializable) e.getErrorValue());
+                    loaderResult.addError(clazz, sheet.getSheetName(), e.getRowIndex() + configuration.getDataStartRowIndex(), block.getStartColumn(), block.getAsColumn().title(), tranlator.translate(e.getMessage()), (Serializable) e.getErrorValue());
                 }
             }
         }
@@ -199,7 +202,7 @@ public class ReportLoader {
             if (ReportLoaderErrorTreatment.THROW_ERROR.equals(errorTreatment)) {
                 throw e;
             } else {
-                loaderResult.addError(clazz, cell, block.getAsColumn().title(), e.getMessage(), (Serializable) value);
+                loaderResult.addError(clazz, cell, block.getAsColumn().title(), tranlator.translate(e.getMessage()), (Serializable) value);
                 return true;
             }
         }

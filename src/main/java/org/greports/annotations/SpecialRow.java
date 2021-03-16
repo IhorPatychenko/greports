@@ -14,6 +14,10 @@ public @interface SpecialRow {
 
     /**
      * Special row index. Needs to be greater or equals than zero.
+     * {@code Integer.MAX_VALUE} means that the row will be inserted
+     * after all data rows. If more then 1 special row has a rowIndex
+     * with value {@code Integer.MAX_VALUE} then they will be placed
+     * in the same order defined in the {@link Configuration}
      *
      * @return int
      */

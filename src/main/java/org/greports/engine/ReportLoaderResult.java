@@ -33,7 +33,7 @@ public class ReportLoaderResult implements Serializable {
 
     @SuppressWarnings("unchecked")
     public <T> List<T> getResult(Class<T> clazz) {
-        return ((List<T>) results.getOrDefault(clazz, new ArrayList<T>()));
+        return ((List<T>) results.getOrDefault(clazz, new ArrayList<>()));
     }
 
     public <T> List<ReportLoaderError> getErrors(Class<T> clazz) {

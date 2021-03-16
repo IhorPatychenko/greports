@@ -26,7 +26,7 @@ public class ReportGenerator {
     public ReportGenerator(boolean loggerEnabled, Level level) {
         this.loggerEnabled = loggerEnabled;
         this.level = level;
-        reportGeneratorResult = new ReportGeneratorResult(this.functions, false, loggerEnabled, level);
+        this.reportGeneratorResult = new ReportGeneratorResult(this.functions, false, loggerEnabled, level);
     }
 
     public <T> ReportGenerator parse(final List<T> list, final String reportName, Class<T> clazz) throws ReportEngineReflectionException {

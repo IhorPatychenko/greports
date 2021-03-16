@@ -4,7 +4,6 @@ import org.greports.annotations.CellValidator;
 import org.greports.annotations.ColumnValidator;
 import org.greports.exceptions.ReportEngineReflectionException;
 import org.greports.exceptions.ReportEngineValidationException;
-import org.greports.utils.TranslationsParser;
 import org.greports.utils.Translator;
 import org.greports.validators.AbstractCellValidator;
 import org.greports.validators.AbstractColumnValidator;
@@ -13,15 +12,13 @@ import org.greports.validators.ValidatorFactory;
 
 import java.io.Serializable;
 import java.util.List;
-import java.util.Map;
 
 public class ReportLoaderValidator {
 
     private final Translator translator;
 
     public ReportLoaderValidator(ReportConfiguration configuration) {
-        final Map<String, Object> translations = new TranslationsParser(configuration.getLocale(), configuration.getTranslationsDir(), configuration.getTranslationFileExtension()).getTranslations();
-        this.translator = new Translator(translations);
+        this.translator = new Translator(configuration.getLocale(), configuration.getTranslationsDir(), configuration.getTranslationFileExtension());
     }
 
     protected void checkColumnValidations(final List<Object> values, final List<ColumnValidator> columnValidators) {

@@ -80,15 +80,14 @@ public final class ReportDataParser<T> extends ReportParser {
         currentContainer = container;
 
         final ReportConfiguration configuration = container.getReportData().getConfiguration();
-        final Map<String, Object> translations = new TranslationsParser(
-                configuration.getLocale(),
-                configuration.getTranslationsDir(),
-                configuration.getTranslationFileExtension()
-        ).getTranslations();
 
         container.setData(list)
-                .setTranslator(new Translator(translations))
-                .setConfigurator(configurator);
+                .setTranslator(new Translator(
+                        configuration.getLocale(),
+                        configuration.getTranslationsDir(),
+                        configuration.getTranslationFileExtension()
+                    )
+                ).setConfigurator(configurator);
 
         final ReportData reportData = container.getReportData();
 

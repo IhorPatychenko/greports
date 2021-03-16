@@ -17,6 +17,9 @@ import java.lang.annotation.Target;
 @Repeatable(Cell.List.class)
 @Inherited
 @Documented
+/**
+ * Annotation which represents a cell in a data structure.
+ */
 public @interface Cell {
 
     /**

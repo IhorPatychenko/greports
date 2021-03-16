@@ -5,8 +5,12 @@ import java.util.Map;
 public class Translator {
     private final Map<String, Object> translations;
 
-    public Translator(final Map<String, Object> translations) {
-        this.translations = translations;
+    private Translator(final TranslationsParser translationsParser) {
+        this.translations = translationsParser.getTranslations();
+    }
+
+    public Translator(String locale, String translationDir, TranslationsParser.FileExtensions translationFileExt) {
+        this(new TranslationsParser(locale, translationDir, translationFileExt));
     }
 
     public String translate(String key, String... params){
