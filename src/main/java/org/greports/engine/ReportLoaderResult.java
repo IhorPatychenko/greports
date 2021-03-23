@@ -50,16 +50,14 @@ public class ReportLoaderResult implements Serializable {
     }
 
     private <T> void errorsCheckClass(Class<T> clazz) {
-        if (!errors.containsKey(clazz)) {
-            errors.put(clazz, new ArrayList<>());
-        }
+        errors.computeIfAbsent(clazz, entry -> new ArrayList<>());
     }
 
-    public <T> Map<Class<?>, List<ReportLoaderError>> getErrors() {
+    public Map<Class<?>, List<ReportLoaderError>> getErrors() {
         return Collections.unmodifiableMap(errors);
     }
 
-    public <T> Map<Class<?>, List<ReportLoaderError>> getErrors(int limit) {
+    public Map<Class<?>, List<ReportLoaderError>> getErrors(int limit) {
         Map<Class<?>, List<ReportLoaderError>> map = new HashMap<>();
         if (limit > 1) {
             for (final Map.Entry<Class<?>, List<ReportLoaderError>> entry : errors.entrySet()) {
@@ -71,7 +69,7 @@ public class ReportLoaderResult implements Serializable {
 
     public boolean hasErrors() {
         for (final Map.Entry<Class<?>, List<ReportLoaderError>> entry : errors.entrySet()) {
-            if (entry.getValue().size() > 0) {
+            if (!entry.getValue().isEmpty()) {
                 return true;
             }
         }

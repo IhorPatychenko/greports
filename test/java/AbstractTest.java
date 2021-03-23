@@ -17,6 +17,7 @@ import java.util.List;
 public class AbstractTest {
 
     protected static final String FILE_PATH = "C:\\Users\\IhorPatychenko\\Documents\\cars.xlsx";
+    protected static final String FILE_PATH2 = "C:\\Users\\IhorPatychenko\\Documents\\cars2.xlsx";
 
     protected static final Date currentDate = new Date();
 

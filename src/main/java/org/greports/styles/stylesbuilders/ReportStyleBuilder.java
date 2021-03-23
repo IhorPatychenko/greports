@@ -15,6 +15,11 @@ import org.greports.styles.ReportStyle;
 import java.awt.*;
 import java.io.Serializable;
 
+/**
+ * A style builder for a single rows and columns range.
+ * @param <E> a Range instance.
+ * @see Range
+ */
 public class ReportStyleBuilder<E extends Range<?, ?>> implements Serializable {
     private static final long serialVersionUID = 7168319249010545243L;
     private String fontName;

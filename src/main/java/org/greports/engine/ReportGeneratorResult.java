@@ -49,10 +49,14 @@ public class ReportGeneratorResult implements Serializable {
         if(reportDataBySheetName == null){
             throw new ReportEngineRuntimeException(String.format("Sheet with name %s does not exist", sheetName), this.getClass());
         }
-        if(!_resultChangers.containsKey(sheetName)) {
-            _resultChangers.put(sheetName, new ReportResultChanger(reportDataBySheetName, this));
-        }
+        _resultChangers.computeIfAbsent(sheetName, entry -> new ReportResultChanger(reportDataBySheetName, this));
         return _resultChangers.get(sheetName);
+    }
+
+
+    void updateResultChangerSheetName(String oldSheetName, String newSheetName) {
+        final ReportResultChanger resultChanger = _resultChangers.remove(oldSheetName);
+        _resultChangers.put(newSheetName, resultChanger);
     }
 
     public ReportGeneratorResult deleteSheet(final String sheetName) {
