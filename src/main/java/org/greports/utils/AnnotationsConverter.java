@@ -126,7 +126,7 @@ public class AnnotationsConverter {
             }
 
             @Override
-            public Converter setterConverters() {
+            public Converter setterConverter() {
                 return columnGetter.typeConverter();
             }
 
@@ -158,6 +158,11 @@ public class AnnotationsConverter {
             @Override
             public int columnWidth() {
                 return columnGetter.columnWidth();
+            }
+
+            @Override
+            public boolean translate() {
+                return columnGetter.translate();
             }
         };
     }
@@ -225,6 +230,11 @@ public class AnnotationsConverter {
             public int columnWidth() {
                 return cellGetter.columnWidth();
             }
+
+            @Override
+            public boolean translate() {
+                return cellGetter.translate();
+            }
         };
     }
 
@@ -261,8 +271,8 @@ public class AnnotationsConverter {
             }
 
             @Override
-            public Converter setterConverters() {
-                return columnSetter.typeConverters();
+            public Converter setterConverter() {
+                return columnSetter.typeConverter();
             }
 
             @Override
@@ -293,6 +303,11 @@ public class AnnotationsConverter {
             @Override
             public int columnWidth() {
                 return columnSetter.columnWidth();
+            }
+
+            @Override
+            public boolean translate() {
+                return false;
             }
         };
     }

@@ -43,6 +43,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.IntPredicate;
@@ -160,6 +161,9 @@ public final class ReportDataParser<T> extends ReportParser {
 
                 if(invokedValue != null) {
                     format = container.getConfigurator().getFormatForClass(invokedValue.getClass(), format);
+                    if(column.translate() && invokedValue instanceof String) {
+                        invokedValue = container.getTranslator().translate(Objects.toString(invokedValue));
+                    }
                 }
 
                 final DataCell dataCell = new DataCell(

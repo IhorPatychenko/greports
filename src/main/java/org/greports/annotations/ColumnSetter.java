@@ -57,7 +57,7 @@ public @interface ColumnSetter {
      *
      * @return Converter[]
      */
-    Converter typeConverters() default @Converter(converterClass = NotImplementedConverter.class);
+    Converter typeConverter() default @Converter(converterClass = NotImplementedConverter.class);
 
 
     /**

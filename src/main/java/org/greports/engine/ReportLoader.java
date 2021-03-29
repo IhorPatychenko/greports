@@ -195,7 +195,7 @@ public class ReportLoader {
         Object value = null;
         try {
             value = getCellValue(method, cell);
-            value = ConverterUtils.convertValue(value, block.getSetterConverters(), block.getBlockClass());
+            value = ConverterUtils.convertValue(value, block.getSetterConverter());
             instanceSetValue(method, instance, value, block.getCellValidators());
             block.addValue(value);
         } catch (RuntimeException e) {

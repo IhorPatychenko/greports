@@ -32,7 +32,7 @@ public @interface Column {
      * In case of need to add a new column among the existing ones,
      * the floating part can be used to indicate the desired position.
      *
-     * @return float
+     * @return {@code float}
      */
     float position();
 
@@ -53,16 +53,16 @@ public @interface Column {
     /**
      * A converter to be applied when the column value is being obtained.
      *
-     * @return Converter
+     * @return {@link Converter}
      */
     Converter getterConverter() default @Converter(converterClass = NotImplementedConverter.class);
 
     /**
      * A converter to be applied when the data is being loaded.
      *
-     * @return Converter
+     * @return {@link Converter}
      */
-    Converter setterConverters() default @Converter(converterClass = NotImplementedConverter.class);
+    Converter setterConverter() default @Converter(converterClass = NotImplementedConverter.class);
 
     /**
      * Column title. This text string will be used to search for
@@ -103,7 +103,7 @@ public @interface Column {
      * This functionality is very expensive due to the large number of calculations to be performed.
      * Use only when necessary.
      *
-     * @return boolean
+     * @return {@code boolean}
      */
     boolean autoSizeColumn() default false;
 
@@ -115,9 +115,16 @@ public @interface Column {
      * position = 1 (first column), columnWidth = 2. In this case
      * the row will have the cells A1 and B1 merged in only one cell
      * which will be placed into A1 cell.
-     * @return int
+     * @return {@code boolean}
      */
     int columnWidth() default 1;
+
+    /**
+     * The value of this attribute allows to enable the translation
+     * of the cell content.
+     * @return {@code boolean}
+     */
+    boolean translate() default false;
 
     /**
      * Defines several {@link Column} annotations on the same element.

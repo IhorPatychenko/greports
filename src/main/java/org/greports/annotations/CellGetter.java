@@ -100,6 +100,13 @@ public @interface CellGetter {
     int columnWidth() default 1;
 
     /**
+     * The value of this attribute allows to enable the translation
+     * of the cell content.
+     * @return {@code boolean}
+     */
+    boolean translate() default false;
+
+    /**
      * Defines several {@link CellGetter} annotations on the same element.
      * @see CellGetter
      */

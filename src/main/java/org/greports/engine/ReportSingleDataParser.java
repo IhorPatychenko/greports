@@ -18,6 +18,7 @@ import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Function;
 
 public class ReportSingleDataParser<T> extends ReportParser {
@@ -63,9 +64,7 @@ public class ReportSingleDataParser<T> extends ReportParser {
             final Cell cell = entry.getKey();
             final Method method = entry.getValue();
             Integer rowIndex = reportData.getConfiguration().getDataStartRowIndex() + cell.row();
-            if(!rows.containsKey(rowIndex)){
-                rows.put(rowIndex, new DataRow(rowIndex));
-            }
+            rows.putIfAbsent(rowIndex, new DataRow(rowIndex));
             final DataRow dataRow = rows.get(rowIndex);
             method.setAccessible(true);
             try {
@@ -78,6 +77,9 @@ public class ReportSingleDataParser<T> extends ReportParser {
 
                 if(cellValue != null) {
                     format = configurator.getFormatForClass(cellValue.getClass(), format);
+                    if(cell.translate() && cellValue instanceof String) {
+                        cellValue = container.getTranslator().translate(Objects.toString(cellValue));
+                    }
                 }
 
                 DataCell dataCell = new DataCell(

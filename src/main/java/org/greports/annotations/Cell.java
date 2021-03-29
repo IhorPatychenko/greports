@@ -111,6 +111,13 @@ public @interface Cell {
     int columnWidth() default 1;
 
     /**
+     * The value of this attribute allows to enable the translation
+     * of the cell content.
+     * @return {@code boolean}
+     */
+    boolean translate() default false;
+
+    /**
      * Defines several {@link Cell} annotations on the same element.
      * @see Cell
      */
