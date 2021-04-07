@@ -88,7 +88,7 @@ public class ReportLoader {
             throw new ReportEngineRuntimeException("reportName cannot be null", this.getClass());
         }
         ReportConfiguration configuration = ReportConfigurationLoader.load(clazz, reportName);
-        this.tranlator = new Translator(configuration.getLocale(), configuration.getTranslationsDir(), configuration.getTranslationFileExtension());
+        this.tranlator = new Translator(configuration);
         this.validator = new ReportLoaderValidator(configuration);
         final ReportBlock reportBlock = new ReportBlock(clazz, reportName, null);
         loadBlocks(reportBlock);

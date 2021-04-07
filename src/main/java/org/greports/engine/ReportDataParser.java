@@ -77,18 +77,14 @@ public final class ReportDataParser<T> extends ReportParser {
 
     private ReportDataParser<T> parse(List<T> list, final String reportName, final Class<T> clazz, ReportConfigurator configurator, Float positionIncrement, String idPrefix) throws ReportEngineReflectionException {
         ReportListDataContainer<T> container = new  ReportListDataContainer<>(new ReportData(reportName, ReportConfigurationLoader.load(clazz, reportName)), clazz);
-
-        currentContainer = container;
-
         final ReportConfiguration configuration = container.getReportData().getConfiguration();
+        final Translator translator = new Translator(configuration);
 
         container.setData(list)
-                .setTranslator(new Translator(
-                        configuration.getLocale(),
-                        configuration.getTranslationsDir(),
-                        configuration.getTranslationFileExtension()
-                    )
-                ).setConfigurator(configurator);
+                .setTranslator(translator)
+                .setConfigurator(configurator);
+
+        currentContainer = container;
 
         final ReportData reportData = container.getReportData();
 
@@ -110,12 +106,13 @@ public final class ReportDataParser<T> extends ReportParser {
     private void parseReportHeader(final ReportListDataContainer<T> container, Float positionIncrement, String idPrefix) throws ReportEngineReflectionException {
         final ReportData reportData = container.getReportData();
         final Translator translator = container.getTranslator();
-        reportData.setCreateHeader(reportData.getConfiguration().isCreateHeader());
+        final ReportConfiguration configuration = reportData.getConfiguration();
+        reportData.setCreateHeader(configuration.isCreateHeader());
         List<HeaderCell> cells = new ArrayList<>();
         final Function<Pair<Method, Column>, Void> columnFunction = AnnotationUtils.getHeadersFunction(cells, translator, positionIncrement, idPrefix);
         AnnotationUtils.methodsWithColumnAnnotations(container.getClazz(), columnFunction, reportData.getReportName());
 
-        final List<ReportSpecialColumn> specialColumns = reportData.getConfiguration().getSpecialColumns();
+        final List<ReportSpecialColumn> specialColumns = configuration.getSpecialColumns();
         for(int i = 0; i < specialColumns.size(); i++) {
             final ReportSpecialColumn specialColumn = specialColumns.get(i);
             String generateIdPrefix = Utils.generateId(idPrefix, specialColumn.getTitle());
@@ -125,11 +122,7 @@ public final class ReportDataParser<T> extends ReportParser {
             cells.add(new HeaderCell(specialColumn, generateIdPrefix));
         }
 
-        final ReportHeader reportHeader = new ReportHeader(
-                reportData.getConfiguration().isSortableHeader(),
-                reportData.getConfiguration().isStickyHeader(),
-                reportData.getConfiguration().getHeaderRowIndex()
-        ).addCells(cells);
+        final ReportHeader reportHeader = new ReportHeader(configuration).addCells(cells);
 
         reportData.setHeader(reportHeader);
         reportData.setTargetIds();

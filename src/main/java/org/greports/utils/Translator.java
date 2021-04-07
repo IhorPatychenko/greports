@@ -1,5 +1,7 @@
 package org.greports.utils;
 
+import org.greports.engine.ReportConfiguration;
+
 import java.util.Map;
 
 public class Translator {
@@ -9,8 +11,8 @@ public class Translator {
         this.translations = translationsParser.getTranslations();
     }
 
-    public Translator(String locale, String translationDir, TranslationsParser.FileExtensions translationFileExt) {
-        this(new TranslationsParser(locale, translationDir, translationFileExt));
+    public Translator(ReportConfiguration config) {
+        this(new TranslationsParser(config.getLocale(), config.getTranslationsDir(), config.getTranslationFileExtension()));
     }
 
     public String translate(String key, String... params){

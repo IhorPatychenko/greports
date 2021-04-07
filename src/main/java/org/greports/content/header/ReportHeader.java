@@ -2,6 +2,7 @@ package org.greports.content.header;
 
 import org.greports.content.cell.HeaderCell;
 import org.greports.content.row.ReportRow;
+import org.greports.engine.ReportConfiguration;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -19,6 +20,10 @@ public class ReportHeader implements ReportRow<HeaderCell>, Cloneable, Serializa
         this.columnFilter = addFilter;
         this.stickyHeader = stickyHeader;
         this.rowIndex = rowIndex;
+    }
+
+    public ReportHeader(ReportConfiguration configuration) {
+        this(configuration.isSortableHeader(), configuration.isStickyHeader(), configuration.getHeaderRowIndex());
     }
 
     public void addCell(HeaderCell cell) {

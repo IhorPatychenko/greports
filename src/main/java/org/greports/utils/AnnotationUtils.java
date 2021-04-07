@@ -49,7 +49,7 @@ public class AnnotationUtils {
             .filter(entry -> Arrays.asList(entry.reportName()).contains(reportName))
             .findFirst()
             .orElseThrow(() -> new ReportEngineRuntimeException(
-                String.format("%s.Report has no %s.Configuration annotation with name \"%s\"", Report.class.getPackage().getName(), Configuration.class.getPackage().getName(), reportName),
+                String.format("%s has no %s annotation with name \"%s\"", Report.class.getName(), Configuration.class.getName(), reportName),
                 report.getClass()
             ));
     }
@@ -213,8 +213,6 @@ public class AnnotationUtils {
             }
         }
     }
-
-
 
     private static Predicate<Annotation> getReportColumnPredicate(String reportName) {
         return annotation -> Arrays.asList(((Column) annotation).reportName()).contains(reportName);

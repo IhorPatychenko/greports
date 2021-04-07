@@ -18,7 +18,7 @@ public class ReportLoaderValidator {
     private final Translator translator;
 
     public ReportLoaderValidator(ReportConfiguration configuration) {
-        this.translator = new Translator(configuration.getLocale(), configuration.getTranslationsDir(), configuration.getTranslationFileExtension());
+        this.translator = new Translator(configuration);
     }
 
     protected void checkColumnValidations(final List<Object> values, final List<ColumnValidator> columnValidators) {
