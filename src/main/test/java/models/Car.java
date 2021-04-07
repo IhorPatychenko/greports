@@ -1,6 +1,5 @@
 package models;
 
-import formats.Formats;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.greports.annotations.Column;
@@ -12,6 +11,7 @@ import org.greports.engine.ValueType;
 import org.greports.interfaces.collectedvalues.CollectedValues;
 import styles.DefaultStyles;
 
+import java.formats.Formats;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;

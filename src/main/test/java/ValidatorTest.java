@@ -1,3 +1,5 @@
+package java;
+
 import org.greports.validators.BooleanValidator;
 import org.greports.validators.DateValidator;
 import org.greports.validators.DoubleValidator;
