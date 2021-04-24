@@ -24,9 +24,6 @@ import java.util.function.BooleanSupplier;
             @SpecialRowCell(targetId = "brand", value = "Total"),
             @SpecialRowCell(targetId = "model", valueType = ValueType.COLLECTED_VALUE, value = "model", columnWidth = 4),
             @SpecialRowCell(targetId = "price", valueType = ValueType.COLLECTED_VALUE, value = "price", format = Formats.FLOAT_2_DEC, comment = "translation.price.total")
-        }),
-        @SpecialRow(rowIndex = Integer.MAX_VALUE, cells = {
-            @SpecialRowCell(targetId = "price", valueType = ValueType.COLLECTED_VALUE, value = "price", format = Formats.FLOAT_2_DEC)
         })
     })
 })

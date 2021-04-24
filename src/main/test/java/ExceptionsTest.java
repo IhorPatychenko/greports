@@ -41,5 +41,4 @@ class ExceptionsTest extends AbstractTest {
         Exception exception = assertThrows(ReportEngineRuntimeException.class, executable);
         assertEquals("The object is null", exception.getMessage());
     }
-
 }

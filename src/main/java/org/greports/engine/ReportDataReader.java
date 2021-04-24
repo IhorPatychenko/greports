@@ -86,11 +86,11 @@ public class ReportDataReader {
 
     public <T> T getCellValue(XSSFSheet sheet, Integer rowNumber, int cellNumber, Row.MissingCellPolicy missingCellPolicy, Class<T> bindToClass) {
         if(rowNumber == null) {
-            rowNumber = getLastRowNum(sheet) - 1;
+            rowNumber = getLastRowNum(sheet);
         }
 
         if(rowNumber < 0) {
-            rowNumber = getLastRowNum(sheet) - 1 + rowNumber;
+            rowNumber = getLastRowNum(sheet) + rowNumber;
         }
 
         if(cellNumber < 0) {

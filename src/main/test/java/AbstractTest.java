@@ -23,6 +23,11 @@ public class AbstractTest {
     protected static String FILE_PATH;
 
     static {
+
+        if(OUTPUT_TEST_DIR == null) {
+            throw new ReportEngineRuntimeException(String.format("You need to define the '%s' environment variable in order to run tests.", OUTPUT_TEST_DIR_ENV_KEY), AbstractTest.class);
+        }
+
         if(String.valueOf(OUTPUT_TEST_DIR.charAt(OUTPUT_TEST_DIR.length() - 1)).equals(File.separator)) {
             FILE_PATH = OUTPUT_TEST_DIR + OUTPUT_FILE_NAME;
         } else {
@@ -40,10 +45,6 @@ public class AbstractTest {
 
     @BeforeAll
     public static void createCars() {
-
-        if(OUTPUT_TEST_DIR == null) {
-            throw new ReportEngineRuntimeException(String.format("You need to define the '%s' environment variable in order to run tests.", OUTPUT_TEST_DIR_ENV_KEY), AbstractTest.class);
-        }
 
         List<Car> cars = new ArrayList<>();
         cars.add(new Car("Mercedes-Benz", "S600", 2019, (short) 4, currentDate, 79900.0f));
