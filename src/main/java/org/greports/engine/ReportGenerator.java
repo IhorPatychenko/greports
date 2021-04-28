@@ -12,7 +12,7 @@ import java.util.Map;
 
 public class ReportGenerator {
 
-    private static final Map<Pair<Class<?>, String>, ReportConfigurator> _configurators = new HashMap<>();
+    private final Map<Pair<Class<?>, String>, ReportConfigurator> _configurators = new HashMap<>();
 
     private final boolean loggerEnabled;
     private final Level level;

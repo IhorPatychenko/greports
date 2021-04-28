@@ -50,7 +50,9 @@ public class ReportLoaderResult implements Serializable {
     }
 
     private <T> void errorsCheckClass(Class<T> clazz) {
-        errors.computeIfAbsent(clazz, entry -> new ArrayList<>());
+        if (!errors.containsKey(clazz)) {
+            errors.put(clazz, new ArrayList<>());
+        }
     }
 
     public Map<Class<?>, List<ReportLoaderError>> getErrors() {

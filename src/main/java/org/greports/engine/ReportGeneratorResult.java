@@ -17,7 +17,7 @@ import java.util.Map;
 public class ReportGeneratorResult implements Serializable {
     private static final long serialVersionUID = 8220764494072805634L;
 
-    private static final Map<String, ReportResultChanger> _resultChangers = new HashMap<>();
+    private final Map<String, ReportResultChanger> _resultChangers = new HashMap<>();
 
     private final transient LoggerService loggerService;
     private final List<ReportData> reportData = new ArrayList<>();
@@ -49,7 +49,9 @@ public class ReportGeneratorResult implements Serializable {
         if(reportDataBySheetName == null){
             throw new ReportEngineRuntimeException(String.format("Sheet with name %s does not exist", sheetName), this.getClass());
         }
-        _resultChangers.computeIfAbsent(sheetName, entry -> new ReportResultChanger(reportDataBySheetName, this));
+        if(!_resultChangers.containsKey(sheetName)) {
+            _resultChangers.put(sheetName, new ReportResultChanger(reportDataBySheetName, this));
+        }
         return _resultChangers.get(sheetName);
     }
 
