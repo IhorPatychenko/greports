@@ -28,7 +28,7 @@ public class ReflectionUtils {
         }
     }
 
-    public static <T> Method getMethodWithName(Class<T> clazz, String methodName, Class<?>... parameters) throws ReportEngineReflectionException {
+    public static <T> Method getMethodWithName(Class<T> clazz, String methodName, Class<?>... parameters) {
         try {
             return clazz.getDeclaredMethod(methodName, parameters);
         } catch (NoSuchMethodException e) {
@@ -39,8 +39,17 @@ public class ReflectionUtils {
         }
     }
 
+    public static <T> Method fetchFieldGetter(String fieldName, Class<T> clazz) throws ReportEngineReflectionException {
+        List<String> getterPossibleNames = generateMethodNames(fieldName, gettersPrefixes);
+        return catchFieldMethod(getterPossibleNames, clazz, fieldName);
+    }
+
     public static <T> Method fetchFieldGetter(Field field, Class<T> clazz) throws ReportEngineReflectionException {
         List<String> getterPossibleNames = generateMethodNames(field, gettersPrefixes);
+        return catchFieldMethod(getterPossibleNames, clazz, field.getName());
+    }
+
+    private static <T> Method catchFieldMethod(List<String> getterPossibleNames, Class<T> clazz, String fieldName) throws ReportEngineReflectionException {
         for (String getterPossibleName : getterPossibleNames) {
             final Method method = getMethodWithName(clazz, getterPossibleName);
             if (method != null) {
@@ -48,8 +57,8 @@ public class ReflectionUtils {
             }
         }
         throw new ReportEngineReflectionException(
-            String.format("No getter was found with any of these names \"%s\" for field %s in class %s", String.join(", ", getterPossibleNames), field.getName(), clazz.getName()),
-            clazz
+                String.format("No getter was found with any of these names \"%s\" for field %s in class %s", String.join(", ", getterPossibleNames), fieldName, clazz.getName()),
+                clazz
         );
     }
 
@@ -68,10 +77,14 @@ public class ReflectionUtils {
     }
 
     private static List<String> generateMethodNames(Field field, List<String> prefixes) {
+        return generateMethodNames(field.getName(), prefixes);
+    }
+
+    private static List<String> generateMethodNames(String fieldName, List<String> prefixes) {
         List<String> possibleNames = new ArrayList<>();
         prefixes.forEach(prefix -> {
-            possibleNames.add(prefix + Utils.capitalizeString(field.getName()));
-            possibleNames.add(prefix + field.getName());
+            possibleNames.add(prefix + Utils.capitalizeString(fieldName));
+            possibleNames.add(prefix + fieldName);
         });
         return possibleNames;
     }

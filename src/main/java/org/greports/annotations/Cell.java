@@ -30,6 +30,12 @@ public @interface Cell {
     String[] reportName();
 
     /**
+     * The value used to target attributes in a nested class.
+     * @return {@link String}
+     */
+    String target() default StringUtils.EMPTY;
+
+    /**
      * Row index. Zero based value.
      *
      * @return int

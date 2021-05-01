@@ -1,5 +1,6 @@
 package org.greports.engine;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.greports.content.cell.DataCell;
 import org.greports.content.cell.HeaderCell;
@@ -25,11 +26,10 @@ public class ReportData implements Cloneable, Serializable {
 
     private final ReportStylesContainer reportStylesContainer = new ReportStylesContainer();
     private final Map<String, Integer> targetIndexes = new HashMap<>();
-    private String reportName;
+    private final String reportName;
     private ReportConfiguration configuration;
     private URL templateURL;
     private ReportHeader header;
-    private boolean createHeader;
     private int dataStartRow;
     private final List<Pair<Integer, Integer>> groupedRows = new ArrayList<>();
     private boolean groupedRowsDefaultCollapsed;
@@ -39,14 +39,10 @@ public class ReportData implements Cloneable, Serializable {
     private List<DataRow> dataRows = new ArrayList<>();
     private List<Integer> autosizedColumns;
 
-    public ReportData(final ReportConfiguration configuration) {
-        this.configuration = configuration;
-    }
-
     public ReportData(final String reportName, final ReportConfiguration configuration) {
         this.reportName = reportName;
         this.configuration = configuration;
-        this.templateURL = !configuration.getTemplatePath().equals("") ? getClass().getClassLoader().getResource(configuration.getTemplatePath()) : null;
+        this.templateURL = !configuration.getTemplatePath().equals(StringUtils.EMPTY) ? getClass().getClassLoader().getResource(configuration.getTemplatePath()) : null;
     }
 
     public boolean isReportWithTemplate(){
@@ -69,7 +65,7 @@ public class ReportData implements Cloneable, Serializable {
     }
 
     public boolean isCreateHeader() {
-        return createHeader;
+        return this.configuration.isCreateHeader();
     }
 
     public boolean getGroupedRowsDefaultCollapsed() {
@@ -77,7 +73,7 @@ public class ReportData implements Cloneable, Serializable {
     }
 
     public ReportData setCreateHeader(boolean createHeader) {
-        this.createHeader = createHeader;
+        this.configuration.setCreateHeader(createHeader);
         return this;
     }
 
@@ -229,7 +225,7 @@ public class ReportData implements Cloneable, Serializable {
 
     public List<ReportRow<?>> getReportRows() {
         List<ReportRow<?>> rows = new ArrayList<>();
-        if(createHeader) {
+        if(isCreateHeader()) {
             rows.add(header);
         }
         rows.addAll(dataRows);

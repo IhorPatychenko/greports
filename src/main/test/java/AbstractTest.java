@@ -1,4 +1,5 @@
 import models.Car;
+import models.Person;
 import org.apache.log4j.Level;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.greports.engine.ReportConfigurator;
@@ -47,10 +48,23 @@ public class AbstractTest {
     public static void createCars() {
 
         List<Car> cars = new ArrayList<>();
-        cars.add(new Car("Mercedes-Benz", "S600", 2019, (short) 4, currentDate, 79900.0f));
-        cars.add(new Car("BMW", "320di", 2020, (short) 4, currentDate, 55900.0f));
-        cars.add(new Car("Audi", "A1 Sportline", 2020, (short) 4, currentDate, 20560.0f));
-        cars.add(new Car("Lamborghini", "Aventador", 2020, (short) 4, currentDate, 315000.0f));
+
+        final Car mercedes = new Car("Mercedes-Benz", "S600", 2019, (short) 4, currentDate, 79900.0f);
+        mercedes.setOwner(new Person("Grace", "MacDonald"));
+
+        final Car bmw = new Car("BMW", "320di", 2020, (short) 4, currentDate, 55900.0f);
+        bmw.setOwner(new Person("Caroline", "Clarkson"));
+
+        final Car audi = new Car("Audi", "A1 Sportline", 2020, (short) 4, currentDate, 20560.0f);
+        audi.setOwner(new Person("Julia", "Poole"));
+
+        final Car lamborghini = new Car("Lamborghini", "Aventador", 2020, (short) 4, currentDate, 315000.0f);
+        lamborghini.setOwner(new Person("Sonia", "Peake"));
+
+        cars.add(mercedes);
+        cars.add(bmw);
+        cars.add(audi);
+        cars.add(lamborghini);
 
         reportGenerator = new ReportGenerator(true, Level.ALL);
         configurator = reportGenerator.getConfigurator(Car.class, Car.REPORT_NAME);

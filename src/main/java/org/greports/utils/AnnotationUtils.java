@@ -1,5 +1,6 @@
 package org.greports.utils;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.greports.annotations.Cell;
 import org.greports.annotations.CellGetter;
@@ -58,13 +59,13 @@ public class AnnotationUtils {
         return (int) configuration.getSpecialRows().stream().filter(entry -> entry.getRowIndex() == Integer.MAX_VALUE).count();
     }
 
-    public static <T> void methodsWithColumnAnnotations(Class<T> clazz, Function<Pair<Method, Column>, Void> columnFunction, String reportName) throws ReportEngineReflectionException {
+    public static <T> void methodsWithColumnAnnotations(Class<T> clazz, Function<Pair<Column, Method>, Void> columnFunction, String reportName) throws ReportEngineReflectionException {
         for (Field declaredField : getAllClassFields(clazz)) {
             final Column[] columns = declaredField.getAnnotationsByType(Column.class);
             for (Column column : columns) {
                 if (getReportColumnPredicate(reportName).test(column)) {
                     final Method method = ReflectionUtils.fetchFieldGetter(declaredField, clazz);
-                    columnFunction.apply(Pair.of(method, column));
+                    columnFunction.apply(Pair.of(column, method));
                 }
             }
         }
@@ -74,7 +75,7 @@ public class AnnotationUtils {
             for (final ColumnGetter columnGetter : columnGetters) {
                 final Column column = AnnotationsConverter.convert(columnGetter);
                 if (getReportColumnPredicate(reportName).test(column)) {
-                    columnFunction.apply(Pair.of(declaredMethod, column));
+                    columnFunction.apply(Pair.of(column, declaredMethod));
                 }
             }
         }
@@ -192,13 +193,13 @@ public class AnnotationUtils {
         return map;
     }
 
-    public static <T> void methodsWithSubreportAnnotations(Class<T> clazz, Function<Pair<Method, Subreport>, Void> columnFunction, String reportName) throws ReportEngineReflectionException {
+    public static <T> void methodsWithSubreportAnnotations(Class<T> clazz, Function<Pair<Subreport, Method>, Void> columnFunction, String reportName) throws ReportEngineReflectionException {
         for (Field field : getAllClassFields(clazz)) {
             final Subreport[] subreports = field.getAnnotationsByType(Subreport.class);
             for (Subreport subreport : subreports) {
                 if (getSubreportPredicate(reportName).test(subreport)) {
                     final Method method = ReflectionUtils.fetchFieldGetter(field, clazz);
-                    columnFunction.apply(Pair.of(method, subreport));
+                    columnFunction.apply(Pair.of(subreport, method));
                 }
             }
         }
@@ -208,7 +209,7 @@ public class AnnotationUtils {
             for (final SubreportGetter subreportGetter : subreportGetters) {
                 final Subreport subreport = AnnotationsConverter.convert(subreportGetter);
                 if (getSubreportPredicate(reportName).test(subreport)) {
-                    columnFunction.apply(Pair.of(method, subreport));
+                    columnFunction.apply(Pair.of(subreport, method));
                 }
             }
         }
@@ -226,7 +227,7 @@ public class AnnotationUtils {
         return annotation -> Arrays.asList(((Subreport) annotation).reportName()).contains(reportName);
     }
 
-    public static Function<Pair<Method, Column>, Void> getMethodsAndColumnsFunction(Map<Method, Column> columnsMap) {
+    public static Function<Pair<Column, Method>, Void> getMethodsAndColumnsFunction(Map<Column, Method> columnsMap) {
         return pair -> {
             columnsMap.put(pair.getLeft(), pair.getRight());
             return null;
@@ -240,9 +241,9 @@ public class AnnotationUtils {
         };
     }
 
-    public static Function<Pair<Method, Column>, Void> getHeadersFunction(List<HeaderCell> cells, Translator translator, Float positionIncrement, String idPrefix) {
+    public static Function<Pair<Column, Method>, Void> getHeadersFunction(List<HeaderCell> cells, Translator translator, Float positionIncrement, String idPrefix) {
         return pair -> {
-            Column column = pair.getRight();
+            Column column = pair.getLeft();
             cells.add(new HeaderCell(
                     column.position() + positionIncrement,
                     translator.translate(column.title()),
@@ -254,10 +255,18 @@ public class AnnotationUtils {
         };
     }
 
-    public static Function<Pair<Method, Subreport>, Void> getSubreportsFunction(Map<Method, Subreport> subreportMap) {
+    public static Function<Pair<Subreport, Method>, Void> getSubreportsFunction(Map<Subreport, Method> subreportMap) {
         return pair -> {
             subreportMap.put(pair.getLeft(), pair.getRight());
             return null;
         };
+    }
+
+    public static boolean hasNestedTarget(Column column) {
+        return !column.target().equals(StringUtils.EMPTY);
+    }
+
+    public static boolean hasNestedTarget(Cell cell) {
+        return !cell.target().equals(StringUtils.EMPTY);
     }
 }

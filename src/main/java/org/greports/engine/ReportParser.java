@@ -1,14 +1,19 @@
 package org.greports.engine;
 
 import org.greports.exceptions.ReportEngineReflectionException;
+import org.greports.exceptions.ReportEngineRuntimeException;
 import org.greports.styles.ReportStylesContainer;
 import org.greports.styles.interfaces.StripedRows;
 import org.greports.styles.interfaces.StyledReport;
 import org.greports.utils.ReflectionUtils;
 
+import java.lang.reflect.Method;
+
 public abstract class ReportParser {
 
-    protected  <T> void parseStyles(final ReportGenericDataContainer<T> container) throws ReportEngineReflectionException {
+    private final String NESTED_VALUE_DELIMITER_REGEX = "\\.";
+
+    protected <T> void parseStyles(final ReportGenericDataContainer<T> container) throws ReportEngineReflectionException {
         final Class<T> clazz = container.getClazz();
         final ReportData reportData = container.getReportData();
         if(StyledReport.class.isAssignableFrom(clazz) || StripedRows.class.isAssignableFrom(clazz)) {
@@ -29,5 +34,22 @@ public abstract class ReportParser {
                 }
             }
         }
+    }
+
+    protected <T> Object checkNestedValue(T dto, Method method, boolean isNested, String target) throws ReportEngineReflectionException {
+        Object invokedValue = dto != null ? ReflectionUtils.invokeMethod(method, dto) : null;
+        if(isNested) {
+            final String[] split = target.split(NESTED_VALUE_DELIMITER_REGEX);
+            short nestedCount = 0;
+            while(nestedCount < split.length) {
+                if(invokedValue == null) {
+                    throw new ReportEngineRuntimeException(String.format("Nested field %s cannot be null", split[nestedCount]), ReportDataParser.class);
+                }
+                method = ReflectionUtils.fetchFieldGetter(split[nestedCount], invokedValue.getClass());
+                invokedValue = ReflectionUtils.invokeMethod(method, invokedValue);
+                nestedCount++;
+            }
+        }
+        return invokedValue;
     }
 }

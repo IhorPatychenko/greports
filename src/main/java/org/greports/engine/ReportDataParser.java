@@ -31,7 +31,6 @@ import org.greports.styles.stylesbuilders.ReportStylesBuilder;
 import org.greports.utils.AnnotationUtils;
 import org.greports.utils.ConverterUtils;
 import org.greports.utils.ReflectionUtils;
-import org.greports.utils.TranslationsParser;
 import org.greports.utils.Translator;
 import org.greports.utils.Utils;
 
@@ -109,7 +108,7 @@ public final class ReportDataParser<T> extends ReportParser {
         final ReportConfiguration configuration = reportData.getConfiguration();
         reportData.setCreateHeader(configuration.isCreateHeader());
         List<HeaderCell> cells = new ArrayList<>();
-        final Function<Pair<Method, Column>, Void> columnFunction = AnnotationUtils.getHeadersFunction(cells, translator, positionIncrement, idPrefix);
+        final Function<Pair<Column, Method>, Void> columnFunction = AnnotationUtils.getHeadersFunction(cells, translator, positionIncrement, idPrefix);
         AnnotationUtils.methodsWithColumnAnnotations(container.getClazz(), columnFunction, reportData.getReportName());
 
         final List<ReportSpecialColumn> specialColumns = configuration.getSpecialColumns();
@@ -132,19 +131,20 @@ public final class ReportDataParser<T> extends ReportParser {
         final ReportData reportData = container.getReportData();
         reportData.setDataStartRow(reportData.getConfiguration().getDataStartRowIndex());
 
-        Map<Method, Column> columnsMap = new LinkedHashMap<>();
-        Function<Pair<Method, Column>, Void> columnFunction = AnnotationUtils.getMethodsAndColumnsFunction(columnsMap);
+        Map<Column, Method> columnsMap = new LinkedHashMap<>();
+        Function<Pair<Column, Method>, Void> columnFunction = AnnotationUtils.getMethodsAndColumnsFunction(columnsMap);
         AnnotationUtils.methodsWithColumnAnnotations(container.getClazz(), columnFunction, reportData.getReportName());
 
         final List<T> dataList = container.getData();
         for (int i = 0; i < dataList.size(); i++) {
             T dto = dataList.get(i);
             DataRow row = new DataRow(reportData.getConfiguration().getDataStartRowIndex() + i);
-            for (final Map.Entry<Method, Column> entry : columnsMap.entrySet()) {
-                final Column column = entry.getValue();
-                final Method method = entry.getKey();
+            for (final Map.Entry<Column, Method> entry : columnsMap.entrySet()) {
+                final Column column = entry.getKey();
+                Method method = entry.getValue();
                 method.setAccessible(true);
-                Object invokedValue = dto != null ? ReflectionUtils.invokeMethod(method, dto) : null;
+
+                Object invokedValue = super.checkNestedValue(dto, method, AnnotationUtils.hasNestedTarget(column), column.target());
 
                 if(!column.getterConverter().converterClass().equals(NotImplementedConverter.class)){
                     invokedValue = ConverterUtils.convertValue(invokedValue, column.getterConverter());
@@ -209,13 +209,13 @@ public final class ReportDataParser<T> extends ReportParser {
 
     private void parseSubreports(final ReportListDataContainer<T> container, String idPrefix) throws ReportEngineReflectionException {
         final ReportDataParser<T> reportDataParser = new ReportDataParser<>(this.loggerService.isEnabled(), this.loggerService.getLevel());
-        Map<Method, Subreport> subreportMap = new LinkedHashMap<>();
-        Function<Pair<Method, Subreport>, Void> subreportFunction = AnnotationUtils.getSubreportsFunction(subreportMap);
+        Map<Subreport, Method> subreportMap = new LinkedHashMap<>();
+        Function<Pair<Subreport, Method>, Void> subreportFunction = AnnotationUtils.getSubreportsFunction(subreportMap);
         AnnotationUtils.methodsWithSubreportAnnotations(container.getClazz(), subreportFunction, container.getReportData().getReportName());
 
-        for (Map.Entry<Method, Subreport> entry : subreportMap.entrySet()) {
-            final Method method = entry.getKey();
-            final Subreport subreportAnnotation = entry.getValue();
+        for (Map.Entry<Subreport, Method> entry : subreportMap.entrySet()) {
+            final Subreport subreportAnnotation = entry.getKey();
+            final Method method = entry.getValue();
             Class<?> componentType = method.getReturnType();
             method.setAccessible(true);
 

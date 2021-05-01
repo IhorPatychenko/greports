@@ -37,6 +37,12 @@ public @interface Column {
     float position();
 
     /**
+     * The value used to target attributes in a nested class.
+     * @return {@link String}
+     */
+    String target() default StringUtils.EMPTY;
+
+    /**
      * An array of {@link CellValidator} to be applied to the column.
      *
      * @return {@link CellValidator}

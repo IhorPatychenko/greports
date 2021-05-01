@@ -111,6 +111,11 @@ public class AnnotationsConverter {
             }
 
             @Override
+            public String target() {
+                return columnGetter.target();
+            }
+
+            @Override
             public CellValidator[] cellValidators() {
                 return new CellValidator[0];
             }
@@ -179,6 +184,11 @@ public class AnnotationsConverter {
             @Override
             public String[] reportName() {
                 return cellGetter.reportName();
+            }
+
+            @Override
+            public String target() {
+                return cellGetter.target();
             }
 
             @Override
@@ -253,6 +263,11 @@ public class AnnotationsConverter {
             @Override
             public float position() {
                 return columnSetter.position();
+            }
+
+            @Override
+            public String target() {
+                return columnSetter.target();
             }
 
             @Override

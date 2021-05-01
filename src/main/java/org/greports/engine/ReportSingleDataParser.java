@@ -67,35 +67,30 @@ public class ReportSingleDataParser<T> extends ReportParser {
             rows.putIfAbsent(rowIndex, new DataRow(rowIndex));
             final DataRow dataRow = rows.get(rowIndex);
             method.setAccessible(true);
-            try {
-                Object cellValue = object != null ? method.invoke(object) : null;
-                if(!cell.getterConverter().converterClass().equals(NotImplementedConverter.class)){
-                    cellValue = ConverterUtils.convertValue(cellValue, cell.getterConverter());
-                }
+            Object cellValue = super.checkNestedValue(object, method, AnnotationUtils.hasNestedTarget(cell), cell.target());
 
-                String format = cell.format();
-
-                if(cellValue != null) {
-                    format = configurator.getFormatForClass(cellValue.getClass(), format);
-                    if(cell.translate() && cellValue instanceof String) {
-                        cellValue = container.getTranslator().translate(Objects.toString(cellValue));
-                    }
-                }
-
-                DataCell dataCell = new DataCell(
-                        (float) cell.column(),
-                        true,
-                        format,
-                        cellValue,
-                        cell.valueType(),
-                        cell.columnWidth()
-                );
-                dataRow.addCell(dataCell);
-            } catch (IllegalAccessException e) {
-                throw new ReportEngineReflectionException(ErrorMessages.INV_METHOD_WITH_NO_ACCESS, e, clazz);
-            } catch (InvocationTargetException e) {
-                throw new ReportEngineReflectionException(ErrorMessages.INV_METHOD, e, clazz);
+            if(!cell.getterConverter().converterClass().equals(NotImplementedConverter.class)){
+                cellValue = ConverterUtils.convertValue(cellValue, cell.getterConverter());
             }
+
+            String format = cell.format();
+
+            if(cellValue != null) {
+                format = configurator.getFormatForClass(cellValue.getClass(), format);
+                if(cell.translate() && cellValue instanceof String) {
+                    cellValue = container.getTranslator().translate(Objects.toString(cellValue));
+                }
+            }
+
+            DataCell dataCell = new DataCell(
+                    (float) cell.column(),
+                    true,
+                    format,
+                    cellValue,
+                    cell.valueType(),
+                    cell.columnWidth()
+            );
+            dataRow.addCell(dataCell);
         }
         for (final Map.Entry<Integer, DataRow> dataRowEntry : rows.entrySet()) {
             reportData.addRow(dataRowEntry.getValue());

@@ -43,6 +43,9 @@ public class Car implements CollectedValues<Object, Object>, DefaultStyles {
     private Date soldTime;
     @Column(reportName = REPORT_NAME, position = 6, title = "Price", format = Formats.FLOAT_2_DEC, autoSizeColumn = true, id = "price")
     private float price;
+    @Column(reportName = REPORT_NAME, position = 7, title = "Owner", format = Formats.TEXT, autoSizeColumn = true, target = "fullName")
+    @Column(reportName = REPORT_NAME, position = 8, title = "Owner address", format = Formats.TEXT, autoSizeColumn = true, target = "address.fullAddress")
+    private Person owner;
 
     private Car() {}
 
@@ -106,6 +109,15 @@ public class Car implements CollectedValues<Object, Object>, DefaultStyles {
 
     public Car setPrice(float price) {
         this.price = price;
+        return this;
+    }
+
+    public Person getOwner() {
+        return owner;
+    }
+
+    public Car setOwner(Person owner) {
+        this.owner = owner;
         return this;
     }
 

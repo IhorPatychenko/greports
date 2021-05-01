@@ -36,6 +36,12 @@ public @interface ColumnGetter {
     float position();
 
     /**
+     * The value used to target attributes in a nested class.
+     * @return {@link String}
+     */
+    String target() default StringUtils.EMPTY;
+
+    /**
      * Column title. This text string will be used to search for
      * the corresponding translation in the translation file located in
      * the directory provided by the {@link Configuration#translationsDir()}
