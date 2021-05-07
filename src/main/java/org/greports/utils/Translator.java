@@ -16,10 +16,13 @@ public class Translator {
     }
 
     public String translate(String key, String... params){
-        String text = translations.getOrDefault(key, key).toString();
-        for (int i = 0; i < params.length; i++) {
-            text = text.replaceAll("\\{" + i + "}", params[i]);
+        if(key != null) {
+            String text = translations.getOrDefault(key, key).toString();
+            for (int i = 0; i < params.length; i++) {
+                text = text.replaceAll("\\{" + i + "}", params[i]);
+            }
+            return text;
         }
-        return text;
+        return null;
     }
 }
