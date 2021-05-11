@@ -2,6 +2,7 @@ package org.greports.utils;
 
 import org.greports.engine.ReportConfiguration;
 
+import java.text.MessageFormat;
 import java.util.Map;
 
 public class Translator {
@@ -15,13 +16,9 @@ public class Translator {
         this(new TranslationsParser(config.getLocale(), config.getTranslationsDir(), config.getTranslationFileExtension()));
     }
 
-    public String translate(String key, String... params){
+    public String translate(String key, Object... params){
         if(key != null) {
-            String text = translations.getOrDefault(key, key).toString();
-            for (int i = 0; i < params.length; i++) {
-                text = text.replaceAll("\\{" + i + "}", params[i]);
-            }
-            return text;
+            return MessageFormat.format(translations.getOrDefault(key, key).toString(), params);
         }
         return null;
     }

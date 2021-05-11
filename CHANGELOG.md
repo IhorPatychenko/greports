@@ -1,15 +1,18 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
-## [3.2.3] - yyyy-mm-dd
+## [3.2.5] - 2021-05-11
 
 ### Added
-- Data cell value translation.
-- Javadoc for some classes.
+- ReportLoaderResult. Added getResultWithoutErrors method.
+- NotEmptyValidator added.
 ### Changed
-- The translations folder moved to the test package.
-### Deprecated
-- The method *AbstractValueConverter.getToClass* is no longer needed. Will be removed in version 4.0
+- Translator. The logic of method Translator.translate was migrated to MessageFormat.format method
+
+## [3.2.4] - 2021-04-21
+
+### Fixed
+- Fixed getConfigurator method.
 
 ## [3.2.2] - 2021-03-23
 
