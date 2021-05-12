@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -52,18 +53,32 @@ public class ReportLoaderResult implements Serializable {
 
     public <T> List<T> getResultWithoutErrors(Class<T> clazz) {
         List<T> toReturn = new ArrayList<>();
-        Set<Integer> rowsWithError = rowsWithErrors.getOrDefault(clazz, new HashSet<>());
+        Set<Integer> rowsWithError = getRowIndexesWithErrors(clazz);
         List<T> result = getResult(clazz);
         if(rowsWithError.size() == 0) {
             return result;
         }
 
         for (int i = 0; i < result.size(); i++) {
-            if(!rowsWithError.contains(i + 1)) {
+            if(!rowsWithError.contains(i)) {
                 toReturn.add(result.get(i));
             }
         }
         return toReturn;
+    }
+
+    public <T> Map<Integer, T> getResultMap(Class<T> clazz) {
+        Map<Integer, T> toReturn = new LinkedHashMap<>();
+        List<T> result = getResult(clazz);
+
+        for (int i = 0; i < result.size(); i++) {
+            toReturn.put(i, result.get(i));
+        }
+        return toReturn;
+    }
+
+    private <T> Set<Integer> getRowIndexesWithErrors(Class<T> clazz) {
+        return rowsWithErrors.getOrDefault(clazz, new HashSet<>());
     }
 
     public <T> List<ReportLoaderError> getErrors(Class<T> clazz) {
