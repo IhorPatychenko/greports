@@ -202,7 +202,7 @@ public class ReportLoader {
             if (ReportLoaderErrorTreatment.THROW_ERROR.equals(errorTreatment)) {
                 throw e;
             } else {
-                loaderResult.addError(clazz, cell, block.getAsColumn().title(), tranlator.translate(e.getMessage()), (Serializable) value);
+                loaderResult.addError(clazz, instance, cell, block.getAsColumn().title(), tranlator.translate(e.getMessage()), (Serializable) value);
                 return true;
             }
         }

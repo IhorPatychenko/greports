@@ -1,6 +1,14 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [3.2.7] - 2021-05-13
+
+### Added
+- ReportLoaderResult.getResultWithErrors added.
+
+### Changed
+- Changed ReportLoaderResult.getResultWithoutErrors method logic
+
 ## [3.2.6] - 2021-05-12
 
 ### Added

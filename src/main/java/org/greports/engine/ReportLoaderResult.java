@@ -19,25 +19,27 @@ public class ReportLoaderResult implements Serializable {
 
     private final Map<Class<?>, List<?>> results = new HashMap<>();
     private final Map<Class<?>, List<ReportLoaderError>> errors = new HashMap<>();
-    private final Map<Class<?>, Set<Integer>> rowsWithErrors = new HashMap<>();
+    private final Map<Class<?>, Set<Object>> rowsWithErrors = new HashMap<>();
 
     protected <T> void addResult(Class<T> clazz, List<T> list) {
         results.put(clazz, list);
     }
 
-    protected <T> void addError(Class<T> clazz, Cell cell, String columnTitle, String errorMessage, final Serializable errorValue) {
-        addError(clazz, new ReportLoaderError(cell, columnTitle, errorMessage, errorValue));
+    protected <T> void addError(Class<T> clazz, T rowWithError, Cell cell, String columnTitle, String errorMessage, final Serializable errorValue) {
+        addError(clazz, rowWithError, new ReportLoaderError(cell, columnTitle, errorMessage, errorValue));
     }
 
     protected <T> void addError(Class<T> clazz, String sheetName, Integer rowIndex, Integer columnIndex, String columnTitle, String errorMessage, final Serializable errorValue) {
-        addError(clazz, new ReportLoaderError(sheetName, rowIndex, columnIndex, columnTitle, errorMessage, errorValue));
+        addError(clazz, null, new ReportLoaderError(sheetName, rowIndex, columnIndex, columnTitle, errorMessage, errorValue));
     }
 
-    private <T> void addError(Class<T> clazz, ReportLoaderError error) {
+    private <T> void addError(Class<T> clazz, T rowWithError, ReportLoaderError error) {
         errorsCheckClass(clazz);
         errors.get(clazz).add(error);
         rowsWithErrorsCheckClass(clazz);
-        rowsWithErrors.get(clazz).add(error.getRowIndex());
+        if(rowWithError != null) {
+            rowsWithErrors.get(clazz).add(rowWithError);
+        }
     }
 
     private <T> void rowsWithErrorsCheckClass(Class<T> clazz) {
@@ -51,34 +53,16 @@ public class ReportLoaderResult implements Serializable {
         return ((List<T>) results.getOrDefault(clazz, new ArrayList<>()));
     }
 
+    @SuppressWarnings("unchecked")
     public <T> List<T> getResultWithoutErrors(Class<T> clazz) {
-        List<T> toReturn = new ArrayList<>();
-        Set<Integer> rowsWithError = getRowIndexesWithErrors(clazz);
-        List<T> result = getResult(clazz);
-        if(rowsWithError.size() == 0) {
-            return result;
-        }
-
-        for (int i = 0; i < result.size(); i++) {
-            if(!rowsWithError.contains(i)) {
-                toReturn.add(result.get(i));
-            }
-        }
-        return toReturn;
+        final List<T> objects = results.get(clazz).stream().map(e -> (T) e).collect(Collectors.toList());
+        objects.removeAll(getResultWithErrors(clazz));
+        return objects;
     }
 
-    public <T> Map<Integer, T> getResultMap(Class<T> clazz) {
-        Map<Integer, T> toReturn = new LinkedHashMap<>();
-        List<T> result = getResult(clazz);
-
-        for (int i = 0; i < result.size(); i++) {
-            toReturn.put(i, result.get(i));
-        }
-        return toReturn;
-    }
-
-    private <T> Set<Integer> getRowIndexesWithErrors(Class<T> clazz) {
-        return rowsWithErrors.getOrDefault(clazz, new HashSet<>());
+    @SuppressWarnings("unchecked")
+    public <T> List<T> getResultWithErrors(Class<T> clazz) {
+        return rowsWithErrors.get(clazz).stream().map(e -> (T) e).collect(Collectors.toList());
     }
 
     public <T> List<ReportLoaderError> getErrors(Class<T> clazz) {
