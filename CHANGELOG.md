@@ -1,6 +1,11 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [3.2.6] - 2021-05-12
+
+### Added
+- ReportLoaderResult getResultMap added.
+
 ## [3.2.5] - 2021-05-11
 
 ### Added
