@@ -1,6 +1,7 @@
 package org.greports.engine;
 
 import org.apache.commons.lang3.ClassUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellType;
@@ -12,10 +13,7 @@ import org.greports.annotations.CellValidator;
 import org.greports.exceptions.ReportEngineReflectionException;
 import org.greports.exceptions.ReportEngineRuntimeException;
 import org.greports.exceptions.ReportEngineValidationException;
-import org.greports.utils.AnnotationUtils;
-import org.greports.utils.ConverterUtils;
-import org.greports.utils.ReflectionUtils;
-import org.greports.utils.Translator;
+import org.greports.utils.*;
 
 import java.io.File;
 import java.io.IOException;
@@ -24,6 +22,8 @@ import java.io.Serializable;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -76,14 +76,22 @@ public class ReportLoader {
     }
 
     public <T> ReportLoader bindForClass(Class<T> clazz) throws ReportEngineReflectionException {
-        return bindForClass(clazz, ReportLoaderErrorTreatment.THROW_ERROR, -1, Integer.MAX_VALUE);
+        return bindForClass(clazz, this.reportName, ReportLoaderErrorTreatment.THROW_ERROR, -1, Integer.MAX_VALUE);
+    }
+
+    public <T> ReportLoader bindForClass(Class<T> clazz, String reportName) throws ReportEngineReflectionException {
+        return bindForClass(clazz, reportName, ReportLoaderErrorTreatment.THROW_ERROR, -1, Integer.MAX_VALUE);
     }
 
     public <T> ReportLoader bindForClass(Class<T> clazz, ReportLoaderErrorTreatment errorTreatment) throws ReportEngineReflectionException {
-        return bindForClass(clazz, errorTreatment, -1, Integer.MAX_VALUE);
+        return bindForClass(clazz, this.reportName, errorTreatment, -1, Integer.MAX_VALUE);
     }
 
-    public <T> ReportLoader bindForClass(Class<T> clazz, ReportLoaderErrorTreatment errorTreatment, int fromRow, int toRow) throws ReportEngineReflectionException {
+    public <T> ReportLoader bindForClass(Class<T> clazz, String reportName, ReportLoaderErrorTreatment errorTreatment) throws ReportEngineReflectionException {
+        return bindForClass(clazz, reportName, errorTreatment, -1, Integer.MAX_VALUE);
+    }
+
+    public <T> ReportLoader bindForClass(Class<T> clazz, String reportName, ReportLoaderErrorTreatment errorTreatment, int fromRow, int toRow) throws ReportEngineReflectionException {
         if(reportName == null) {
             throw new ReportEngineRuntimeException("reportName cannot be null", this.getClass());
         }
@@ -99,7 +107,6 @@ public class ReportLoader {
         this.loaderResult.addResult(clazz, list);
         return this;
     }
-
 
     public void loadBlocks(ReportBlock reportBlock) throws ReportEngineReflectionException {
         final Map<Annotation, Method> annotationMethodMap = AnnotationUtils.loadBlockAnnotations(reportBlock);
@@ -221,7 +228,7 @@ public class ReportLoader {
     private Object getCellValue(final Method method, final Cell cell) {
         Class<?> parameterType = method.getParameterTypes()[0];
         if (cell != null) {
-            if(parameterType.equals(Boolean.class) || "boolean".equals(ClassUtils.getName(parameterType))) {
+            if(parameterType.equals(Boolean.class) || parameterType.equals(boolean.class)) {
                 return cell.getBooleanCellValue();
             } else if (CellType.FORMULA.equals(cell.getCellTypeEnum())) {
                 return cell.getCellFormula();
@@ -229,18 +236,13 @@ public class ReportLoader {
                 return cell.getRichStringCellValue().getString();
             } else if(parameterType.equals(String.class) && CellType.NUMERIC.equals(cell.getCellTypeEnum())) {
                 return Double.toString(cell.getNumericCellValue());
+            } else if(parameterType.equals(Character.class) || parameterType.equals(char.class)) {
+                String string = cell.getRichStringCellValue().getString();
+                return StringUtils.isEmpty(string) ? null : string.charAt(0);
             } else if(parameterType.equals(Date.class)) {
                 return cell.getDateCellValue();
-            } else if (parameterType.equals(Double.class) || "double".equals(ClassUtils.getName(parameterType))) {
-                return cell.getNumericCellValue();
-            } else if (parameterType.equals(Integer.class) || "int".equals(ClassUtils.getName(parameterType))) {
-                return ((int) cell.getNumericCellValue());
-            } else if (parameterType.equals(Long.class) || "long".equals(ClassUtils.getName(parameterType))) {
-                return ((long) cell.getNumericCellValue());
-            } else if (parameterType.equals(Float.class) || "float".equals(ClassUtils.getName(parameterType))) {
-                return ((float) cell.getNumericCellValue());
-            } else if (parameterType.equals(Short.class) || "short".equals(ClassUtils.getName(parameterType))) {
-                return ((short) cell.getNumericCellValue());
+            } else if(Number.class.isAssignableFrom(parameterType) || parameterType.isPrimitive()) {
+                return NumberFactory.valueOf(cell.getNumericCellValue(), parameterType);
             }
         }
         return null;

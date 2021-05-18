@@ -4,7 +4,7 @@ import java.util.List;
 
 public abstract class AbstractColumnValidator extends AbstractValidator {
 
-    protected AbstractColumnValidator(final String validatorValue) {
+    public AbstractColumnValidator(final String validatorValue) {
         super(validatorValue);
     }
 

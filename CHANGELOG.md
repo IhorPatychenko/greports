@@ -1,11 +1,18 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [3.2.8] - 2021-05-18
+
+### Added
+- ReportLoader.getCellValue more data types support
+- GREPORTS_TEST_DIR environment variable to can run the tests
+### Changed
+- Make AbstractCellValidator and AbstractColumnValidator constructors public
+
 ## [3.2.7] - 2021-05-13
 
 ### Added
 - ReportLoaderResult.getResultWithErrors added.
-
 ### Changed
 - Changed ReportLoaderResult.getResultWithoutErrors method logic
 

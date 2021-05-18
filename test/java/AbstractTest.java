@@ -9,6 +9,7 @@ import org.greports.exceptions.ReportEngineReflectionException;
 import org.greports.exceptions.ReportEngineRuntimeException;
 import org.junit.jupiter.api.BeforeAll;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
@@ -16,8 +17,23 @@ import java.util.List;
 
 public class AbstractTest {
 
-    protected static final String FILE_PATH = "C:\\Users\\IhorPatychenko\\Documents\\cars.xlsx";
-    protected static final String FILE_PATH2 = "C:\\Users\\IhorPatychenko\\Documents\\cars2.xlsx";
+    protected static final String OUTPUT_TEST_DIR_ENV_KEY = "GREPORTS_TEST_DIR";
+    protected static final String OUTPUT_TEST_DIR = System.getenv(OUTPUT_TEST_DIR_ENV_KEY);
+    protected static final String OUTPUT_FILE_NAME = "Cars.xlsx";
+    protected static String FILE_PATH;
+
+    static {
+
+        if(OUTPUT_TEST_DIR == null) {
+            throw new ReportEngineRuntimeException(String.format("You need to define the '%s' environment variable in order to run tests.", OUTPUT_TEST_DIR_ENV_KEY), AbstractTest.class);
+        }
+
+        if(String.valueOf(OUTPUT_TEST_DIR.charAt(OUTPUT_TEST_DIR.length() - 1)).equals(File.separator)) {
+            FILE_PATH = OUTPUT_TEST_DIR + OUTPUT_FILE_NAME;
+        } else {
+            FILE_PATH = OUTPUT_TEST_DIR + File.separator + OUTPUT_FILE_NAME;
+        }
+    }
 
     protected static final Date currentDate = new Date();
 
