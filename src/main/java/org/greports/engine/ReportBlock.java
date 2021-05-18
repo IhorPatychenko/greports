@@ -11,6 +11,7 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
@@ -79,11 +80,11 @@ public class ReportBlock {
     }
 
     public List<Converter> getSetterConverters() {
-        return Arrays.asList(getAsColumn().setterConverters());
+        return Collections.singletonList(getAsColumn().setterConverter());
     }
 
     public List<Converter> getGetterConverters() {
-        return Arrays.asList(getAsColumn().getterConverter());
+        return Collections.singletonList(getAsColumn().getterConverter());
     }
 
     public void addValue(Object value) {

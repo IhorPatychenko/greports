@@ -96,10 +96,6 @@ public abstract class DataInjector {
         loggerService.trace("Columns adjusted. Time: " + adjustColumnsStopwatch.stop(), !autoSizedColumns.isEmpty());
     }
 
-    protected void setGridlines(Sheet sheet) {
-        sheet.setDisplayGridlines(reportData.getConfiguration().isShowGridlines());
-    }
-
     protected void createSpecialRows(Sheet sheet) {
         final List<SpecialDataRow> specialRows = reportData.getSpecialRows();
         Integer countBottomRows = 0;

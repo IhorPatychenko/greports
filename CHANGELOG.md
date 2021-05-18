@@ -1,6 +1,13 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [3.2.9] - 2021-05-18
+
+### Added
+- displayZeros method added to Configration annotation
+### Fixed
+- AnnotationUtils convert ColumnGetter to Column
+
 ## [3.2.8] - 2021-05-18
 
 ### Added

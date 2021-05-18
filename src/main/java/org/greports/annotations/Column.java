@@ -62,7 +62,7 @@ public @interface Column {
      *
      * @return Converter
      */
-    Converter setterConverters() default @Converter(converterClass = NotImplementedConverter.class);
+    Converter setterConverter() default @Converter(converterClass = NotImplementedConverter.class);
 
     /**
      * Column title. This text string will be used to search for

@@ -1,5 +1,6 @@
 package org.greports.engine;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.greports.content.cell.DataCell;
 import org.greports.content.cell.HeaderCell;
@@ -25,7 +26,7 @@ public class ReportData implements Cloneable, Serializable {
 
     private final ReportStylesContainer reportStylesContainer = new ReportStylesContainer();
     private final Map<String, Integer> targetIndexes = new HashMap<>();
-    private String reportName;
+    private final String reportName;
     private ReportConfiguration configuration;
     private URL templateURL;
     private ReportHeader header;
@@ -39,14 +40,10 @@ public class ReportData implements Cloneable, Serializable {
     private List<DataRow> dataRows = new ArrayList<>();
     private List<Integer> autosizedColumns;
 
-    public ReportData(final ReportConfiguration configuration) {
-        this.configuration = configuration;
-    }
-
     public ReportData(final String reportName, final ReportConfiguration configuration) {
         this.reportName = reportName;
         this.configuration = configuration;
-        this.templateURL = !configuration.getTemplatePath().equals("") ? getClass().getClassLoader().getResource(configuration.getTemplatePath()) : null;
+        this.templateURL = !configuration.getTemplatePath().equals(StringUtils.EMPTY) ? getClass().getClassLoader().getResource(configuration.getTemplatePath()) : null;
     }
 
     public boolean isReportWithTemplate(){
@@ -137,7 +134,7 @@ public class ReportData implements Cloneable, Serializable {
 
         for (int i = 0; i < header.getCells().size(); i++) {
             HeaderCell headerCell = header.getCell(i);
-            if(!"".equals(headerCell.getId())){
+            if(!StringUtils.EMPTY.equals(headerCell.getId())){
                 targetIndexes.put(headerCell.getId(), i);
             }
         }

@@ -103,13 +103,6 @@ public @interface Configuration {
     short dataStartRowIndex() default 1;
 
     /**
-     * Indicates on which column the data will start.
-     * 0-based.
-     * @return short
-     */
-    short dataStartColumnIndex() default 0;
-
-    /**
      * Indicates if the configuration to be parsed need to be injected
      * into existing sheet using {@link org.greports.engine.TemplateDataInjector}
      *
@@ -146,7 +139,7 @@ public @interface Configuration {
      *     horizontalOffset = 0, headerRowIndex = 1 => header starts at column 0 (A)
      *     horizontalOffset = 1, headerRowIndex = 1 => header starts at column 1 (B)
      *     horizontalOffset = 4, headerRowIndex = 0 => header starts at column 4 (E)
-     *     horizontalOffset = 4, headerRowIndex = 2 => header starts at column 4 (E)
+     *     horizontalOffset = 4, headerRowIndex = 2 => header starts at column 6 (G)
      * </pre>
      *
      * @return {@code short}
@@ -159,6 +152,12 @@ public @interface Configuration {
      * @return {@code boolean}
      */
     boolean showGridlines() default true;
+
+    /**
+     * Set whether the window should show 0 (zero) in cells containing zero value.
+     * When false, cells with zero value appear blank instead of showing the number zero.
+     */
+    boolean displayZeros() default true;
 
     /**
      * An array of {@link SpecialRow}

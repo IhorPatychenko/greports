@@ -37,8 +37,10 @@ import java.util.function.Predicate;
 
 class RawDataInjector extends DataInjector {
 
+    public static final int WIDTH_MULTIPLIER = 256;
+
     private final ReportData data;
-    private Map<Pair<ReportStyle, String>, XSSFCellStyle> stylesCache = new HashedMap<>();
+    private Map<Pair<ReportStyle, String>, XSSFCellStyle> stylesCache = new HashMap<>();
 
     public RawDataInjector(XSSFWorkbook currentWorkbook, ReportData reportData, boolean loggerEnabled, Level level) {
         super(currentWorkbook, reportData, loggerEnabled, level);
@@ -48,7 +50,7 @@ class RawDataInjector extends DataInjector {
     @Override
     public void inject() {
         Sheet sheet = getSheet(currentWorkbook, data);
-        stylesCache = new HashedMap<>();
+        stylesCache = new HashMap<>();
         formatsCache = new HashMap<>();
         injectData(sheet);
     }
@@ -63,6 +65,7 @@ class RawDataInjector extends DataInjector {
     }
 
     protected void injectData(Sheet sheet) {
+        setSheetAttributes(sheet);
         createHeader(sheet);
         createDataRows(sheet);
         super.createSpecialRows(sheet);
@@ -71,7 +74,14 @@ class RawDataInjector extends DataInjector {
         addStripedRows(sheet);
         addStyles(sheet);
         super.adjustColumns(sheet);
-        setGridlines(sheet);
+    }
+
+    private void setSheetAttributes(Sheet sheet) {
+        loggerService.trace("Applying sheet configuration...");
+        ReportConfiguration configuration = reportData.getConfiguration();
+        sheet.setDisplayZeros(configuration.isDisplayZeros());
+        sheet.setDisplayGridlines(reportData.getConfiguration().isShowGridlines());
+        loggerService.trace("Sheet configuration applied");
     }
 
     private void createHeader(Sheet sheet) {
@@ -256,11 +266,12 @@ class RawDataInjector extends DataInjector {
                 }
                 if(reportStyle.getColumnWidth() != null) {
                     for (int i = horizontalRange.getStart() + horizontalOffset; i <= horizontalRange.getEnd() + horizontalOffset; i++) {
-                        sheet.setColumnWidth(i, reportStyle.getColumnWidth() * 256);
+                        sheet.setColumnWidth(i, reportStyle.getColumnWidth() * WIDTH_MULTIPLIER);
                     }
                 }
             }
             loggerService.trace("Styles added. Time: " + stylesStopwatch.stop());
+            loggerService.trace("Total styles: " + sheet.getWorkbook().getNumCellStyles());
         }
     }
 

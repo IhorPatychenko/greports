@@ -122,12 +122,12 @@ public class AnnotationsConverter {
 
             @Override
             public Converter getterConverter() {
-                return notImplementedConveter;
+                return columnGetter.typeConverter();
             }
 
             @Override
-            public Converter setterConverters() {
-                return columnGetter.typeConverter();
+            public Converter setterConverter() {
+                return notImplementedConveter;
             }
 
             @Override
@@ -261,7 +261,7 @@ public class AnnotationsConverter {
             }
 
             @Override
-            public Converter setterConverters() {
+            public Converter setterConverter() {
                 return columnSetter.typeConverters();
             }
 
