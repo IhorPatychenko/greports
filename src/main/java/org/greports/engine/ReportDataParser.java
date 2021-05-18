@@ -69,7 +69,7 @@ public final class ReportDataParser<T> extends ReportParser {
         loggerService.info("Parsing started...");
         loggerService.info(String.format("Parsing report for class \"%s\" with report name \"%s\"...", clazz.getSimpleName(), reportName));
         Stopwatch timer = Stopwatch.createStarted();
-        final ReportDataParser<T> parser = parse(list, reportName, clazz, configurator, 0f, "");
+        final ReportDataParser<T> parser = parse(list, reportName, clazz, configurator, 0f, StringUtils.EMPTY);
         loggerService.info(String.format("Report with name \"%s\" successfully parsed. Parse time: %s", reportName, timer.stop()));
         return parser;
     }

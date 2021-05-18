@@ -16,12 +16,12 @@ public class NumberFactory {
             return number.floatValue();
         } else if (clazz.equals(Short.class) || clazz.equals(short.class)) {
             return number.shortValue();
+        }  else if(clazz.equals(Byte.class) || clazz.equals(byte.class)) {
+            return number.byteValue();
         } else if(clazz.equals(BigDecimal.class)) {
             return BigDecimal.valueOf(number);
         } else if(clazz.equals(BigInteger.class)) {
             return BigInteger.valueOf(number.intValue());
-        } else if(clazz.equals(Byte.class) || clazz.equals(byte.class)) {
-            return number.byteValue();
         }
         return number;
     }

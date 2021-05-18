@@ -68,7 +68,7 @@ public @interface SpecialRowCell {
      * cells of his right. Example:
      * position = 1 (first column), columnWidth = 2. In this case
      * the row will have the cells A1 and B1 merged in only one cell
-     * which will be placed intoan A1 cell.
+     * which will be placed into an A1 cell.
      * @return int
      */
     int columnWidth() default 1;

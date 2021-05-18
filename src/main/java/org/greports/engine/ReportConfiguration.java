@@ -10,8 +10,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class ReportConfiguration implements Cloneable, Serializable {
-    private static final long serialVersionUID = 5728699559958112658L;
 
+    private static final long serialVersionUID = 5728699559958112658L;
 
     private String sheetName;
     private String[] reportName = new String[]{};
@@ -30,6 +30,7 @@ public class ReportConfiguration implements Cloneable, Serializable {
     private List<ReportSpecialRow> specialRows = new ArrayList<>();
     private List<ReportSpecialColumn> specialColumns = new ArrayList<>();
     private boolean showGridlines = true;
+    private boolean displayZeros = true;
 
     ReportConfiguration(Configuration configuration) {
         this.reportName = configuration.reportName();
@@ -49,6 +50,7 @@ public class ReportConfiguration implements Cloneable, Serializable {
         this.specialRows = Arrays.stream(configuration.specialRows()).map(ReportSpecialRow::new).collect(Collectors.toList());
         this.specialColumns = Arrays.stream(configuration.specialColumns()).map(ReportSpecialColumn::new).collect(Collectors.toList());
         this.showGridlines = configuration.showGridlines();
+        this.displayZeros = configuration.displayZeros();
     }
 
     public ReportConfiguration(final String sheetName) {
@@ -121,6 +123,10 @@ public class ReportConfiguration implements Cloneable, Serializable {
 
     public boolean isShowGridlines() {
         return showGridlines;
+    }
+
+    public boolean isDisplayZeros() {
+        return displayZeros;
     }
 
     public ReportConfiguration setReportName(final String[] reportName) {
@@ -205,6 +211,11 @@ public class ReportConfiguration implements Cloneable, Serializable {
 
     public ReportConfiguration setShowGridlines(boolean showGridlines) {
         this.showGridlines = showGridlines;
+        return this;
+    }
+
+    public ReportConfiguration setDisplayZeros(boolean displayZeros) {
+        this.displayZeros = displayZeros;
         return this;
     }
 
