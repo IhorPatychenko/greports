@@ -24,6 +24,8 @@ import java.io.Serializable;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -76,14 +78,22 @@ public class ReportLoader {
     }
 
     public <T> ReportLoader bindForClass(Class<T> clazz) throws ReportEngineReflectionException {
-        return bindForClass(clazz, ReportLoaderErrorTreatment.THROW_ERROR, -1, Integer.MAX_VALUE);
+        return bindForClass(clazz, this.reportName, ReportLoaderErrorTreatment.THROW_ERROR, -1, Integer.MAX_VALUE);
+    }
+
+    public <T> ReportLoader bindForClass(Class<T> clazz, String reportName) throws ReportEngineReflectionException {
+        return bindForClass(clazz, reportName, ReportLoaderErrorTreatment.THROW_ERROR, -1, Integer.MAX_VALUE);
     }
 
     public <T> ReportLoader bindForClass(Class<T> clazz, ReportLoaderErrorTreatment errorTreatment) throws ReportEngineReflectionException {
-        return bindForClass(clazz, errorTreatment, -1, Integer.MAX_VALUE);
+        return bindForClass(clazz, this.reportName, errorTreatment, -1, Integer.MAX_VALUE);
     }
 
-    public <T> ReportLoader bindForClass(Class<T> clazz, ReportLoaderErrorTreatment errorTreatment, int fromRow, int toRow) throws ReportEngineReflectionException {
+    public <T> ReportLoader bindForClass(Class<T> clazz, String reportName, ReportLoaderErrorTreatment errorTreatment) throws ReportEngineReflectionException {
+        return bindForClass(clazz, reportName, errorTreatment, -1, Integer.MAX_VALUE);
+    }
+
+    public <T> ReportLoader bindForClass(Class<T> clazz, String reportName, ReportLoaderErrorTreatment errorTreatment, int fromRow, int toRow) throws ReportEngineReflectionException {
         if(reportName == null) {
             throw new ReportEngineRuntimeException("reportName cannot be null", this.getClass());
         }
@@ -99,7 +109,6 @@ public class ReportLoader {
         this.loaderResult.addResult(clazz, list);
         return this;
     }
-
 
     public void loadBlocks(ReportBlock reportBlock) throws ReportEngineReflectionException {
         final Map<Annotation, Method> annotationMethodMap = AnnotationUtils.loadBlockAnnotations(reportBlock);
@@ -241,6 +250,10 @@ public class ReportLoader {
                 return ((float) cell.getNumericCellValue());
             } else if (parameterType.equals(Short.class) || "short".equals(ClassUtils.getName(parameterType))) {
                 return ((short) cell.getNumericCellValue());
+            } else if(parameterType.equals(BigDecimal.class)) {
+                return BigDecimal.valueOf(cell.getNumericCellValue());
+            } else if(parameterType.equals(BigInteger.class)) {
+                return BigInteger.valueOf((long) cell.getNumericCellValue());
             }
         }
         return null;

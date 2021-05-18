@@ -2,7 +2,7 @@ package org.greports.validators;
 
 public abstract class AbstractCellValidator extends AbstractValidator {
 
-    protected AbstractCellValidator(final String params) {
+    public AbstractCellValidator(final String params) {
         super(params);
     }
 
