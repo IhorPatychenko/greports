@@ -1,6 +1,11 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [3.2.10] - 2021-05-18
+
+### Chaged
+- Tests folder moved to mail package
+
 ## [3.2.9] - 2021-05-18
 
 ### Added
