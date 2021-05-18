@@ -1,6 +1,6 @@
 package org.greports.engine;
 
-import org.apache.commons.lang3.ClassUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellType;
@@ -14,6 +14,7 @@ import org.greports.exceptions.ReportEngineRuntimeException;
 import org.greports.exceptions.ReportEngineValidationException;
 import org.greports.utils.AnnotationUtils;
 import org.greports.utils.ConverterUtils;
+import org.greports.utils.NumberFactory;
 import org.greports.utils.ReflectionUtils;
 import org.greports.utils.Translator;
 
@@ -24,8 +25,6 @@ import java.io.Serializable;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -230,7 +229,7 @@ public class ReportLoader {
     private Object getCellValue(final Method method, final Cell cell) {
         Class<?> parameterType = method.getParameterTypes()[0];
         if (cell != null) {
-            if(parameterType.equals(Boolean.class) || "boolean".equals(ClassUtils.getName(parameterType))) {
+            if(parameterType.equals(Boolean.class) || parameterType.equals(boolean.class)) {
                 return cell.getBooleanCellValue();
             } else if (CellType.FORMULA.equals(cell.getCellTypeEnum())) {
                 return cell.getCellFormula();
@@ -238,22 +237,13 @@ public class ReportLoader {
                 return cell.getRichStringCellValue().getString();
             } else if(parameterType.equals(String.class) && CellType.NUMERIC.equals(cell.getCellTypeEnum())) {
                 return Double.toString(cell.getNumericCellValue());
+            } else if(parameterType.equals(Character.class) || parameterType.equals(char.class)) {
+                String string = cell.getRichStringCellValue().getString();
+                return StringUtils.isEmpty(string) ? null : string.charAt(0);
             } else if(parameterType.equals(Date.class)) {
                 return cell.getDateCellValue();
-            } else if (parameterType.equals(Double.class) || "double".equals(ClassUtils.getName(parameterType))) {
-                return cell.getNumericCellValue();
-            } else if (parameterType.equals(Integer.class) || "int".equals(ClassUtils.getName(parameterType))) {
-                return ((int) cell.getNumericCellValue());
-            } else if (parameterType.equals(Long.class) || "long".equals(ClassUtils.getName(parameterType))) {
-                return ((long) cell.getNumericCellValue());
-            } else if (parameterType.equals(Float.class) || "float".equals(ClassUtils.getName(parameterType))) {
-                return ((float) cell.getNumericCellValue());
-            } else if (parameterType.equals(Short.class) || "short".equals(ClassUtils.getName(parameterType))) {
-                return ((short) cell.getNumericCellValue());
-            } else if(parameterType.equals(BigDecimal.class)) {
-                return BigDecimal.valueOf(cell.getNumericCellValue());
-            } else if(parameterType.equals(BigInteger.class)) {
-                return BigInteger.valueOf((long) cell.getNumericCellValue());
+            } else if(Number.class.isAssignableFrom(parameterType) || parameterType.isPrimitive()) {
+                return NumberFactory.valueOf(cell.getNumericCellValue(), parameterType);
             }
         }
         return null;

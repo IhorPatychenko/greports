@@ -4,7 +4,8 @@ All notable changes to this project will be documented in this file.
 ## [3.2.8] - 2021-05-18
 
 ### Added
-- ReportLoader.getCellValue BigDecimal and BigInteger value types
+- ReportLoader.getCellValue more data types support
+- GREPORTS_TEST_DIR environment variable to can run the tests
 ### Changed
 - Make AbstractCellValidator and AbstractColumnValidator constructors public
 
