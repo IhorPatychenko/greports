@@ -55,14 +55,14 @@ public class ReportLoaderResult implements Serializable {
 
     @SuppressWarnings("unchecked")
     public <T> List<T> getResultWithoutErrors(Class<T> clazz) {
-        final List<T> objects = results.get(clazz).stream().map(e -> (T) e).collect(Collectors.toList());
+        final List<T> objects = results.getOrDefault(clazz, new ArrayList<>()).stream().map(e -> (T) e).collect(Collectors.toList());
         objects.removeAll(getResultWithErrors(clazz));
         return objects;
     }
 
     @SuppressWarnings("unchecked")
     public <T> List<T> getResultWithErrors(Class<T> clazz) {
-        return rowsWithErrors.get(clazz).stream().map(e -> (T) e).collect(Collectors.toList());
+        return rowsWithErrors.getOrDefault(clazz, new HashSet<>()).stream().map(e -> (T) e).collect(Collectors.toList());
     }
 
     public <T> List<ReportLoaderError> getErrors(Class<T> clazz) {
