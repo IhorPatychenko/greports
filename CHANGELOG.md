@@ -1,9 +1,18 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [3.3] - 2021-05-19
+
+### Added
+- Nested column value.
+- Column and cell translation
+
+### Fixed
+- ReportDataReader.getCellValue get row if row index is null (last row) or negative
+
 ## [3.2.10] - 2021-05-18
 
-### Chaged
+### Changed
 - Tests folder moved to mail package
 
 ## [3.2.9] - 2021-05-18

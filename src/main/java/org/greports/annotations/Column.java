@@ -121,7 +121,7 @@ public @interface Column {
      * position = 1 (first column), columnWidth = 2. In this case
      * the row will have the cells A1 and B1 merged in only one cell
      * which will be placed into A1 cell.
-     * @return {@code boolean}
+     * @return {@code int}
      */
     int columnWidth() default 1;
 
