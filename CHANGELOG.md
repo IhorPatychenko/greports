@@ -1,6 +1,11 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [3.4] - 2021-05-20
+
+### Added
+- ReportEditor service
+
 ## [3.3.1] - 2021-05-19
 
 ### Fixed

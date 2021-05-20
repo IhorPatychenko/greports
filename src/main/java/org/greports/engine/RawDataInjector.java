@@ -49,19 +49,9 @@ class RawDataInjector extends DataInjector {
 
     @Override
     public void inject() {
-        Sheet sheet = getSheet(currentWorkbook, data);
+        Sheet sheet = WorkbookUtils.getOrCreateSheet(currentWorkbook, data.getSheetName());
         stylesCache = new HashMap<>();
-        formatsCache = new HashMap<>();
         injectData(sheet);
-    }
-
-    private Sheet getSheet(Workbook workbook, ReportData reportData) {
-        if(reportData.getSheetName() == null) {
-            return workbook.createSheet();
-        } else {
-            final Sheet sheet = workbook.getSheet(reportData.getSheetName());
-            return sheet != null ? sheet : workbook.createSheet(reportData.getSheetName());
-        }
     }
 
     protected void injectData(Sheet sheet) {
@@ -90,7 +80,7 @@ class RawDataInjector extends DataInjector {
 
         if(data.isCreateHeader()) {
             final ReportHeader header = data.getHeader();
-            Row headerRow = super.getOrCreateRow(sheet, header.getRowIndex() + data.getConfiguration().getVerticalOffset());
+            Row headerRow = WorkbookUtils.getOrCreateRow(sheet, header.getRowIndex() + data.getConfiguration().getVerticalOffset());
             int mergeCount = 0;
             for (int i = 0; i < header.getCells().size(); i++) {
                 final HeaderCell headerCell = header.getCells().get(i);
@@ -134,7 +124,7 @@ class RawDataInjector extends DataInjector {
     private void createCells(Sheet sheet, Predicate<DataCell> predicate) {
         for (int i = 0; i < data.getDataRows().size(); i++) {
             final DataRow dataRow = data.getDataRow(i);
-            Row row = super.getOrCreateRow(sheet, data.getDataRealStartRow() + i);
+            Row row = WorkbookUtils.getOrCreateRow(sheet, data.getDataRealStartRow() + i);
             int mergedCellsCount = 0;
             for (int y = 0; y < dataRow.getCells().size(); y++) {
                 final DataCell dataCell = dataRow.getCell(y);
@@ -255,7 +245,7 @@ class RawDataInjector extends DataInjector {
                 checkRange(horizontalRange, reportData);
                 for (int i = verticalRange.getStart() + verticalOffset; i <= verticalRange.getEnd() + verticalOffset; i++) {
                     final Row row = sheet.getRow(i);
-                    if(row != null){
+                    if(row != null) {
                         for (int y = horizontalRange.getStart() + horizontalOffset; y <= horizontalRange.getEnd() + horizontalOffset; y++) {
                             cellApplyStyles(row.getCell(y), reportStyle);
                         }

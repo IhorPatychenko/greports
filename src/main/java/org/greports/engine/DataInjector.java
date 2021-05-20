@@ -108,9 +108,9 @@ public abstract class DataInjector {
                 if(ValueType.TEMPLATED_FORMULA.equals(valueType)) {
                     continue;
                 }
-                Row row = getOrCreateRow(sheet, specialRow.getRowIndex());
+                Row row = WorkbookUtils.getOrCreateRow(sheet, specialRow.getRowIndex());
                 final int columnIndexForTarget = reportData.getColumnIndexForId(specialCell.getTargetId()) + reportData.getConfiguration().getHorizontalOffset();
-                Cell cell = getOrCreateCell(row, columnIndexForTarget);
+                Cell cell = WorkbookUtils.getOrCreateCell(row, columnIndexForTarget);
                 createColumnsToMerge(sheet, row, columnIndexForTarget, specialCell.getColumnWidth());
 
                 if(!Arrays.asList(ValueType.FORMULA, ValueType.COLLECTED_FORMULA_VALUE, ValueType.TEMPLATED_FORMULA).contains(valueType)) {
@@ -131,16 +131,6 @@ public abstract class DataInjector {
         loggerService.trace("Special rows created. Time: " + specialRowsStopwatch.stop(), !specialRows.isEmpty());
     }
 
-    protected Row getOrCreateRow(Sheet sheet, Integer rowIndex) {
-        final Row row = sheet.getRow(rowIndex);
-        return row != null ? row : sheet.createRow(rowIndex);
-    }
-
-    protected Cell getOrCreateCell(Row row, Integer cellIndex) {
-        final Cell cell = row.getCell(cellIndex);
-        return cell != null ? cell : row.createCell(cellIndex);
-    }
-
     private void createCollectedFormulaValueCell(Sheet sheet, SpecialDataCell specialCell, Cell cell, String formulaString) {
         Map<String, List<Integer>> valuesById = (Map<String, List<Integer>>) specialCell.getValuesById();
         if(valuesById != null) {
@@ -150,7 +140,7 @@ public abstract class DataInjector {
                 List<String> cellReferences = new ArrayList<>();
                 for(final Integer rowIndex : rowIndexes) {
                     CellReference cellReference = this.getCellReferenceForTargetId(
-                            getOrCreateRow(sheet, reportData.getDataRealStartRow() + rowIndex),
+                            WorkbookUtils.getOrCreateRow(sheet, reportData.getDataRealStartRow() + rowIndex),
                             specialCell.getTargetId()
                     );
                     cellReferences.add(cellReference.formatAsString() + ":" + cellReference.formatAsString());
@@ -186,11 +176,11 @@ public abstract class DataInjector {
         if(sheet.getLastRowNum() >= reportData.getDataStartRow()) {
             for (Map.Entry<String, Integer> entry : reportData.getTargetIndexes().entrySet()) {
                 CellReference firstCellReference = this.getCellReferenceForTargetId(
-                        getOrCreateRow(sheet, reportData.getDataRealStartRow()),
+                        WorkbookUtils.getOrCreateRow(sheet, reportData.getDataRealStartRow()),
                         specialCell.getTargetId()
                 );
                 CellReference lastCellReference = this.getCellReferenceForTargetId(
-                        getOrCreateRow(sheet,reportData.getDataRealStartRow() + reportData.getRowsCount() - 1),
+                        WorkbookUtils.getOrCreateRow(sheet,reportData.getDataRealStartRow() + reportData.getRowsCount() - 1),
                         specialCell.getTargetId()
                 );
                 formulaString = formulaString.replaceAll(entry.getKey(), firstCellReference.formatAsString() + ":" + lastCellReference.formatAsString());
@@ -202,7 +192,7 @@ public abstract class DataInjector {
     protected void createColumnsToMerge(final Sheet sheet, final Row row, final int cellIndex, final int columnWidth) {
         if(columnWidth > 1) {
             for (int i = 1; i < columnWidth; i++) {
-                getOrCreateCell(row, cellIndex + i);
+                WorkbookUtils.getOrCreateCell(row, cellIndex + i);
             }
             sheet.addMergedRegion(new CellRangeAddress(row.getRowNum(), row.getRowNum(), cellIndex, cellIndex + columnWidth - 1));
         }

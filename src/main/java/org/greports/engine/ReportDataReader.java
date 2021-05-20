@@ -10,6 +10,7 @@ import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.greports.exceptions.ReportEngineRuntimeException;
+import org.greports.utils.WorkbookUtils;
 
 public class ReportDataReader {
 
@@ -23,19 +24,7 @@ public class ReportDataReader {
         if(sheetIndex < 0 || sheetIndex >= workbook.getNumberOfSheets()) {
             throw new ReportEngineRuntimeException("sheetIndex cannot be lower than zeo and greater than workbook number of sheets", this.getClass());
         }
-        return this.getLastRowNum(this.workbook.getSheetAt(sheetIndex));
-    }
-
-    public int getLastRowNum(String sheetName) {
-        final Sheet sheet = this.workbook.getSheet(sheetName);
-        if(sheet == null) {
-            throw new ReportEngineRuntimeException(String.format("The sheet with name %s does not exist", sheetName), this.getClass());
-        }
-        return this.getLastRowNum(sheet);
-    }
-
-    public int getLastRowNum(Sheet sheet) {
-        return sheet.getLastRowNum();
+        return WorkbookUtils.getLastRowNum(this.workbook.getSheetAt(sheetIndex));
     }
 
     public Object getCellValue(int sheetIndex, Integer rowNumber, int cellNumber) {
@@ -86,11 +75,11 @@ public class ReportDataReader {
 
     public <T> T getCellValue(XSSFSheet sheet, Integer rowNumber, int cellNumber, Row.MissingCellPolicy missingCellPolicy, Class<T> bindToClass) {
         if(rowNumber == null) {
-            rowNumber = getLastRowNum(sheet);
+            rowNumber = WorkbookUtils.getLastRowNum(sheet);
         }
 
         if(rowNumber < 0) {
-            rowNumber = getLastRowNum(sheet) + rowNumber;
+            rowNumber = WorkbookUtils.getLastRowNum(sheet) + rowNumber;
         }
 
         if(cellNumber < 0) {
