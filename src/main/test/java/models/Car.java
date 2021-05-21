@@ -49,13 +49,14 @@ public class Car implements CollectedValues<Object, Object>, DefaultStyles {
 
     private Car() {}
 
-    public Car(String brand, String model, int year, short wheels, Date soldTime, float price) {
+    public Car(String brand, String model, int year, short wheels, Date soldTime, float price, Person owner) {
         this.brand = brand;
         this.model = model;
         this.year = year;
         this.wheels = wheels;
         this.soldTime = soldTime;
         this.price = price;
+        this.owner = owner;
     }
 
     public String getBrand() {

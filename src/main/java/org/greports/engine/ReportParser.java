@@ -36,14 +36,14 @@ public abstract class ReportParser {
         }
     }
 
-    protected <T> Object checkNestedValue(T dto, Method method, boolean isNested, String target) throws ReportEngineReflectionException {
+    protected <T> Object checkNestedValue(T dto, Method method, boolean nested, String target) throws ReportEngineReflectionException {
         Object invokedValue = dto != null ? ReflectionUtils.invokeMethod(method, dto) : null;
-        if(isNested) {
+        if(nested) {
             final String[] split = target.split(NESTED_VALUE_DELIMITER_REGEX);
             short nestedCount = 0;
             while(nestedCount < split.length) {
                 if(invokedValue == null) {
-                    throw new ReportEngineRuntimeException(String.format("Nested field %s cannot be null", split[nestedCount]), ReportDataParser.class);
+                    return null;
                 }
                 method = ReflectionUtils.fetchFieldGetter(split[nestedCount], invokedValue.getClass());
                 invokedValue = ReflectionUtils.invokeMethod(method, invokedValue);

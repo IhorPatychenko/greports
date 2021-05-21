@@ -12,7 +12,7 @@ import org.junit.jupiter.api.BeforeAll;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
@@ -47,24 +47,12 @@ public class AbstractTest {
     @BeforeAll
     public static void createCars() {
 
-        List<Car> cars = new ArrayList<>();
-
-        final Car mercedes = new Car("Mercedes-Benz", "S600", 2019, (short) 4, currentDate, 79900.0f);
-        mercedes.setOwner(new Person("Grace", "MacDonald"));
-
-        final Car bmw = new Car("BMW", "320di", 2020, (short) 4, currentDate, 55900.0f);
-        bmw.setOwner(new Person("Caroline", "Clarkson"));
-
-        final Car audi = new Car("Audi", "A1 Sportline", 2020, (short) 4, currentDate, 20560.0f);
-        audi.setOwner(new Person("Julia", "Poole"));
-
-        final Car lamborghini = new Car("Lamborghini", "Aventador", 2020, (short) 4, currentDate, 315000.0f);
-        lamborghini.setOwner(new Person("Sonia", "Peake"));
-
-        cars.add(mercedes);
-        cars.add(bmw);
-        cars.add(audi);
-        cars.add(lamborghini);
+        List<Car> cars = Arrays.asList(
+                new Car("Mercedes-Benz", "S600", 2019, (short) 4, currentDate, 79900.0f, new Person("Grace", "MacDonald")),
+                new Car("BMW", "320di", 2020, (short) 4, currentDate, 55900.0f, new Person("Caroline", "Clarkson")),
+                new Car("Audi", "A1 Sportline", 2020, (short) 4, currentDate, 20560.0f, new Person("Julia", "Poole")),
+                new Car("Lamborghini", "Aventador", 2020, (short) 4, currentDate, 315000.0f, new Person("Sonia", "Peake"))
+        );
 
         reportGenerator = new ReportGenerator(true, Level.ALL);
         configurator = reportGenerator.getConfigurator(Car.class, Car.REPORT_NAME);

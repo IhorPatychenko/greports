@@ -177,11 +177,11 @@ public abstract class DataInjector {
             for (Map.Entry<String, Integer> entry : reportData.getTargetIndexes().entrySet()) {
                 CellReference firstCellReference = this.getCellReferenceForTargetId(
                         WorkbookUtils.getOrCreateRow(sheet, reportData.getDataRealStartRow()),
-                        specialCell.getTargetId()
+                        entry.getKey()
                 );
                 CellReference lastCellReference = this.getCellReferenceForTargetId(
                         WorkbookUtils.getOrCreateRow(sheet,reportData.getDataRealStartRow() + reportData.getRowsCount() - 1),
-                        specialCell.getTargetId()
+                        entry.getKey()
                 );
                 formulaString = formulaString.replaceAll(entry.getKey(), firstCellReference.formatAsString() + ":" + lastCellReference.formatAsString());
             }
