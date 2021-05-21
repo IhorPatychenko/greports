@@ -1,6 +1,11 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [3.4] - 2021-05-21
+
+### Added
+- ReportEditor javadoc
+
 ## [3.4] - 2021-05-20
 
 ### Added

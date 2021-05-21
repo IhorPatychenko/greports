@@ -22,10 +22,20 @@ public class ReportEditor {
 
     private final XSSFWorkbook workbook;
 
+    /**
+     * @param file input file
+     * @throws IOException input/output exception
+     * @throws InvalidFormatException this exception could be thrown when opening the workbook
+     */
     public ReportEditor(File file) throws IOException, InvalidFormatException {
         this((XSSFWorkbook) WorkbookFactory.create(file));
     }
 
+    /**
+     * @param stream file input stream
+     * @throws IOException input/output exception
+     * @throws InvalidFormatException this exception could be thrown when opening the workbook
+     */
     public ReportEditor(InputStream stream) throws IOException, InvalidFormatException {
         this((XSSFWorkbook) WorkbookFactory.create(stream));
     }
@@ -34,29 +44,66 @@ public class ReportEditor {
         this.workbook = workbook;
     }
 
+    /**
+     * @param sheetName a name of the sheet to change the cell's value
+     * @param rowIndex a row index
+     * @param columnIndex a column index (zero-based)
+     * @param value new cell value
+     * @return {@code ReportEditor}
+     */
     public ReportEditor setCellValue(String sheetName, Integer rowIndex, Integer columnIndex, Object value) {
         final Cell cell = this.getCell(sheetName, rowIndex, columnIndex);
         WorkbookUtils.setCellValue(cell, value);
         return this;
     }
 
+    /**
+     * @param sheetName a name of the sheet to change the cell's value
+     * @param rowIndex a row index
+     * @param columnIndex a column index (zero-based)
+     * @param value new cell value
+     * @param format new value format
+     * @return {@code ReportEditor}
+     */
     public ReportEditor setCellValue(String sheetName, Integer rowIndex, Integer columnIndex, Object value, String format) {
         this.setCellValue(sheetName, rowIndex, columnIndex, value);
         return this.setCellFormat(sheetName, rowIndex, columnIndex, format);
     }
 
+    /**
+     * @param sheetName a name of the sheet to change the cell's value
+     * @param rowIndex a row index
+     * @param columnIndex a column index (zero-based)
+     * @param format new value format
+     * @return {@code ReportEditor}
+     */
     public ReportEditor setCellFormat(String sheetName, Integer rowIndex, Integer columnIndex, String format) {
         final Cell cell = this.getCell(sheetName, rowIndex, columnIndex);
         this.addCellFormat(cell, format);
         return this;
     }
 
+    /**
+     * @param sheetName a name of the sheet to change the cell's style
+     * @param rowIndex a row index
+     * @param columnIndex a column index (zero-based)
+     * @param propertyName a name of style property to be changed
+     * @param propertyValue a new style property value
+     * @return {@code ReportEditor}
+     */
     public ReportEditor setCellStyleProperty(String sheetName, Integer rowIndex, Integer columnIndex, String propertyName, Object propertyValue) {
         final Cell cell = this.getCell(sheetName, rowIndex, columnIndex);
         CellUtil.setCellStyleProperty(cell, propertyName, propertyValue);
         return this;
     }
 
+    /**
+     * @param sheetName a name of the sheet to change the cell's style
+     * @param rowIndex a row index
+     * @param columnIndex a column index (zero-based)
+     * @param stylesBuilder styles builder
+     * @return {@code ReportEditor}
+     */
     public ReportEditor setCellStyleProperties(String sheetName, Integer rowIndex, Integer columnIndex, CellStylesBuilder stylesBuilder) {
         final Cell cell = this.getCell(sheetName, rowIndex, columnIndex);
         final Map<String, Object> stylesMap = stylesBuilder.build();
@@ -64,6 +111,12 @@ public class ReportEditor {
         return this;
     }
 
+    /**
+     *
+     * @param sheetName a sheet name
+     * @param columnIndex column index (zero-based)
+     * @return {@code ReportEditor}
+     */
     public ReportEditor autosizeColumn(String sheetName, Integer columnIndex) {
         final Sheet sheet = this.getSheet(sheetName);
         sheet.autoSizeColumn(columnIndex);
@@ -74,6 +127,15 @@ public class ReportEditor {
         return WorkbookUtils.getLastRowNum(this.workbook, sheetName);
     }
 
+    /**
+     * Writes a workbook content to the output stream received by parameter.
+     * If the workbook was opened via {@code File} constructor, then the output stream should be pointing to
+     * another file, if not {@code IOException} will be thrown, because the file is not closed.
+     * If the workbook was opened via {@code InputStream} constructor, then it is possible to write to the same file.
+     *
+     * @param outputStream output stream where to save the workbook's data
+     * @throws IOException input/output exception could be thrown when trying to write to the stream
+     */
     public void write(OutputStream outputStream) throws IOException {
         this.workbook.write(outputStream);
         outputStream.close();
