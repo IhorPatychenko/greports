@@ -10,7 +10,7 @@ public class VerticalRange extends Range<Integer, Integer> implements Serializab
     }
 
     @Override
-    public RectangleRange toRectangeRange() {
+    public RectangleRange toRectangleRange() {
         return new RectangleRange(this, new HorizontalRange(0, null));
     }
 }

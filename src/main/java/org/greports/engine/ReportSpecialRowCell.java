@@ -1,9 +1,15 @@
 package org.greports.engine;
 
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.Setter;
 import org.greports.annotations.SpecialRowCell;
 
 import java.io.Serializable;
 
+@AllArgsConstructor
+@Getter
+@Setter
 public class ReportSpecialRowCell implements Cloneable, Serializable {
     private static final long serialVersionUID = -4555194088608860976L;
 
@@ -14,7 +20,7 @@ public class ReportSpecialRowCell implements Cloneable, Serializable {
     private String comment;
     private short commentWidth;
     private short commentHeight;
-    private int columnWidth = 1;
+    private int columnWidth;
 
     ReportSpecialRowCell(SpecialRowCell specialRowCell) {
         this(specialRowCell.targetId(),
@@ -26,89 +32,6 @@ public class ReportSpecialRowCell implements Cloneable, Serializable {
             specialRowCell.commentHeight(),
             specialRowCell.columnWidth()
         );
-    }
-
-    public ReportSpecialRowCell(final String targetId, final ValueType valueType, final String value, final String format, final String comment, short commentWidth, short commentHeight, final int columnWidth) {
-        this.targetId = targetId;
-        this.valueType = valueType;
-        this.value = value;
-        this.format = format;
-        this.comment = comment;
-        this.commentWidth = commentWidth;
-        this.commentHeight = commentHeight;
-        this.columnWidth = columnWidth;
-    }
-
-    public String getTargetId() {
-        return targetId;
-    }
-
-    public ReportSpecialRowCell setTargetId(final String targetId) {
-        this.targetId = targetId;
-        return this;
-    }
-
-    public ValueType getValueType() {
-        return valueType;
-    }
-
-    public ReportSpecialRowCell setValueType(final ValueType valueType) {
-        this.valueType = valueType;
-        return this;
-    }
-
-    public String getValue() {
-        return value;
-    }
-
-    public ReportSpecialRowCell setValue(final String value) {
-        this.value = value;
-        return this;
-    }
-
-    public String getFormat() {
-        return format;
-    }
-
-    public ReportSpecialRowCell setFormat(final String format) {
-        this.format = format;
-        return this;
-    }
-
-    public String getComment() {
-        return comment;
-    }
-
-    public ReportSpecialRowCell setComment(String comment) {
-        this.comment = comment;
-        return this;
-    }
-
-    public short getCommentWidth() {
-        return commentWidth;
-    }
-
-    public ReportSpecialRowCell setCommentWidth(short commentWidth) {
-        this.commentWidth = commentWidth;
-        return this;
-    }
-
-    public short getCommentHeight() {
-        return commentHeight;
-    }
-
-    public ReportSpecialRowCell setCommentHeight(short commentHeight) {
-        this.commentHeight = commentHeight;
-        return this;
-    }
-
-    public int getColumnWidth() {
-        return columnWidth;
-    }
-
-    public ReportSpecialRowCell setColumnWidth(final int columnWidth) {
-        this.columnWidth = columnWidth;
-        return this;
     }
 
     @Override

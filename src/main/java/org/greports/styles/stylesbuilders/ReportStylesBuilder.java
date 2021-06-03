@@ -178,15 +178,15 @@ public class ReportStylesBuilder implements Serializable {
     }
 
     public ReportStylesBuilder newStyle(final HorizontalRange horizontalRange, final boolean clonePreviousStyle) {
-        return this.newStyle(horizontalRange.toRectangeRange(), clonePreviousStyle);
+        return this.newStyle(horizontalRange.toRectangleRange(), clonePreviousStyle);
     }
 
     public ReportStylesBuilder newStyle(final VerticalRange verticalRange, final boolean clonePreviousStyle) {
-        return this.newStyle(verticalRange.toRectangeRange(), clonePreviousStyle);
+        return this.newStyle(verticalRange.toRectangleRange(), clonePreviousStyle);
     }
 
     public ReportStylesBuilder newStyle(final Position position, final boolean clonePreviousStyle) {
-        return this.newStyle(position.toRectangeRange(), clonePreviousStyle);
+        return this.newStyle(position.toRectangleRange(), clonePreviousStyle);
     }
 
     public ReportStylesBuilder newStyle(final RectangleRange rectangleRange, final boolean clonePreviousStyle) {

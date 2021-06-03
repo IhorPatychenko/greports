@@ -28,7 +28,7 @@ public class Position extends Range<Integer, Integer> implements Serializable {
     }
 
     @Override
-    public RectangleRange toRectangeRange() {
+    public RectangleRange toRectangleRange() {
         return new RectangleRange(new VerticalRange(getRow(), getRow()), new HorizontalRange(getColumn(), getColumn()));
     }
 }

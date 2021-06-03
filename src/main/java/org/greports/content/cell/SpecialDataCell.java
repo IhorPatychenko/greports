@@ -1,7 +1,9 @@
 package org.greports.content.cell;
 
+import lombok.Getter;
 import org.greports.engine.ValueType;
 
+@Getter
 public class SpecialDataCell extends AbstractReportCell implements ReportCell {
     private final String targetId;
     private final int columnWidth;
@@ -17,30 +19,6 @@ public class SpecialDataCell extends AbstractReportCell implements ReportCell {
         this.commentWidth = commentWidth;
         this.commentHeight = commentHeight;
         this.columnWidth = columnWidth;
-    }
-
-    public String getTargetId() {
-        return targetId;
-    }
-
-    public int getColumnWidth() {
-        return columnWidth;
-    }
-
-    public Object getValuesById() {
-        return valuesById;
-    }
-
-    public String getComment() {
-        return comment;
-    }
-
-    public short getCommentWidth() {
-        return commentWidth;
-    }
-
-    public short getCommentHeight() {
-        return commentHeight;
     }
 
     public SpecialDataCell setValuesById(final Object valuesById) {

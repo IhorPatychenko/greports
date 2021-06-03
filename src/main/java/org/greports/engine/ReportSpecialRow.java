@@ -1,5 +1,6 @@
 package org.greports.engine;
 
+import lombok.Getter;
 import org.greports.annotations.SpecialRow;
 
 import java.io.Serializable;
@@ -8,6 +9,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Getter
 public class ReportSpecialRow implements Cloneable, Serializable {
     private static final long serialVersionUID = -110378709759679479L;
 
@@ -25,26 +27,14 @@ public class ReportSpecialRow implements Cloneable, Serializable {
         this.rowIndex = rowIndex;
     }
 
-    public int getRowIndex() {
-        return rowIndex;
-    }
-
     public ReportSpecialRow setRowIndex(final int rowIndex) {
         this.rowIndex = rowIndex;
         return this;
     }
 
-    public boolean isStickyRow() {
-        return stickyRow;
-    }
-
     public ReportSpecialRow setStickyRow(boolean stickyRow) {
         this.stickyRow = stickyRow;
         return this;
-    }
-
-    public List<ReportSpecialRowCell> getCells() {
-        return cells;
     }
 
     public ReportSpecialRow setCells(final List<ReportSpecialRowCell> cells) {

@@ -1,5 +1,10 @@
 package models;
 
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.greports.annotations.Column;
@@ -11,13 +16,17 @@ import org.greports.engine.ValueType;
 import org.greports.interfaces.collectedvalues.CollectedValues;
 import styles.DefaultStyles;
 
-import java.formats.Formats;
+import formats.Formats;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.BooleanSupplier;
 
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
+@AllArgsConstructor
+@Getter
+@Setter
 @Report(reportConfigurations = {
     @Configuration(reportName = Car.REPORT_NAME, sheetName = "Cars", specialRows = {
         @SpecialRow(rowIndex = Integer.MAX_VALUE, cells = {
@@ -46,81 +55,6 @@ public class Car implements CollectedValues<Object, Object>, DefaultStyles {
     @Column(reportName = REPORT_NAME, position = 7, title = "Owner", format = Formats.TEXT, autoSizeColumn = true, target = "fullName")
     @Column(reportName = REPORT_NAME, position = 8, title = "Owner address", format = Formats.TEXT, autoSizeColumn = true, target = "address.fullAddress")
     private Person owner;
-
-    private Car() {}
-
-    public Car(String brand, String model, int year, short wheels, Date soldTime, float price, Person owner) {
-        this.brand = brand;
-        this.model = model;
-        this.year = year;
-        this.wheels = wheels;
-        this.soldTime = soldTime;
-        this.price = price;
-        this.owner = owner;
-    }
-
-    public String getBrand() {
-        return brand;
-    }
-
-    public Car setBrand(String brand) {
-        this.brand = brand;
-        return this;
-    }
-
-    public String getModel() {
-        return model;
-    }
-
-    public Car setModel(String model) {
-        this.model = model;
-        return this;
-    }
-
-    public int getYear() {
-        return year;
-    }
-
-    public Car setYear(int year) {
-        this.year = year;
-        return this;
-    }
-
-    public short getWheels() {
-        return wheels;
-    }
-
-    public Car setWheels(short wheels) {
-        this.wheels = wheels;
-        return this;
-    }
-
-    public Date getSoldTime() {
-        return soldTime;
-    }
-
-    public Car setSoldTime(Date soldTime) {
-        this.soldTime = soldTime;
-        return this;
-    }
-
-    public float getPrice() {
-        return price;
-    }
-
-    public Car setPrice(float price) {
-        this.price = price;
-        return this;
-    }
-
-    public Person getOwner() {
-        return owner;
-    }
-
-    public Car setOwner(Person owner) {
-        this.owner = owner;
-        return this;
-    }
 
     @Override
     public Map<Pair<String, String>, BooleanSupplier> isCollectedValue() {

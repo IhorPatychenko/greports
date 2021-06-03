@@ -1,10 +1,12 @@
 package org.greports.content.cell;
 
+import lombok.Getter;
 import org.greports.engine.ValueType;
 
 /**
  * This class represents a cell which contains an input data.
  */
+@Getter
 public class DataCell extends AbstractReportCell implements PositionedCell {
 
     private final Float position;
@@ -39,29 +41,6 @@ public class DataCell extends AbstractReportCell implements PositionedCell {
         this.position = position;
         this.physicalPosition = physicalPosition;
         this.columnWidth = columnWidth;
-    }
-
-    @Override
-    public Float getPosition() {
-        return position;
-    }
-
-    /**
-     * Returns {@code true} if column's position is not relative.
-     *
-     * @return {@code boolean}
-     */
-    public boolean isPhysicalPosition() {
-        return physicalPosition;
-    }
-
-    /**
-     * Returns column width.
-     *
-     * @return {@code int}
-     */
-    public int getColumnWidth() {
-        return columnWidth;
     }
 
     /**

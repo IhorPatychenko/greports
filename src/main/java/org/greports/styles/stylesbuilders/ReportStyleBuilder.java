@@ -64,15 +64,15 @@ public class ReportStyleBuilder<E extends Range<?, ?>> implements Serializable {
     }
 
     public ReportStyleBuilder(HorizontalRange range, boolean clonePreviousStyle) {
-        this(range.toRectangeRange(), clonePreviousStyle);
+        this(range.toRectangleRange(), clonePreviousStyle);
     }
 
     public ReportStyleBuilder(VerticalRange range, boolean clonePreviousStyle) {
-        this(range.toRectangeRange(), clonePreviousStyle);
+        this(range.toRectangleRange(), clonePreviousStyle);
     }
 
     public ReportStyleBuilder(Position range, boolean clonePreviousStyle) {
-        this(range.toRectangeRange(), clonePreviousStyle);
+        this(range.toRectangleRange(), clonePreviousStyle);
     }
 
     public ReportStyleBuilder(RectangleRange range, ReportStyleBuilder<?> styleBuilder) {
@@ -108,15 +108,15 @@ public class ReportStyleBuilder<E extends Range<?, ?>> implements Serializable {
     }
 
     public ReportStyleBuilder(HorizontalRange range, ReportStyleBuilder<?> styleBuilder) {
-        this(range.toRectangeRange(), styleBuilder);
+        this(range.toRectangleRange(), styleBuilder);
     }
 
     public ReportStyleBuilder(VerticalRange range, ReportStyleBuilder<?> styleBuilder) {
-        this(range.toRectangeRange(), styleBuilder);
+        this(range.toRectangleRange(), styleBuilder);
     }
 
     public ReportStyleBuilder(Position position, ReportStyleBuilder<?> styleBuilder) {
-        this(position.toRectangeRange(), styleBuilder);
+        this(position.toRectangleRange(), styleBuilder);
     }
 
     public void setRange(RectangleRange range) {
@@ -281,37 +281,40 @@ public class ReportStyleBuilder<E extends Range<?, ?>> implements Serializable {
     }
 
     protected ReportStyle buildStyle() {
-        ReportStyle reportStyle = new ReportStyle(this.range)
-                .setClonePreviousStyle(clonePreviousStyle)
-                .setFontName(fontName)
-                .setForegroundColor(foregroundColor)
-                .setFontColor(fontColor)
-                .setFontSize(fontSize)
-                .setFillPattern(fillPattern)
-                .setBoldFont(boldFont)
-                .setItalicFont(italicFont)
-                .setUnderlineFont(underlineFont)
-                .setStrikeoutFont(strikeoutFont)
-                .setHorizontalAlignment(horizontalAlignment)
-                .setVerticalAlignment(verticalAlignment)
-                .setBorderTop(borderTop)
-                .setBorderBottom(borderBottom)
-                .setBorderLeft(borderLeft)
-                .setBorderRight(borderRight)
-                .setHidden(hidden)
-                .setIndentation(indentation)
-                .setLocked(locked)
-                .setQuotePrefixed(quotePrefixed)
-                .setRotation(rotation)
-                .setShrinkToFit(shrinkToFit)
-                .setRowHeight(rowHeight)
-                .setWrapText(wrapText)
-                .setColumnWidth(columnWidth)
-                .setLeftBorderColor(leftBorderColor)
-                .setRightBorderColor(rightBorderColor)
-                .setTopBorderColor(topBorderColor)
-                .setBottomBorderColor(bottomBorderColor)
-                .setBorderColor(borderColor);
+
+        ReportStyle reportStyle = ReportStyle.builder()
+                .range(range)
+                .clonePreviousStyle(clonePreviousStyle)
+                .fontName(fontName)
+                .foregroundColor(foregroundColor)
+                .fontColor(fontColor)
+                .fontSize(fontSize)
+                .fillPattern(fillPattern)
+                .boldFont(boldFont)
+                .italicFont(italicFont)
+                .underlineFont(underlineFont)
+                .strikeoutFont(strikeoutFont)
+                .horizontalAlignment(horizontalAlignment)
+                .verticalAlignment(verticalAlignment)
+                .borderTop(borderTop)
+                .borderBottom(borderBottom)
+                .borderLeft(borderLeft)
+                .borderRight(borderRight)
+                .hidden(hidden)
+                .indentation(indentation)
+                .locked(locked)
+                .quotePrefixed(quotePrefixed)
+                .rotation(rotation)
+                .shrinkToFit(shrinkToFit)
+                .rowHeight(rowHeight)
+                .wrapText(wrapText)
+                .columnWidth(columnWidth)
+                .leftBorderColor(leftBorderColor)
+                .rightBorderColor(rightBorderColor)
+                .topBorderColor(topBorderColor)
+                .bottomBorderColor(bottomBorderColor)
+                .borderColor(borderColor)
+                .build();
         return setCustomStyles(reportStyle);
     }
 

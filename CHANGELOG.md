@@ -1,6 +1,11 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [3.4.3] - 2021-06-03
+
+### Added
+- Lombok added
+
 ## [3.4.2] - 2021-05-21
 
 ### Changed

@@ -9,7 +9,7 @@ import java.util.stream.Collectors;
 public class SpecialDataRow implements ReportRow<SpecialDataCell>, Cloneable {
 
     private int rowIndex;
-    private boolean stickyRow;
+    private final boolean stickyRow;
     private List<SpecialDataCell> specialCells = new ArrayList<>();
 
     public SpecialDataRow(int rowIndex, boolean stickyRow){

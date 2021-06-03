@@ -1,5 +1,6 @@
 package org.greports.content.header;
 
+import lombok.Getter;
 import org.greports.content.cell.HeaderCell;
 import org.greports.content.row.ReportRow;
 import org.greports.engine.ReportConfiguration;
@@ -8,6 +9,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+@Getter
 public class ReportHeader implements ReportRow<HeaderCell>, Cloneable, Serializable {
 
     private static final long serialVersionUID = -927334852923873496L;
@@ -33,14 +35,6 @@ public class ReportHeader implements ReportRow<HeaderCell>, Cloneable, Serializa
     public ReportHeader addCells(List<HeaderCell> cells) {
         this.cells.addAll(cells);
         return this;
-    }
-
-    public boolean isColumnFilter() {
-        return columnFilter;
-    }
-
-    public boolean isStickyHeader() {
-        return stickyHeader;
     }
 
     @Override

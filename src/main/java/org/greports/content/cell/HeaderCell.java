@@ -1,9 +1,11 @@
 package org.greports.content.cell;
 
+import lombok.Getter;
 import org.greports.engine.ReportSpecialColumn;
 import org.greports.engine.ValueType;
 import org.greports.utils.CellFormats;
 
+@Getter
 public class HeaderCell extends AbstractReportCell implements PositionedCell {
     private final String id;
     private final boolean autoSizeColumn;
@@ -49,22 +51,5 @@ public class HeaderCell extends AbstractReportCell implements PositionedCell {
             specialColumn.isAutoSizeColumn(),
             specialColumn.getColumnWidth()
         );
-    }
-
-    public String getId() {
-        return id;
-    }
-
-    public boolean isAutoSizeColumn() {
-        return autoSizeColumn;
-    }
-
-    public int getColumnWidth() {
-        return columnWidth;
-    }
-
-    @Override
-    public Float getPosition() {
-        return this.position;
     }
 }

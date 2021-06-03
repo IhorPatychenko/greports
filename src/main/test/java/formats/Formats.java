@@ -1,4 +1,4 @@
-package java.formats;
+package formats;
 
 public class Formats {
     public static final String TEXT = "@";

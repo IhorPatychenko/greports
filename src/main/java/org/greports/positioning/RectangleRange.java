@@ -11,7 +11,7 @@ public class RectangleRange extends Range<VerticalRange, HorizontalRange> implem
     }
 
     @Override
-    public RectangleRange toRectangeRange() {
+    public RectangleRange toRectangleRange() {
         return this;
     }
 

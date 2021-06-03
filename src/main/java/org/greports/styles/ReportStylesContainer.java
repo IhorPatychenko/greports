@@ -1,11 +1,13 @@
 package org.greports.styles;
 
+import lombok.Getter;
 import org.greports.styles.interfaces.StripedRows.StripedRowsIndex;
 import org.greports.styles.stylesbuilders.ReportStylesBuilder;
 
 import java.awt.*;
 import java.io.Serializable;
 
+@Getter
 public class ReportStylesContainer implements Serializable {
     private static final long serialVersionUID = 3171712599995917074L;
 
@@ -13,16 +15,8 @@ public class ReportStylesContainer implements Serializable {
     private StripedRowsIndex stripedRowsIndex;
     private Color stripedRowsColor;
 
-    public ReportStylesBuilder getReportStylesBuilder() {
-        return reportStylesBuilder;
-    }
-
     public void setReportStylesBuilder(ReportStylesBuilder reportStylesBuilder) {
         this.reportStylesBuilder = reportStylesBuilder;
-    }
-
-    public StripedRowsIndex getStripedRowsIndex() {
-        return stripedRowsIndex;
     }
 
     public ReportStylesContainer setStripedRowsIndex(StripedRowsIndex stripedRowsIndex) {
