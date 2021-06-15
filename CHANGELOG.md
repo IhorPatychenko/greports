@@ -1,6 +1,14 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [4.0.0] - 2021-06-15
+
+### Added
+- Code clean up
+
+### Deleted
+- Templates support
+
 ## [3.4.3] - 2021-06-03
 
 ### Added

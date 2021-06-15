@@ -12,12 +12,11 @@ import java.util.Map;
 
 public class ReportGenerator {
 
-    private final Map<Pair<Class<?>, String>, ReportConfigurator> _configurators = new HashMap<>();
+    private final Map<Pair<Class<?>, String>, Configurator> _configurators = new HashMap<>();
 
     private final boolean loggerEnabled;
     private final Level level;
-    private final ReportGeneratorResult reportGeneratorResult;
-    private final List<CustomFunction> functions = new ArrayList<>();
+    private final GeneratorResult generatorResult;
 
     public ReportGenerator() {
         this(false, Level.ALL);
@@ -26,56 +25,51 @@ public class ReportGenerator {
     public ReportGenerator(boolean loggerEnabled, Level level) {
         this.loggerEnabled = loggerEnabled;
         this.level = level;
-        this.reportGeneratorResult = new ReportGeneratorResult(this.functions, false, loggerEnabled, level);
+        this.generatorResult = new GeneratorResult(false, loggerEnabled, level);
     }
 
     public <T> ReportGenerator parse(final List<T> list, final String reportName, Class<T> clazz) throws ReportEngineReflectionException {
-        ReportDataParser<T> reportDataParser = new ReportDataParser<>(this.loggerEnabled, this.level);
-        final ReportData reportData = reportDataParser.parse(list, reportName, clazz, getConfigurator(clazz, reportName)).getContainer().getReportData();
-        reportGeneratorResult.addData(reportData);
+        DataParser<T> dataParser = new DataParser<>(this.loggerEnabled, this.level);
+        final Data data = dataParser.parse(list, reportName, clazz, getConfigurator(clazz, reportName)).getContainer().getReportData();
+        generatorResult.addData(data);
         return this;
     }
 
     public <T> ReportGenerator parseSingleObject(final T object, final String reportName, Class<T> clazz) throws ReportEngineReflectionException {
-        ReportSingleDataParser<T> reportSingleDataParser = new ReportSingleDataParser<>(this.loggerEnabled, this.level);
-        final ReportData data = reportSingleDataParser.parse(object, reportName, clazz, getConfigurator(clazz, reportName)).getContainer().getReportData();
-        reportGeneratorResult.addData(data);
+        SingleDataParser<T> singleDataParser = new SingleDataParser<>(this.loggerEnabled, this.level);
+        final Data data = singleDataParser.parse(object, reportName, clazz, getConfigurator(clazz, reportName)).getContainer().getReportData();
+        generatorResult.addData(data);
         return this;
     }
 
-    public ReportGenerator parseReport(final ReportData reportData) {
-        if(reportData == null) {
+    public ReportGenerator parseReport(final Data data) {
+        if(data == null) {
             throw new ReportEngineRuntimeException("reportData cannot be null", this.getClass());
         }
-        reportGeneratorResult.addData(reportData);
-        return this;
-    }
-
-    public ReportGenerator registerFunction(CustomFunction function) {
-        functions.add(function);
+        generatorResult.addData(data);
         return this;
     }
 
     public ReportGenerator setEvaluateFormulas(boolean evaluateFormulas) {
-        this.reportGeneratorResult.setEvaluateFormulas(evaluateFormulas);
+        this.generatorResult.setEvaluateFormulas(evaluateFormulas);
         return this;
     }
 
     public ReportGenerator setForceFormulaRecalculation(boolean formulaRecalculation) {
-        this.reportGeneratorResult.setForceFormulaRecalculation(formulaRecalculation);
+        this.generatorResult.setForceFormulaRecalculation(formulaRecalculation);
         return this;
     }
 
-    public ReportConfigurator getConfigurator(final Class<?> clazz, final String reportName){
+    public Configurator getConfigurator(final Class<?> clazz, final String reportName){
         final Pair<Class<?>, String> key = Pair.of(clazz, reportName);
         if(!_configurators.containsKey(key)){
-            _configurators.put(key, new ReportConfigurator(this));
+            _configurators.put(key, new Configurator(this));
         }
         return _configurators.get(key);
     }
 
-    public ReportGeneratorResult getResult(){
-        return this.reportGeneratorResult;
+    public GeneratorResult getResult(){
+        return this.generatorResult;
     }
 
 }

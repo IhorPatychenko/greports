@@ -6,19 +6,19 @@ class SpecialRowsTest extends AbstractTest {
 
     @Test
     void specialRowTotalKeyTest() {
-        final Object cellValue = reportDataReader.getCellValue("Cars", null, 0);
+        final Object cellValue = dataReader.getCellValue("Cars", null, 0);
         assertEquals("Total", cellValue);
     }
 
     @Test
     void specialRowTotalModelsTest() {
-        final Number cellValue = reportDataReader.getCellValue("Cars", null, 1, Number.class);
+        final Number cellValue = dataReader.getCellValue("Cars", null, 1, Number.class);
         assertEquals(4, cellValue.intValue());
     }
 
     @Test
     void specialRowTotalPriceTest() {
-        final Double cellValue = reportDataReader.getCellValue("Cars", null, 5, Double.class);
+        final Double cellValue = dataReader.getCellValue("Cars", null, 5, Double.class);
         assertEquals(471360.0, cellValue, 5);
     }
 }

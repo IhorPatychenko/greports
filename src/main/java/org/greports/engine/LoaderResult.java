@@ -7,18 +7,17 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public class ReportLoaderResult implements Serializable {
+public class LoaderResult implements Serializable {
 
     private static final long serialVersionUID = 9015684910370931236L;
 
     private final Map<Class<?>, List<?>> results = new HashMap<>();
-    private final Map<Class<?>, List<ReportLoaderError>> errors = new HashMap<>();
+    private final Map<Class<?>, List<LoaderError>> errors = new HashMap<>();
     private final Map<Class<?>, Set<Object>> rowsWithErrors = new HashMap<>();
 
     protected <T> void addResult(Class<T> clazz, List<T> list) {
@@ -26,14 +25,14 @@ public class ReportLoaderResult implements Serializable {
     }
 
     protected <T> void addError(Class<T> clazz, T rowWithError, Cell cell, String columnTitle, String errorMessage, final Serializable errorValue) {
-        addError(clazz, rowWithError, new ReportLoaderError(cell, columnTitle, errorMessage, errorValue));
+        addError(clazz, rowWithError, new LoaderError(cell, columnTitle, errorMessage, errorValue));
     }
 
     protected <T> void addError(Class<T> clazz, String sheetName, Integer rowIndex, Integer columnIndex, String columnTitle, String errorMessage, final Serializable errorValue) {
-        addError(clazz, null, new ReportLoaderError(sheetName, rowIndex, columnIndex, columnTitle, errorMessage, errorValue));
+        addError(clazz, null, new LoaderError(sheetName, rowIndex, columnIndex, columnTitle, errorMessage, errorValue));
     }
 
-    private <T> void addError(Class<T> clazz, T rowWithError, ReportLoaderError error) {
+    private <T> void addError(Class<T> clazz, T rowWithError, LoaderError error) {
         errorsCheckClass(clazz);
         errors.get(clazz).add(error);
         rowsWithErrorsCheckClass(clazz);
@@ -65,13 +64,13 @@ public class ReportLoaderResult implements Serializable {
         return rowsWithErrors.getOrDefault(clazz, new HashSet<>()).stream().map(e -> (T) e).collect(Collectors.toList());
     }
 
-    public <T> List<ReportLoaderError> getErrors(Class<T> clazz) {
+    public <T> List<LoaderError> getErrors(Class<T> clazz) {
         errorsCheckClass(clazz);
         return errors.get(clazz);
     }
 
-    public <T> List<ReportLoaderError> getErrors(Class<T> clazz, int limit) {
-        List<ReportLoaderError> list = new ArrayList<>();
+    public <T> List<LoaderError> getErrors(Class<T> clazz, int limit) {
+        List<LoaderError> list = new ArrayList<>();
         if (limit > 0) {
             list = getErrors(clazz).stream().limit(limit).collect(Collectors.toList());
         }
@@ -84,14 +83,14 @@ public class ReportLoaderResult implements Serializable {
         }
     }
 
-    public Map<Class<?>, List<ReportLoaderError>> getErrors() {
+    public Map<Class<?>, List<LoaderError>> getErrors() {
         return Collections.unmodifiableMap(errors);
     }
 
-    public Map<Class<?>, List<ReportLoaderError>> getErrors(int limit) {
-        Map<Class<?>, List<ReportLoaderError>> map = new HashMap<>();
+    public Map<Class<?>, List<LoaderError>> getErrors(int limit) {
+        Map<Class<?>, List<LoaderError>> map = new HashMap<>();
         if (limit > 1) {
-            for (final Map.Entry<Class<?>, List<ReportLoaderError>> entry : errors.entrySet()) {
+            for (final Map.Entry<Class<?>, List<LoaderError>> entry : errors.entrySet()) {
                 map.put(entry.getKey(), getErrors(entry.getKey(), limit));
             }
         }
@@ -99,7 +98,7 @@ public class ReportLoaderResult implements Serializable {
     }
 
     public boolean hasErrors() {
-        for (final Map.Entry<Class<?>, List<ReportLoaderError>> entry : errors.entrySet()) {
+        for (final Map.Entry<Class<?>, List<LoaderError>> entry : errors.entrySet()) {
             if (!entry.getValue().isEmpty()) {
                 return true;
             }

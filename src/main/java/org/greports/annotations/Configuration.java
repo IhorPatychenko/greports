@@ -52,14 +52,6 @@ public @interface Configuration {
     String locale() default "en_US";
 
     /**
-     * Template path to be used to generate the report.
-     * This template path needs to point the template inside the resource folder of the project.
-     *
-     * @return {@link String}
-     */
-    String templatePath() default StringUtils.EMPTY;
-
-    /**
      * Sheet's name. If value is empty, the org.greports.engine will generate the sheet's name automatically.
      *
      * @return {@link String}
@@ -101,14 +93,6 @@ public @interface Configuration {
      * @return {@code short}
      */
     short dataStartRowIndex() default 1;
-
-    /**
-     * Indicates if the configuration to be parsed need to be injected
-     * into existing sheet using {@link org.greports.engine.TemplateDataInjector}
-     *
-     * @return {@code boolean}
-     */
-    boolean templatedInject() default false;
 
     /**
      * Vertical offset. When greater then zero, indicated quantity of rows

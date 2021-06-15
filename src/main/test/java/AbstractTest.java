@@ -2,8 +2,8 @@ import models.Car;
 import models.Person;
 import org.apache.log4j.Level;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
-import org.greports.engine.ReportConfigurator;
-import org.greports.engine.ReportDataReader;
+import org.greports.engine.Configurator;
+import org.greports.engine.DataReader;
 import org.greports.engine.ReportGenerator;
 import org.greports.engine.ReportLoader;
 import org.greports.exceptions.ReportEngineReflectionException;
@@ -40,9 +40,9 @@ public class AbstractTest {
 
     protected static List<Car> loadedCars;
     protected static ReportLoader reportLoader;
-    protected static ReportDataReader reportDataReader;
+    protected static DataReader dataReader;
     protected static ReportGenerator reportGenerator;
-    protected static ReportConfigurator configurator;
+    protected static Configurator configurator;
 
     @BeforeAll
     public static void createCars() {
@@ -71,7 +71,7 @@ public class AbstractTest {
     protected static void loadCars() {
         try {
             reportLoader = new ReportLoader(FILE_PATH, Car.REPORT_NAME);
-            reportDataReader = reportLoader.getReader();
+            dataReader = reportLoader.getReader();
             loadedCars = reportLoader.bindForClass(Car.class).getLoaderResult().getResult(Car.class);
         } catch(InvalidFormatException | IOException | ReportEngineReflectionException e) {
             throw new ReportEngineRuntimeException("Error loading cars", e, ReportGeneratorAndLoaderTest.class);

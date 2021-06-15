@@ -7,15 +7,14 @@ import org.greports.annotations.CellGetter;
 import org.greports.annotations.Column;
 import org.greports.annotations.ColumnGetter;
 import org.greports.annotations.ColumnSetter;
-import org.greports.annotations.Configuration;
 import org.greports.annotations.Report;
 import org.greports.annotations.SpecialColumn;
 import org.greports.annotations.Subreport;
 import org.greports.annotations.SubreportGetter;
 import org.greports.annotations.SubreportSetter;
 import org.greports.content.cell.HeaderCell;
-import org.greports.engine.ReportBlock;
-import org.greports.engine.ReportConfiguration;
+import org.greports.engine.Configuration;
+import org.greports.engine.DataBlock;
 import org.greports.exceptions.ReportEngineReflectionException;
 import org.greports.exceptions.ReportEngineRuntimeException;
 
@@ -44,18 +43,18 @@ public class AnnotationUtils {
                 .orElseThrow(() -> new ReportEngineRuntimeException(String.format("%s class has no %s.Report annotation", clazz.toString(), Report.class.getPackage().getName()), clazz));
     }
 
-    public static Configuration getReportConfiguration(Class<?> clazz, String reportName) {
+    public static org.greports.annotations.Configuration getReportConfiguration(Class<?> clazz, String reportName) {
         final Report report = getReportAnnotation(clazz);
         return Arrays.stream(report.reportConfigurations())
             .filter(entry -> Arrays.asList(entry.reportName()).contains(reportName))
             .findFirst()
             .orElseThrow(() -> new ReportEngineRuntimeException(
-                String.format("%s has no %s annotation with name \"%s\"", Report.class.getName(), Configuration.class.getName(), reportName),
+                String.format("%s has no %s annotation with name \"%s\"", Report.class.getName(), org.greports.annotations.Configuration.class.getName(), reportName),
                 report.getClass()
             ));
     }
 
-    public static int getLastSpecialRowsCount(ReportConfiguration configuration) {
+    public static int getLastSpecialRowsCount(Configuration configuration) {
         return (int) configuration.getSpecialRows().stream().filter(entry -> entry.getRowIndex() == Integer.MAX_VALUE).count();
     }
 
@@ -145,13 +144,13 @@ public class AnnotationUtils {
         return list.stream().max(Comparator.comparing(Column::position)).orElse(null);
     }
 
-    public static Map<Annotation, Method> loadBlockAnnotations(final ReportBlock reportBlock) throws ReportEngineReflectionException {
+    public static Map<Annotation, Method> loadBlockAnnotations(final DataBlock dataBlock) throws ReportEngineReflectionException {
         Map<Annotation, Method> map = new HashMap<>();
-        Class<?> clazz = reportBlock.getBlockClass();
+        Class<?> clazz = dataBlock.getBlockClass();
         final List<Field> fields = getAllClassFields(clazz);
         for (final Field field : fields) {
             final Optional<Subreport> optionalSubreport = Arrays.stream(field.getAnnotationsByType(Subreport.class))
-                    .filter(subreport -> Arrays.asList(subreport.reportName()).contains(reportBlock.getReportName()))
+                    .filter(subreport -> Arrays.asList(subreport.reportName()).contains(dataBlock.getReportName()))
                     .findFirst();
             if(optionalSubreport.isPresent()){
                 final Subreport subreport = optionalSubreport.get();
@@ -159,7 +158,7 @@ public class AnnotationUtils {
             }
 
             final Optional<Column> optionalColumn = Arrays.stream(field.getAnnotationsByType(Column.class))
-                    .filter(column -> Arrays.asList(column.reportName()).contains(reportBlock.getReportName()))
+                    .filter(column -> Arrays.asList(column.reportName()).contains(dataBlock.getReportName()))
                     .findFirst();
             if(optionalColumn.isPresent()) {
                 final Column column = optionalColumn.get();
@@ -170,7 +169,7 @@ public class AnnotationUtils {
         final List<Method> methods = getAllClassMethods(clazz);
         for (final Method method : methods) {
             final Optional<SubreportSetter> optionalSubreport = Arrays.stream(method.getAnnotationsByType(SubreportSetter.class))
-                    .filter(subreport -> Arrays.asList(subreport.reportName()).contains(reportBlock.getReportName()))
+                    .filter(subreport -> Arrays.asList(subreport.reportName()).contains(dataBlock.getReportName()))
                     .findFirst();
             if(optionalSubreport.isPresent()){
                 final Subreport subreport = AnnotationsConverter.convert(optionalSubreport.get());
@@ -178,7 +177,7 @@ public class AnnotationUtils {
             }
 
             final Optional<ColumnSetter> optionalColumn = Arrays.stream(method.getAnnotationsByType(ColumnSetter.class))
-                    .filter(column -> Arrays.asList(column.reportName()).contains(reportBlock.getReportName()))
+                    .filter(column -> Arrays.asList(column.reportName()).contains(dataBlock.getReportName()))
                     .findFirst();
             if(optionalColumn.isPresent()) {
                 final Column column = AnnotationsConverter.convert(optionalColumn.get());
@@ -186,7 +185,7 @@ public class AnnotationUtils {
             }
         }
 
-        Configuration configuration = getReportConfiguration(clazz, reportBlock.getReportName());
+        org.greports.annotations.Configuration configuration = getReportConfiguration(clazz, dataBlock.getReportName());
         for (SpecialColumn specialColumn : configuration.specialColumns()) {
             map.put(specialColumn, null);
         }

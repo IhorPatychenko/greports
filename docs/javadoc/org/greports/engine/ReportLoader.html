@@ -176,7 +176,7 @@ java.lang.String&nbsp;reportName)</code></th>
 <tbody>
 <tr class="alt-color" id="i0">
 <td class="col-first"><code>protected &lt;T&gt;&nbsp;java.util.List&lt;T&gt;</code></td>
-<th class="col-second" scope="row"><code><span class="member-name-link"><a href="#bindBlocks(org.greports.engine.ReportBlock,java.lang.Class,org.greports.engine.ReportConfiguration,org.greports.engine.ReportLoader.ReportLoaderErrorTreatment,java.util.List,int,int)">bindBlocks</a></span>&#8203;(<a href="ReportBlock.html" title="class in org.greports.engine">ReportBlock</a>&nbsp;reportBlock,
+<th class="col-second" scope="row"><code><span class="member-name-link"><a href="#bindBlocks(org.greports.engine.ReportBlock,java.lang.Class,org.greports.engine.ReportConfiguration,org.greports.engine.ReportLoader.ReportLoaderErrorTreatment,java.util.List,int,int)">bindBlocks</a></span>&#8203;(<a href="ReportBlock.html" title="class in org.greports.engine">ReportBlock</a>&nbsp;dataBlock,
 java.lang.Class&lt;T&gt;&nbsp;clazz,
 <a href="ReportConfiguration.html" title="class in org.greports.engine">ReportConfiguration</a>&nbsp;configuration,
 <a href="ReportLoader.ReportLoaderErrorTreatment.html" title="enum in org.greports.engine">ReportLoader.ReportLoaderErrorTreatment</a>&nbsp;errorTreatment,
@@ -221,7 +221,7 @@ int&nbsp;toRow)</code></th>
 </tr>
 <tr class="row-color" id="i7">
 <td class="col-first"><code>void</code></td>
-<th class="col-second" scope="row"><code><span class="member-name-link"><a href="#loadBlocks(org.greports.engine.ReportBlock)">loadBlocks</a></span>&#8203;(<a href="ReportBlock.html" title="class in org.greports.engine">ReportBlock</a>&nbsp;reportBlock)</code></th>
+<th class="col-second" scope="row"><code><span class="member-name-link"><a href="#loadBlocks(org.greports.engine.ReportBlock)">loadBlocks</a></span>&#8203;(<a href="ReportBlock.html" title="class in org.greports.engine">ReportBlock</a>&nbsp;dataBlock)</code></th>
 <td class="col-last">&nbsp;</td>
 </tr>
 </tbody>
@@ -371,7 +371,7 @@ int&nbsp;toRow)</span>
 <li>
 <section class="detail" id="loadBlocks(org.greports.engine.ReportBlock)">
 <h3>loadBlocks</h3>
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="member-name">loadBlocks</span>&#8203;(<span class="parameters"><a href="ReportBlock.html" title="class in org.greports.engine">ReportBlock</a>&nbsp;reportBlock)</span>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="member-name">loadBlocks</span>&#8203;(<span class="parameters"><a href="ReportBlock.html" title="class in org.greports.engine">ReportBlock</a>&nbsp;dataBlock)</span>
                 throws <span class="exceptions"><a href="../exceptions/ReportEngineReflectionException.html" title="class in org.greports.exceptions">ReportEngineReflectionException</a></span></div>
 <dl class="notes">
 <dt>Throws:</dt>
@@ -382,7 +382,7 @@ int&nbsp;toRow)</span>
 <li>
 <section class="detail" id="bindBlocks(org.greports.engine.ReportBlock,java.lang.Class,org.greports.engine.ReportConfiguration,org.greports.engine.ReportLoader.ReportLoaderErrorTreatment,java.util.List,int,int)">
 <h3>bindBlocks</h3>
-<div class="member-signature"><span class="modifiers">protected</span>&nbsp;<span class="type-parameters">&lt;T&gt;</span>&nbsp;<span class="return-type">java.util.List&lt;T&gt;</span>&nbsp;<span class="member-name">bindBlocks</span>&#8203;(<span class="parameters"><a href="ReportBlock.html" title="class in org.greports.engine">ReportBlock</a>&nbsp;reportBlock,
+<div class="member-signature"><span class="modifiers">protected</span>&nbsp;<span class="type-parameters">&lt;T&gt;</span>&nbsp;<span class="return-type">java.util.List&lt;T&gt;</span>&nbsp;<span class="member-name">bindBlocks</span>&#8203;(<span class="parameters"><a href="ReportBlock.html" title="class in org.greports.engine">ReportBlock</a>&nbsp;dataBlock,
 java.lang.Class&lt;T&gt;&nbsp;clazz,
 <a href="ReportConfiguration.html" title="class in org.greports.engine">ReportConfiguration</a>&nbsp;configuration,
 <a href="ReportLoader.ReportLoaderErrorTreatment.html" title="enum in org.greports.engine">ReportLoader.ReportLoaderErrorTreatment</a>&nbsp;errorTreatment,

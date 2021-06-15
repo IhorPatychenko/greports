@@ -40,9 +40,9 @@ public class ReportLoader {
 
     private final String reportName;
     private final XSSFWorkbook currentWorkbook;
-    private final ReportLoaderResult loaderResult;
-    private ReportLoaderValidator validator;
-    private final ReportDataReader reader;
+    private final LoaderResult loaderResult;
+    private LoaderValidator validator;
+    private final DataReader reader;
     private Translator tranlator;
 
     public ReportLoader(String filePath) throws IOException, InvalidFormatException {
@@ -72,8 +72,8 @@ public class ReportLoader {
     private ReportLoader(XSSFWorkbook workbook, String reportName) {
         this.reportName = reportName;
         this.currentWorkbook = workbook;
-        this.loaderResult = new ReportLoaderResult();
-        this.reader = new ReportDataReader(this.currentWorkbook);
+        this.loaderResult = new LoaderResult();
+        this.reader = new DataReader(this.currentWorkbook);
     }
 
     public <T> ReportLoader bindForClass(Class<T> clazz) throws ReportEngineReflectionException {
@@ -96,41 +96,41 @@ public class ReportLoader {
         if(reportName == null) {
             throw new ReportEngineRuntimeException("reportName cannot be null", this.getClass());
         }
-        ReportConfiguration configuration = ReportConfigurationLoader.load(clazz, reportName);
+        Configuration configuration = Configuration.load(clazz, reportName);
         this.tranlator = new Translator(configuration);
-        this.validator = new ReportLoaderValidator(configuration);
-        final ReportBlock reportBlock = new ReportBlock(clazz, reportName, null);
-        loadBlocks(reportBlock);
-        reportBlock
+        this.validator = new LoaderValidator(configuration);
+        final DataBlock dataBlock = new DataBlock(clazz, reportName, null);
+        loadBlocks(dataBlock);
+        dataBlock
                 .orderBlocks()
                 .setBlockIndexes(0);
-        final List<T> list = bindBlocks(reportBlock, clazz, configuration, errorTreatment, new ArrayList<>(), fromRow, toRow);
+        final List<T> list = bindBlocks(dataBlock, clazz, configuration, errorTreatment, new ArrayList<>(), fromRow, toRow);
         this.loaderResult.addResult(clazz, list);
         return this;
     }
 
-    public void loadBlocks(ReportBlock reportBlock) throws ReportEngineReflectionException {
-        final Map<Annotation, Method> annotationMethodMap = AnnotationUtils.loadBlockAnnotations(reportBlock);
+    public void loadBlocks(DataBlock dataBlock) throws ReportEngineReflectionException {
+        final Map<Annotation, Method> annotationMethodMap = AnnotationUtils.loadBlockAnnotations(dataBlock);
         for (final Map.Entry<Annotation, Method> entry : annotationMethodMap.entrySet()) {
             final Annotation annotation = entry.getKey();
             final Method method = entry.getValue();
             final Class<?> blockClass = Optional.ofNullable(method).map(m -> m.getParameterTypes()[0]).orElse(null);
-            final ReportBlock block = new ReportBlock(
+            final DataBlock block = new DataBlock(
                 blockClass,
-                reportBlock.getReportName(),
-                reportBlock,
+                dataBlock.getReportName(),
+                dataBlock,
                 annotation,
                 method,
                 ReflectionUtils.isListOrArray(blockClass)
             );
-            reportBlock.addBlock(block);
+            dataBlock.addBlock(block);
             if (block.isSubreport()) {
                 loadBlocks(block);
             }
         }
     }
 
-    protected <T> List<T> bindBlocks(ReportBlock reportBlock, Class<T> clazz, ReportConfiguration configuration, ReportLoaderErrorTreatment errorTreatment, List<Integer> skipRows, int fromRow, int toRow) throws ReportEngineReflectionException {
+    protected <T> List<T> bindBlocks(DataBlock dataBlock, Class<T> clazz, Configuration configuration, ReportLoaderErrorTreatment errorTreatment, List<Integer> skipRows, int fromRow, int toRow) throws ReportEngineReflectionException {
         List<T> instancesList = new ArrayList<>();
         final Sheet sheet = currentWorkbook.getSheet(configuration.getSheetName());
         boolean errorThrown = false;
@@ -155,7 +155,7 @@ public class ReportLoader {
                 if (!skipRows.contains(dataRowNum)) {
                     final T instance = ReflectionUtils.newInstance(clazz);
                     final Row row = sheet.getRow(dataRowNum);
-                    for (final ReportBlock block : reportBlock.getBlocks()) {
+                    for (final DataBlock block : dataBlock.getBlocks()) {
                         if (block.isColumn()) {
                             method = block.getParentMethod();
                             final Cell cell = row.getCell(block.getStartColumn(), Row.MissingCellPolicy.CREATE_NULL_AS_BLANK);
@@ -172,7 +172,7 @@ public class ReportLoader {
                 }
             }
 
-            bindSubBlocks(reportBlock, clazz, configuration, errorTreatment, skipRows, fromRow, toRow, instancesList, sheet);
+            bindSubBlocks(dataBlock, clazz, configuration, errorTreatment, skipRows, fromRow, toRow, instancesList, sheet);
 
         } catch (IllegalAccessException | InvocationTargetException e) {
             throw new ReportEngineReflectionException("Error executing method witch does not have access to the definition of the specified class", e, clazz);
@@ -180,9 +180,9 @@ public class ReportLoader {
         return instancesList;
     }
 
-    private <T> void bindSubBlocks(ReportBlock reportBlock, Class<T> clazz, ReportConfiguration configuration, ReportLoaderErrorTreatment errorTreatment, List<Integer> skipRows, int fromRow, int toRow, List<T> instancesList, Sheet sheet) throws ReportEngineReflectionException, IllegalAccessException, InvocationTargetException {
+    private <T> void bindSubBlocks(DataBlock dataBlock, Class<T> clazz, Configuration configuration, ReportLoaderErrorTreatment errorTreatment, List<Integer> skipRows, int fromRow, int toRow, List<T> instancesList, Sheet sheet) throws ReportEngineReflectionException, IllegalAccessException, InvocationTargetException {
         Method method;
-        for (final ReportBlock block : reportBlock.getBlocks()) {
+        for (final DataBlock block : dataBlock.getBlocks()) {
             if (block.isSubreport()) {
                 final List<?> objects = bindBlocks(block, block.getBlockClass(), configuration, errorTreatment, skipRows, fromRow, toRow);
                 method = block.getParentMethod();
@@ -199,7 +199,7 @@ public class ReportLoader {
         }
     }
 
-    private <T> boolean bindCellValueToClassAttr(Class<T> clazz, Method method, T instance, ReportBlock block, Cell cell, ReportLoaderErrorTreatment errorTreatment) throws ReportEngineReflectionException {
+    private <T> boolean bindCellValueToClassAttr(Class<T> clazz, Method method, T instance, DataBlock block, Cell cell, ReportLoaderErrorTreatment errorTreatment) throws ReportEngineReflectionException {
         Object value = null;
         try {
             value = getCellValue(method, cell);
@@ -249,11 +249,11 @@ public class ReportLoader {
         return null;
     }
 
-    public ReportDataReader getReader() {
+    public DataReader getReader() {
         return reader;
     }
 
-    public ReportLoaderResult getLoaderResult() {
+    public LoaderResult getLoaderResult() {
         return loaderResult;
     }
 

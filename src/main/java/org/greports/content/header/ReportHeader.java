@@ -3,7 +3,7 @@ package org.greports.content.header;
 import lombok.Getter;
 import org.greports.content.cell.HeaderCell;
 import org.greports.content.row.ReportRow;
-import org.greports.engine.ReportConfiguration;
+import org.greports.engine.Configuration;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -24,7 +24,7 @@ public class ReportHeader implements ReportRow<HeaderCell>, Cloneable, Serializa
         this.rowIndex = rowIndex;
     }
 
-    public ReportHeader(ReportConfiguration configuration) {
+    public ReportHeader(Configuration configuration) {
         this(configuration.isSortableHeader(), configuration.isStickyHeader(), configuration.getHeaderRowIndex());
     }
 

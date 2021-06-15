@@ -1,7 +1,7 @@
 package org.greports.content.cell;
 
 import lombok.Getter;
-import org.greports.engine.ReportSpecialColumn;
+import org.greports.engine.SpecialColumn;
 import org.greports.engine.ValueType;
 import org.greports.utils.CellFormats;
 
@@ -43,7 +43,7 @@ public class HeaderCell extends AbstractReportCell implements PositionedCell {
      * @param specialColumn special column
      * @param idPrefix id prefix
      */
-    public HeaderCell(ReportSpecialColumn specialColumn, String idPrefix) {
+    public HeaderCell(SpecialColumn specialColumn, String idPrefix) {
         this(
             specialColumn.getPosition(),
             idPrefix,

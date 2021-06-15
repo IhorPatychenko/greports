@@ -1,7 +1,6 @@
 package org.greports.engine;
 
 import org.greports.exceptions.ReportEngineReflectionException;
-import org.greports.exceptions.ReportEngineRuntimeException;
 import org.greports.styles.ReportStylesContainer;
 import org.greports.styles.interfaces.StripedRows;
 import org.greports.styles.interfaces.StyledReport;
@@ -13,24 +12,24 @@ public abstract class ReportParser {
 
     private final String NESTED_VALUE_DELIMITER_REGEX = "\\.";
 
-    protected <T> void parseStyles(final ReportGenericDataContainer<T> container) throws ReportEngineReflectionException {
+    protected <T> void parseStyles(final DataContainer<T> container) throws ReportEngineReflectionException {
         final Class<T> clazz = container.getClazz();
-        final ReportData reportData = container.getReportData();
+        final Data data = container.getReportData();
         if(StyledReport.class.isAssignableFrom(clazz) || StripedRows.class.isAssignableFrom(clazz)) {
             final T newInstance = ReflectionUtils.newInstance(clazz);
-            final ReportStylesContainer reportStylesContainer = reportData.getStyles();
+            final ReportStylesContainer reportStylesContainer = data.getStyles();
             if(StyledReport.class.isAssignableFrom(clazz)){
                 final StyledReport instance = (StyledReport) newInstance;
-                if(instance.getReportStyles(reportData.getRowsCount()) != null){
-                    reportStylesContainer.setReportStylesBuilder(instance.getReportStyles(reportData.getRowsCount()).getOrDefault(reportData.getReportName(), null));
+                if(instance.getReportStyles(data.getRowsCount()) != null){
+                    reportStylesContainer.setReportStylesBuilder(instance.getReportStyles(data.getRowsCount()).getOrDefault(data.getReportName(), null));
                 }
             }
             if(StripedRows.class.isAssignableFrom(clazz)){
                 final StripedRows instance = (StripedRows) newInstance;
                 if(instance.getStripedRowsIndex() != null && instance.getStripedRowsColor() != null){
                     reportStylesContainer
-                            .setStripedRowsIndex(instance.getStripedRowsIndex().getOrDefault(reportData.getReportName(), null))
-                            .setStripedRowsColor(instance.getStripedRowsColor().getOrDefault(reportData.getReportName(), null));
+                            .setStripedRowsIndex(instance.getStripedRowsIndex().getOrDefault(data.getReportName(), null))
+                            .setStripedRowsColor(instance.getStripedRowsColor().getOrDefault(data.getReportName(), null));
                 }
             }
         }

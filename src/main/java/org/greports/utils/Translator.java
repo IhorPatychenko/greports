@@ -1,6 +1,6 @@
 package org.greports.utils;
 
-import org.greports.engine.ReportConfiguration;
+import org.greports.engine.Configuration;
 
 import java.text.MessageFormat;
 import java.util.Map;
@@ -12,7 +12,7 @@ public class Translator {
         this.translations = translationsParser.getTranslations();
     }
 
-    public Translator(ReportConfiguration config) {
+    public Translator(Configuration config) {
         this(new TranslationsParser(config.getLocale(), config.getTranslationsDir(), config.getTranslationFileExtension()));
     }
 
