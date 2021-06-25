@@ -5,20 +5,18 @@ import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.apache.poi.ss.util.CellUtil;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.greports.utils.WorkbookUtils;
 
-import java.awt.Color;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Map;
 
-public class ReportEditor {
+public class GreportsEditor {
 
     private final XSSFWorkbook workbook;
 
@@ -27,7 +25,7 @@ public class ReportEditor {
      * @throws IOException input/output exception
      * @throws InvalidFormatException this exception could be thrown when opening the workbook
      */
-    public ReportEditor(File file) throws IOException, InvalidFormatException {
+    public GreportsEditor(File file) throws IOException, InvalidFormatException {
         this((XSSFWorkbook) WorkbookFactory.create(file));
     }
 
@@ -36,11 +34,11 @@ public class ReportEditor {
      * @throws IOException input/output exception
      * @throws InvalidFormatException this exception could be thrown when opening the workbook
      */
-    public ReportEditor(InputStream stream) throws IOException, InvalidFormatException {
+    public GreportsEditor(InputStream stream) throws IOException, InvalidFormatException {
         this((XSSFWorkbook) WorkbookFactory.create(stream));
     }
 
-    private ReportEditor(XSSFWorkbook workbook) {
+    private GreportsEditor(XSSFWorkbook workbook) {
         this.workbook = workbook;
     }
 
@@ -51,7 +49,7 @@ public class ReportEditor {
      * @param value new cell value
      * @return {@code ReportEditor}
      */
-    public ReportEditor setCellValue(String sheetName, Integer rowIndex, Integer columnIndex, Object value) {
+    public GreportsEditor setCellValue(String sheetName, Integer rowIndex, Integer columnIndex, Object value) {
         final Cell cell = this.getCell(sheetName, rowIndex, columnIndex);
         WorkbookUtils.setCellValue(cell, value);
         return this;
@@ -65,7 +63,7 @@ public class ReportEditor {
      * @param format new value format
      * @return {@code ReportEditor}
      */
-    public ReportEditor setCellValue(String sheetName, Integer rowIndex, Integer columnIndex, Object value, String format) {
+    public GreportsEditor setCellValue(String sheetName, Integer rowIndex, Integer columnIndex, Object value, String format) {
         this.setCellValue(sheetName, rowIndex, columnIndex, value);
         return this.setCellFormat(sheetName, rowIndex, columnIndex, format);
     }
@@ -77,7 +75,7 @@ public class ReportEditor {
      * @param format new value format
      * @return {@code ReportEditor}
      */
-    public ReportEditor setCellFormat(String sheetName, Integer rowIndex, Integer columnIndex, String format) {
+    public GreportsEditor setCellFormat(String sheetName, Integer rowIndex, Integer columnIndex, String format) {
         final Cell cell = this.getCell(sheetName, rowIndex, columnIndex);
         this.addCellFormat(cell, format);
         return this;
@@ -91,7 +89,7 @@ public class ReportEditor {
      * @param propertyValue a new style property value
      * @return {@code ReportEditor}
      */
-    public ReportEditor setCellStyleProperty(String sheetName, Integer rowIndex, Integer columnIndex, String propertyName, Object propertyValue) {
+    public GreportsEditor setCellStyleProperty(String sheetName, Integer rowIndex, Integer columnIndex, String propertyName, Object propertyValue) {
         final Cell cell = this.getCell(sheetName, rowIndex, columnIndex);
         CellUtil.setCellStyleProperty(cell, propertyName, propertyValue);
         return this;
@@ -104,7 +102,7 @@ public class ReportEditor {
      * @param stylesBuilder styles builder
      * @return {@code ReportEditor}
      */
-    public ReportEditor setCellStyleProperties(String sheetName, Integer rowIndex, Integer columnIndex, CellStylesBuilder stylesBuilder) {
+    public GreportsEditor setCellStyleProperties(String sheetName, Integer rowIndex, Integer columnIndex, CellStylesBuilder stylesBuilder) {
         final Cell cell = this.getCell(sheetName, rowIndex, columnIndex);
         final Map<String, Object> stylesMap = stylesBuilder.build();
         CellUtil.setCellStyleProperties(cell, stylesMap);
@@ -117,7 +115,7 @@ public class ReportEditor {
      * @param columnIndex column index (zero-based)
      * @return {@code ReportEditor}
      */
-    public ReportEditor autosizeColumn(String sheetName, Integer columnIndex) {
+    public GreportsEditor autosizeColumn(String sheetName, Integer columnIndex) {
         final Sheet sheet = this.getSheet(sheetName);
         sheet.autoSizeColumn(columnIndex);
         return this;

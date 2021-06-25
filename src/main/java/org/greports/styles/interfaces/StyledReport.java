@@ -14,5 +14,5 @@ public interface StyledReport {
      *
      * @return {@link Map}
      */
-    Map<String, ReportStylesBuilder> getReportStyles(int rowsCount);
+    Map<String, ReportStylesBuilder> getReportStyles(Integer rowsCount);
 }

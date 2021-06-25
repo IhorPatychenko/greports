@@ -28,7 +28,7 @@ import java.util.function.BooleanSupplier;
 @Getter
 @Setter
 @Report(reportConfigurations = {
-    @Configuration(reportName = Car.REPORT_NAME, sheetName = "Cars", specialRows = {
+    @Configuration(reportName = Car.REPORT_NAME, sheetName = "Cars", styles = DefaultStyles.class, specialRows = {
         @SpecialRow(rowIndex = Integer.MAX_VALUE, cells = {
             @SpecialRowCell(targetId = "brand", value = "Total"),
             @SpecialRowCell(targetId = "model", valueType = ValueType.COLLECTED_VALUE, value = "model", columnWidth = 4),
@@ -36,7 +36,7 @@ import java.util.function.BooleanSupplier;
         })
     })
 })
-public class Car implements CollectedValues<Object, Object>, DefaultStyles {
+public class Car implements CollectedValues<Object, Object> {
 
     public static final String REPORT_NAME = "Car";
 

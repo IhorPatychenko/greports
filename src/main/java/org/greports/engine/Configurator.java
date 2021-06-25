@@ -13,7 +13,7 @@ import java.util.Map;
 public class Configurator implements Serializable {
 
     private static final long serialVersionUID = 396420494885876888L;
-    private final transient ReportGenerator reportGenerator;
+    private final transient GreportsGenerator greportsGenerator;
 
     private Map<Integer, String> overriddenTitles = new HashMap<>();
     private String sheetName;
@@ -22,12 +22,12 @@ public class Configurator implements Serializable {
     private List<Integer> removedColumns = new ArrayList<>();
     private List<Integer> autosizedColumns;
 
-    protected Configurator(final ReportGenerator reportGenerator) {
-        this.reportGenerator = reportGenerator;
+    protected Configurator(final GreportsGenerator greportsGenerator) {
+        this.greportsGenerator = greportsGenerator;
     }
 
-    protected ReportGenerator getReportGenerator() {
-        return reportGenerator;
+    protected GreportsGenerator getReportGenerator() {
+        return greportsGenerator;
     }
 
     public Map<Integer, String> getOverriddenTitles() {

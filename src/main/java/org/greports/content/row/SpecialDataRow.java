@@ -1,16 +1,22 @@
 package org.greports.content.row;
 
-import org.greports.content.cell.SpecialDataCell;
+import org.greports.content.cell.SpecialDataRowCell;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class SpecialDataRow implements ReportRow<SpecialDataCell>, Cloneable {
+public class SpecialDataRow implements ReportRow<SpecialDataRowCell>, Cloneable {
 
     private int rowIndex;
     private final boolean stickyRow;
-    private List<SpecialDataCell> specialCells = new ArrayList<>();
+    private List<SpecialDataRowCell> cells = new ArrayList<>();
+
+    public SpecialDataRow(org.greports.annotations.SpecialRow specialRow) {
+        this.rowIndex = specialRow.rowIndex();
+        this.stickyRow = specialRow.stickyRow();
+    }
 
     public SpecialDataRow(int rowIndex, boolean stickyRow){
         this.rowIndex = rowIndex;
@@ -21,8 +27,8 @@ public class SpecialDataRow implements ReportRow<SpecialDataCell>, Cloneable {
         this.rowIndex = rowIndex;
     }
 
-    public void addCell(SpecialDataCell cell) {
-        specialCells.add(cell);
+    public void addCell(SpecialDataRowCell cell) {
+        cells.add(cell);
     }
 
     public Integer getRowIndex() {
@@ -34,13 +40,13 @@ public class SpecialDataRow implements ReportRow<SpecialDataCell>, Cloneable {
     }
 
     @Override
-    public SpecialDataCell getCell(final int index) {
-        return specialCells.get(index);
+    public SpecialDataRowCell getCell(final int index) {
+        return cells.get(index);
     }
 
     @Override
-    public List<SpecialDataCell> getCells() {
-        return specialCells;
+    public List<SpecialDataRowCell> getCells() {
+        return cells;
     }
 
     @Override
@@ -48,7 +54,7 @@ public class SpecialDataRow implements ReportRow<SpecialDataCell>, Cloneable {
         SpecialDataRow clone = this;
         try {
             clone = (SpecialDataRow) super.clone();
-            clone.specialCells = specialCells.stream().map(cell -> (SpecialDataCell) cell.clone()).collect(Collectors.toList());
+            clone.cells = cells.stream().map(cell -> (SpecialDataRowCell) cell.clone()).collect(Collectors.toList());
         } catch (CloneNotSupportedException ignored) {}
         return clone;
     }

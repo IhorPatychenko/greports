@@ -1,19 +1,18 @@
 package org.greports.engine;
 
 import com.google.common.base.Stopwatch;
-import java.awt.Color;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
-import org.apache.log4j.Level;
+import org.apache.logging.log4j.Level;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellType;
 import org.apache.poi.ss.usermodel.ClientAnchor;
 import org.apache.poi.ss.usermodel.Comment;
 import org.apache.poi.ss.usermodel.CreationHelper;
 import org.apache.poi.ss.usermodel.Drawing;
-import org.apache.poi.ss.usermodel.FillPatternType;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.util.CellRangeAddress;
@@ -25,15 +24,14 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.apache.poi.xssf.usermodel.extensions.XSSFCellBorder;
 import org.greports.content.cell.DataCell;
 import org.greports.content.cell.HeaderCell;
-import org.greports.content.cell.SpecialDataCell;
+import org.greports.content.cell.SpecialDataRowCell;
 import org.greports.content.header.ReportHeader;
 import org.greports.content.row.DataRow;
 import org.greports.content.row.SpecialDataRow;
 import org.greports.positioning.HorizontalRange;
 import org.greports.positioning.VerticalRange;
 import org.greports.services.LoggerService;
-import org.greports.styles.ReportStyle;
-import org.greports.styles.interfaces.StripedRows;
+import org.greports.styles.Style;
 import org.greports.styles.stylesbuilders.ReportStylesBuilder;
 import org.greports.utils.Utils;
 import org.greports.utils.WorkbookUtils;
@@ -47,7 +45,7 @@ class DataInjector {
 
     public static final int WIDTH_MULTIPLIER = 256;
 
-    private Map<Pair<ReportStyle, String>, XSSFCellStyle> stylesCache = new HashMap<>();
+    private Map<Pair<Style, String>, XSSFCellStyle> stylesCache = new HashMap<>();
     protected final XSSFWorkbook currentWorkbook;
     protected final Data data;
     protected final CreationHelper creationHelper;
@@ -74,7 +72,6 @@ class DataInjector {
         createSpecialRows(sheet);
         createRowsGroups(sheet);
         createColumnsGroups(sheet);
-        addStripedRows(sheet);
         addStyles(sheet);
         adjustColumns(sheet);
     }
@@ -125,7 +122,7 @@ class DataInjector {
         final Stopwatch dataRowsStopwatch = Stopwatch.createStarted();
 
         // First create cells with data
-        final Predicate<DataCell> dataCellsPredicate = (DataCell dataCell) -> !dataCell.getValueType().equals(ValueType.FORMULA) && !dataCell.getValueType().equals(ValueType.TEMPLATED_FORMULA);
+        final Predicate<DataCell> dataCellsPredicate = (DataCell dataCell) -> !dataCell.getValueType().equals(ValueType.FORMULA);
         // After create cells with formulas to can evaluate them
         final Predicate<DataCell> formulaCellsPredicate = (DataCell dataCell) -> dataCell.getValueType().equals(ValueType.FORMULA);
         this.createCells(sheet, dataCellsPredicate);
@@ -167,7 +164,7 @@ class DataInjector {
     private void createCell(Sheet sheet, Row row, DataCell dataCell, int columnIndex) {
         CellType cellType = CellType.BLANK;
         final ValueType valueType = dataCell.getValueType();
-        if(!ValueType.FORMULA.equals(valueType) && !ValueType.TEMPLATED_FORMULA.equals(valueType)) {
+        if(!ValueType.FORMULA.equals(valueType)) {
             if(dataCell.getValue() instanceof Number) {
                 cellType = CellType.NUMERIC;
             } else if(dataCell.getValue() instanceof String) {
@@ -220,56 +217,34 @@ class DataInjector {
         loggerService.trace("Column's groups created. Time: " + columnsGroup.stop(), !groupedColumns.isEmpty());
     }
 
-    private void addStripedRows(Sheet sheet) {
-        final StripedRows.StripedRowsIndex stripedRowsIndex = data.getStyles().getStripedRowsIndex();
-        final Color stripedRowsColor = data.getStyles().getStripedRowsColor();
-        if(stripedRowsIndex != null && stripedRowsColor != null) {
-            loggerService.trace("Adding striped row styles...");
-            final Stopwatch stripedRowsStopwatch = Stopwatch.createStarted();
-
-            for (int i = stripedRowsIndex.getIndex() + data.getConfiguration().getVerticalOffset(); i <= sheet.getLastRowNum() + data.getConfiguration().getVerticalOffset(); i += 2) {
-                final Row row = sheet.getRow(i);
-                for (int y = row.getFirstCellNum(); y < row.getLastCellNum(); y++) {
-                    final Cell cell = row.getCell(y);
-                    final XSSFCellStyle cellStyle = currentWorkbook.createCellStyle();
-                    cellStyle.cloneStyleFrom(cell.getCellStyle());
-                    cellStyle.setFillForegroundColor(new XSSFColor(stripedRowsColor));
-                    cellStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
-                    cell.setCellStyle(cellStyle);
-                }
-            }
-            loggerService.trace("Striped row styles added. Time: " + stripedRowsStopwatch.stop());
-        }
-    }
-
     private void addStyles(Sheet sheet) {
         final ReportStylesBuilder reportStylesBuilder = data.getStyles().getReportStylesBuilder();
         if(reportStylesBuilder != null) {
             loggerService.trace("Adding styles...");
             final Stopwatch stylesStopwatch = Stopwatch.createStarted();
 
-            final List<ReportStyle> styles = reportStylesBuilder.getStyles();
+            final List<Style> styles = reportStylesBuilder.getStyles();
             final short verticalOffset = data.getConfiguration().getVerticalOffset();
             final short horizontalOffset = data.getConfiguration().getHorizontalOffset();
-            for (ReportStyle reportStyle : styles) {
-                final VerticalRange verticalRange = reportStyle.getRange().getVerticalRange();
+            for (Style style : styles) {
+                final VerticalRange verticalRange = style.getRange().getVerticalRange();
                 checkRange(verticalRange, sheet);
-                final HorizontalRange horizontalRange = reportStyle.getRange().getHorizontalRange();
+                final HorizontalRange horizontalRange = style.getRange().getHorizontalRange();
                 checkRange(horizontalRange, data);
                 for (int i = verticalRange.getStart() + verticalOffset; i <= verticalRange.getEnd() + verticalOffset; i++) {
                     final Row row = sheet.getRow(i);
                     if(row != null) {
                         for (int y = horizontalRange.getStart() + horizontalOffset; y <= horizontalRange.getEnd() + horizontalOffset; y++) {
-                            cellApplyStyles(row.getCell(y), reportStyle);
+                            cellApplyStyles(row.getCell(y), style);
                         }
-                        if (reportStyle.getRowHeight() != null) {
-                            row.setHeightInPoints(reportStyle.getRowHeight());
+                        if (style.getRowHeight() != null) {
+                            row.setHeightInPoints(style.getRowHeight());
                         }
                     }
                 }
-                if(reportStyle.getColumnWidth() != null) {
+                if(style.getColumnWidth() != null) {
                     for (int i = horizontalRange.getStart() + horizontalOffset; i <= horizontalRange.getEnd() + horizontalOffset; i++) {
-                        sheet.setColumnWidth(i, reportStyle.getColumnWidth() * WIDTH_MULTIPLIER);
+                        sheet.setColumnWidth(i, style.getColumnWidth() * WIDTH_MULTIPLIER);
                     }
                 }
             }
@@ -306,10 +281,10 @@ class DataInjector {
         }
     }
 
-    private void cellApplyStyles(Cell cell, ReportStyle style) {
+    private void cellApplyStyles(Cell cell, Style style) {
         if(cell != null) {
             XSSFCellStyle cellStyle;
-            final Pair<ReportStyle, String> styleKey = Pair.of(style, cell.getCellStyle().getDataFormatString());
+            final Pair<Style, String> styleKey = Pair.of(style, cell.getCellStyle().getDataFormatString());
             if(!stylesCache.containsKey(styleKey) || style.isClonePreviousStyle()) {
                 cellStyle = currentWorkbook.createCellStyle();
                 cellStyle.setDataFormat(cell.getCellStyle().getDataFormat());
@@ -340,7 +315,7 @@ class DataInjector {
         }
     }
 
-    private void cellApplyOtherStyles(ReportStyle style, XSSFCellStyle cellStyle) {
+    private void cellApplyOtherStyles(Style style, XSSFCellStyle cellStyle) {
         if(style.getHidden() != null) {
             cellStyle.setHidden(style.getHidden());
         }
@@ -370,7 +345,7 @@ class DataInjector {
         }
     }
 
-    private void cellApplyAlignmentStyles(ReportStyle style, XSSFCellStyle cellStyle) {
+    private void cellApplyAlignmentStyles(Style style, XSSFCellStyle cellStyle) {
         if(style.getHorizontalAlignment() != null) {
             cellStyle.setAlignment(style.getHorizontalAlignment());
         }
@@ -379,7 +354,7 @@ class DataInjector {
         }
     }
 
-    private void cellApplyFontStyles(ReportStyle style, XSSFCellStyle cellStyle) {
+    private void cellApplyFontStyles(Style style, XSSFCellStyle cellStyle) {
         if(Utils.anyNotNull(style.getFontName(), style.getFontSize(), style.getFontColor(), style.getBoldFont(), style.getItalicFont(), style.getUnderlineFont(), style.getStrikeoutFont())) {
             XSSFFont font = currentWorkbook.createFont();
             if(style.getFontName() != null) {
@@ -407,7 +382,7 @@ class DataInjector {
         }
     }
 
-    private void cellApplyColorStyles(ReportStyle style, XSSFCellStyle cellStyle) {
+    private void cellApplyColorStyles(Style style, XSSFCellStyle cellStyle) {
         if(style.getForegroundColor() != null) {
             cellStyle.setFillForegroundColor(new XSSFColor(style.getForegroundColor()));
             cellStyle.setFillPattern(style.getFillPattern());
@@ -437,7 +412,7 @@ class DataInjector {
         }
     }
 
-    private void cellApplyBorderStyles(ReportStyle style, XSSFCellStyle cellStyle) {
+    private void cellApplyBorderStyles(Style style, XSSFCellStyle cellStyle) {
         if(style.getBorderBottom() != null) {
             cellStyle.setBorderBottom(style.getBorderBottom());
         }
@@ -456,7 +431,7 @@ class DataInjector {
         return new CellReference(row.getCell(data.getColumnIndexForId(id), Row.MissingCellPolicy.CREATE_NULL_AS_BLANK));
     }
 
-    private void setCellComment(Sheet sheet, Cell cell, SpecialDataCell specialCell) {
+    private void setCellComment(Sheet sheet, Cell cell, SpecialDataRowCell specialCell) {
         if(!StringUtils.EMPTY.equals(specialCell.getComment())) {
             final Drawing<?> drawingPatriarch = sheet.createDrawingPatriarch();
             final ClientAnchor clientAnchor = creationHelper.createClientAnchor();
@@ -511,17 +486,14 @@ class DataInjector {
         final Stopwatch specialRowsStopwatch = Stopwatch.createStarted();
         for(SpecialDataRow specialRow : specialRows) {
             countBottomRows = specialRowSetRowIndex(countBottomRows, specialRow);
-            for(final SpecialDataCell specialCell : specialRow.getCells()) {
+            for(final SpecialDataRowCell specialCell : specialRow.getCells()) {
                 final ValueType valueType = specialCell.getValueType();
-                if(ValueType.TEMPLATED_FORMULA.equals(valueType)) {
-                    continue;
-                }
                 Row row = WorkbookUtils.getOrCreateRow(sheet, specialRow.getRowIndex());
                 final int columnIndexForTarget = data.getColumnIndexForId(specialCell.getTargetId()) + data.getConfiguration().getHorizontalOffset();
                 Cell cell = WorkbookUtils.getOrCreateCell(row, columnIndexForTarget);
                 createColumnsToMerge(sheet, row, columnIndexForTarget, specialCell.getColumnWidth());
 
-                if(!Arrays.asList(ValueType.FORMULA, ValueType.COLLECTED_FORMULA_VALUE, ValueType.TEMPLATED_FORMULA).contains(valueType)) {
+                if(!Arrays.asList(ValueType.FORMULA, ValueType.COLLECTED_FORMULA_VALUE).contains(valueType)) {
                     WorkbookUtils.setCellValue(cell, specialCell.getValue());
                 } else {
                     String formulaString = specialCell.getValue().toString();
@@ -539,7 +511,7 @@ class DataInjector {
         loggerService.trace("Special rows created. Time: " + specialRowsStopwatch.stop(), !specialRows.isEmpty());
     }
 
-    private void createCollectedFormulaValueCell(Sheet sheet, SpecialDataCell specialCell, Cell cell, String formulaString) {
+    private void createCollectedFormulaValueCell(Sheet sheet, SpecialDataRowCell specialCell, Cell cell, String formulaString) {
         Map<String, List<Integer>> valuesById = (Map<String, List<Integer>>) specialCell.getValuesById();
         if(valuesById != null) {
             for(final Map.Entry<String, List<Integer>> entry : valuesById.entrySet()) {

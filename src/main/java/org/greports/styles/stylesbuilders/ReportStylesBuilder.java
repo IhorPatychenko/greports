@@ -9,7 +9,7 @@ import org.greports.positioning.HorizontalRange;
 import org.greports.positioning.Position;
 import org.greports.positioning.RectangleRange;
 import org.greports.positioning.VerticalRange;
-import org.greports.styles.ReportStyle;
+import org.greports.styles.Style;
 
 import java.awt.*;
 import java.io.Serializable;
@@ -199,7 +199,7 @@ public class ReportStylesBuilder implements Serializable {
         return this.styleBuilders;
     }
 
-    public List<ReportStyle> getStyles(){
+    public List<Style> getStyles(){
         return this.styleBuilders.stream().map(ReportStyleBuilder::buildStyle).collect(Collectors.toList());
     }
 

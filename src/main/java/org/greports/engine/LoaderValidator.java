@@ -2,8 +2,8 @@ package org.greports.engine;
 
 import org.greports.annotations.CellValidator;
 import org.greports.annotations.ColumnValidator;
-import org.greports.exceptions.ReportEngineReflectionException;
-import org.greports.exceptions.ReportEngineValidationException;
+import org.greports.exceptions.GreportsReflectionException;
+import org.greports.exceptions.GreportsValidationException;
 import org.greports.utils.Translator;
 import org.greports.validators.AbstractCellValidator;
 import org.greports.validators.AbstractColumnValidator;
@@ -27,18 +27,18 @@ public class LoaderValidator {
                 AbstractValidator validatorInstance = ValidatorFactory.get(columnValidator.validatorClass(), columnValidator.param());
                 validateColumn((AbstractColumnValidator) validatorInstance, values, columnValidator.errorMessage());
             } catch (ReflectiveOperationException e) {
-                throw new ReportEngineValidationException("Error instantiating a validator @" + columnValidator.validatorClass().getSimpleName(), columnValidator.validatorClass());
+                throw new GreportsValidationException("Error instantiating a validator @" + columnValidator.validatorClass().getSimpleName(), columnValidator.validatorClass());
             }
         }
     }
 
-    protected void checkCellValidations(final Object value, final List<CellValidator> cellValidators) throws ReportEngineReflectionException {
+    protected void checkCellValidations(final Object value, final List<CellValidator> cellValidators) throws GreportsReflectionException {
         for (final CellValidator cellValidator : cellValidators) {
             try {
                 AbstractValidator validatorInstance = ValidatorFactory.get(cellValidator.validatorClass(), cellValidator.value());
                 validateCell((AbstractCellValidator) validatorInstance, value, cellValidator.errorMessage());
             } catch (ReflectiveOperationException e) {
-                throw new ReportEngineReflectionException("Error instantiating a validator @" + cellValidator.validatorClass().getSimpleName(), e, cellValidator.validatorClass());
+                throw new GreportsReflectionException("Error instantiating a validator @" + cellValidator.validatorClass().getSimpleName(), e, cellValidator.validatorClass());
             }
         }
     }
@@ -47,14 +47,14 @@ public class LoaderValidator {
         if (!validatorInstance.isValid(values)) {
             String errorMessage = translator.translate(errorMessageKey, validatorInstance.getParams());
             final Integer errorRowIndex = validatorInstance.getErrorRowIndex(values);
-            throw new ReportEngineValidationException(errorMessage, validatorInstance.getClass(), errorRowIndex, (Serializable) validatorInstance.getErrorValue());
+            throw new GreportsValidationException(errorMessage, validatorInstance.getClass(), errorRowIndex, (Serializable) validatorInstance.getErrorValue());
         }
     }
 
     private void validateCell(final AbstractCellValidator validatorInstance, final Object value, final String errorMessageKey) {
         if (!validatorInstance.isValid(value)) {
             String errorMessage = translator.translate(errorMessageKey, validatorInstance.getParams());
-            throw new ReportEngineValidationException(errorMessage, validatorInstance.getClass());
+            throw new GreportsValidationException(errorMessage, validatorInstance.getClass());
         }
     }
 }

@@ -1,6 +1,6 @@
 package org.greports.engine;
 
-import org.greports.exceptions.ReportEngineRuntimeException;
+import org.greports.exceptions.GreportsRuntimeException;
 
 public class ResultChanger {
 
@@ -14,14 +14,14 @@ public class ResultChanger {
 
     public ResultChanger cloneSheet(final String targetSheetName) {
         if(targetSheetName == null || data.getConfiguration().getSheetName().equals(targetSheetName)) {
-            throw new ReportEngineRuntimeException("Error cloning the sheet. The names of the origin and destination tabs cannot be null, nor can they have the same name", this.getClass());
+            throw new GreportsRuntimeException("Error cloning the sheet. The names of the origin and destination tabs cannot be null, nor can they have the same name", this.getClass());
         }
         try {
             final Data clone = (Data) data.clone();
             clone.setSheetName(targetSheetName);
             generatorResult.getReportData().add(clone);
         } catch (CloneNotSupportedException e) {
-            throw new ReportEngineRuntimeException("Clone not supported", this.getClass());
+            throw new GreportsRuntimeException("Clone not supported", this.getClass());
         }
         return generatorResult.getResultChanger(targetSheetName);
     }
@@ -48,7 +48,7 @@ public class ResultChanger {
 
     public ResultChanger changeSheetName(final String newSheetName) {
         if(newSheetName == null) {
-            throw new ReportEngineRuntimeException("Error changing sheet's name. New name cannot be null", this.getClass());
+            throw new GreportsRuntimeException("Error changing sheet's name. New name cannot be null", this.getClass());
         }
         generatorResult.updateResultChangerSheetName(data.getConfiguration().getSheetName(), newSheetName);
         data.setSheetName(newSheetName);

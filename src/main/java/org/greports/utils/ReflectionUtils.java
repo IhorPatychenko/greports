@@ -1,6 +1,6 @@
 package org.greports.utils;
 
-import org.greports.exceptions.ReportEngineReflectionException;
+import org.greports.exceptions.GreportsReflectionException;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -18,59 +18,59 @@ public class ReflectionUtils {
 
     private ReflectionUtils() {}
 
-    public static <T> T newInstance(Class<T> clazz) throws ReportEngineReflectionException {
+    public static <T> T newInstance(Class<T> clazz, Object... args) throws GreportsReflectionException {
         try {
             final Constructor<T> declaredConstructor = clazz.getDeclaredConstructor();
             declaredConstructor.setAccessible(true);
-            return declaredConstructor.newInstance();
+            return declaredConstructor.newInstance(args);
         } catch (ReflectiveOperationException e) {
-            throw new ReportEngineReflectionException(String.format(ErrorMessages.SHOULD_HAVE_EMPTY_CONSTRUCTOR, clazz), e, clazz);
+            throw new GreportsReflectionException(String.format(ErrorMessages.SHOULD_HAVE_EMPTY_CONSTRUCTOR, clazz), e, clazz);
         }
     }
 
-    public static <T> Method getMethodWithName(Class<T> clazz, String methodName, Class<?>... parameters) {
+    public static <T> Method getMethodWithName(String methodName, Class<T> clazz, Class<?>... parameters) {
         try {
             return clazz.getDeclaredMethod(methodName, parameters);
         } catch (NoSuchMethodException e) {
             if(clazz.getSuperclass() != null){
-                return getMethodWithName(clazz.getSuperclass(), methodName, parameters);
+                return getMethodWithName(methodName, clazz.getSuperclass(), parameters);
             }
             return null;
         }
     }
 
-    public static <T> Method fetchFieldGetter(String fieldName, Class<T> clazz) throws ReportEngineReflectionException {
+    public static <T> Method fetchFieldGetter(String fieldName, Class<T> clazz) throws GreportsReflectionException {
         List<String> getterPossibleNames = generateMethodNames(fieldName, gettersPrefixes);
         return catchFieldMethod(getterPossibleNames, clazz, fieldName);
     }
 
-    public static <T> Method fetchFieldGetter(Field field, Class<T> clazz) throws ReportEngineReflectionException {
+    public static <T> Method fetchFieldGetter(Field field, Class<T> clazz) throws GreportsReflectionException {
         List<String> getterPossibleNames = generateMethodNames(field, gettersPrefixes);
         return catchFieldMethod(getterPossibleNames, clazz, field.getName());
     }
 
-    private static <T> Method catchFieldMethod(List<String> getterPossibleNames, Class<T> clazz, String fieldName) throws ReportEngineReflectionException {
+    private static <T> Method catchFieldMethod(List<String> getterPossibleNames, Class<T> clazz, String fieldName) throws GreportsReflectionException {
         for (String getterPossibleName : getterPossibleNames) {
-            final Method method = getMethodWithName(clazz, getterPossibleName);
+            final Method method = getMethodWithName(getterPossibleName, clazz);
             if (method != null) {
                 return method;
             }
         }
-        throw new ReportEngineReflectionException(
+        throw new GreportsReflectionException(
                 String.format("No getter was found with any of these names \"%s\" for field %s in class %s", String.join(", ", getterPossibleNames), fieldName, clazz.getName()),
                 clazz
         );
     }
 
-    public static <T> Method fetchFieldSetter(Field field, Class<T> clazz) throws ReportEngineReflectionException {
+    public static <T> Method fetchFieldSetter(Field field, Class<T> clazz) throws GreportsReflectionException {
         List<String> setterPossibleNames = generateMethodNames(field, settersPrefixes);
         for (String setterPossibleName : setterPossibleNames) {
-            final Method method = getMethodWithName(clazz, setterPossibleName, field.getType());
+            final Method method = getMethodWithName(setterPossibleName, clazz, field.getType());
             if (method != null) {
                 return method;
             }
         }
-        throw new ReportEngineReflectionException(
+        throw new GreportsReflectionException(
             String.format("No setter was found with any of these names \"%s\" for field %s in class %s", String.join(", ", setterPossibleNames), field.getName(), clazz.getName()),
             clazz
         );
@@ -89,13 +89,13 @@ public class ReflectionUtils {
         return possibleNames;
     }
 
-    public static Object invokeMethod(Method method, Object object) throws ReportEngineReflectionException {
+    public static Object invokeMethod(Method method, Object object) throws GreportsReflectionException {
         try {
             return method.invoke(object);
         } catch (IllegalAccessException e) {
-            throw new ReportEngineReflectionException(ErrorMessages.INV_METHOD_WITH_NO_ACCESS, e, ReflectionUtils.class);
+            throw new GreportsReflectionException(ErrorMessages.INV_METHOD_WITH_NO_ACCESS, e, ReflectionUtils.class);
         } catch (InvocationTargetException e) {
-            throw new ReportEngineReflectionException(ErrorMessages.INV_METHOD, e, ReflectionUtils.class);
+            throw new GreportsReflectionException(ErrorMessages.INV_METHOD, e, ReflectionUtils.class);
         }
     }
 

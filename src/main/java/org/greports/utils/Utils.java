@@ -2,8 +2,8 @@ package org.greports.utils;
 
 import org.apache.commons.lang3.LocaleUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.Level;
-import org.greports.exceptions.ReportEngineRuntimeException;
+import org.apache.logging.log4j.Level;
+import org.greports.exceptions.GreportsRuntimeException;
 import org.greports.services.LoggerService;
 
 import java.util.Locale;
@@ -48,7 +48,7 @@ public class Utils {
     public static void validateNotNull(final Object object) {
         if(Objects.isNull(object)) {
             _logger.fatal("The object is null");
-            throw new ReportEngineRuntimeException("The object is null", Utils.class);
+            throw new GreportsRuntimeException("The object is null", Utils.class);
         }
     }
 }

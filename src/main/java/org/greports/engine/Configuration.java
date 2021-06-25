@@ -1,5 +1,8 @@
 package org.greports.engine;
 
+import org.greports.annotations.SpecialRow;
+import org.greports.content.row.SpecialDataRow;
+import org.greports.styles.interfaces.StyledReport;
 import org.greports.utils.AnnotationUtils;
 import org.greports.utils.TranslationsParser;
 
@@ -13,11 +16,12 @@ public class Configuration implements Cloneable, Serializable {
 
     private static final long serialVersionUID = 5728699559958112658L;
 
-    private String sheetName;
     private String[] reportName = new String[]{};
     private String translationsDir = "i18n/";
-    private String locale = "en_US";
     private TranslationsParser.FileExtensions translationFileExtension;
+    private String locale = "en_US";
+    private String sheetName;
+    private Class<? extends StyledReport> styles;
     private boolean createHeader = true;
     private boolean stickyHeader = false;
     private boolean sortableHeader = false;
@@ -40,6 +44,7 @@ public class Configuration implements Cloneable, Serializable {
         this.translationFileExtension = configuration.translationFileExtension();
         this.locale = configuration.locale();
         this.sheetName = configuration.sheetName();
+        this.styles = configuration.styles();
         this.createHeader = configuration.createHeader();
         this.stickyHeader = configuration.stickyHeader();
         this.sortableHeader = configuration.sortableHeader();
@@ -47,7 +52,7 @@ public class Configuration implements Cloneable, Serializable {
         this.dataStartRowIndex = configuration.dataStartRowIndex();
         this.verticalOffset = configuration.verticalOffset();
         this.horizontalOffset = configuration.horizontalOffset();
-        this.specialRows = Arrays.stream(configuration.specialRows()).map(SpecialRow::new).collect(Collectors.toList());
+        this.specialRows = Arrays.asList(configuration.specialRows());
         this.specialColumns = Arrays.stream(configuration.specialColumns()).map(SpecialColumn::new).collect(Collectors.toList());
         this.showGridlines = configuration.showGridlines();
         this.displayZeros = configuration.displayZeros();
@@ -61,79 +66,22 @@ public class Configuration implements Cloneable, Serializable {
         return reportName;
     }
 
-    public String getTranslationsDir() {
-        return translationsDir;
-    }
-
-    public String getLocale() {
-        return locale;
-    }
-
-    public TranslationsParser.FileExtensions getTranslationFileExtension() {
-        return translationFileExtension;
-    }
-
-    public String getSheetName() {
-        return sheetName;
-    }
-
-    public boolean isCreateHeader() {
-        return createHeader;
-    }
-
-    public boolean isStickyHeader() {
-        return stickyHeader;
-    }
-
-    public boolean isSortableHeader() {
-        return sortableHeader;
-    }
-
-    public int getHeaderRowIndex() {
-        return headerRowIndex;
-    }
-
-    public int getDataStartRowIndex() {
-        return dataStartRowIndex;
-    }
-
-    public short getVerticalOffset() {
-        return verticalOffset;
-    }
-
-    public short getHorizontalOffset() {
-        return horizontalOffset;
-    }
-
-    public List<SpecialRow> getSpecialRows() {
-        return specialRows;
-    }
-
-    public List<SpecialColumn> getSpecialColumns() {
-        return specialColumns;
-    }
-
-    public boolean isShowGridlines() {
-        return showGridlines;
-    }
-
-    public boolean isDisplayZeros() {
-        return displayZeros;
-    }
-
-    public Configuration setReportName(final String[] reportName) {
+    public Configuration setReportName(String[] reportName) {
         this.reportName = reportName;
         return this;
     }
 
-    public Configuration setTranslationsDir(final String translationsDir) {
+    public String getTranslationsDir() {
+        return translationsDir;
+    }
+
+    public Configuration setTranslationsDir(String translationsDir) {
         this.translationsDir = translationsDir;
         return this;
     }
 
-    public Configuration setLocale(final String locale) {
-        this.locale = locale;
-        return this;
+    public TranslationsParser.FileExtensions getTranslationFileExtension() {
+        return translationFileExtension;
     }
 
     public Configuration setTranslationFileExtension(TranslationsParser.FileExtensions translationFileExtension) {
@@ -141,14 +89,44 @@ public class Configuration implements Cloneable, Serializable {
         return this;
     }
 
-    public Configuration setSheetName(final String sheetName) {
+    public String getLocale() {
+        return locale;
+    }
+
+    public Configuration setLocale(String locale) {
+        this.locale = locale;
+        return this;
+    }
+
+    public String getSheetName() {
+        return sheetName;
+    }
+
+    public Configuration setSheetName(String sheetName) {
         this.sheetName = sheetName;
         return this;
     }
 
-    public Configuration setCreateHeader(final boolean createHeader) {
+    public Class<? extends StyledReport> getStyles() {
+        return styles;
+    }
+
+    public Configuration setStyles(Class<? extends StyledReport> styles) {
+        this.styles = styles;
+        return this;
+    }
+
+    public boolean isCreateHeader() {
+        return createHeader;
+    }
+
+    public Configuration setCreateHeader(boolean createHeader) {
         this.createHeader = createHeader;
         return this;
+    }
+
+    public boolean isStickyHeader() {
+        return stickyHeader;
     }
 
     public Configuration setStickyHeader(boolean stickyHeader) {
@@ -156,19 +134,35 @@ public class Configuration implements Cloneable, Serializable {
         return this;
     }
 
-    public Configuration setSortableHeader(final boolean sortableHeader) {
+    public boolean isSortableHeader() {
+        return sortableHeader;
+    }
+
+    public Configuration setSortableHeader(boolean sortableHeader) {
         this.sortableHeader = sortableHeader;
         return this;
     }
 
-    public Configuration setHeaderRowIndex(final short headerRowIndex) {
+    public int getHeaderRowIndex() {
+        return headerRowIndex;
+    }
+
+    public Configuration setHeaderRowIndex(int headerRowIndex) {
         this.headerRowIndex = headerRowIndex;
         return this;
     }
 
-    public Configuration setDataStartRowIndex(final short dataStartRowIndex) {
+    public int getDataStartRowIndex() {
+        return dataStartRowIndex;
+    }
+
+    public Configuration setDataStartRowIndex(int dataStartRowIndex) {
         this.dataStartRowIndex = dataStartRowIndex;
         return this;
+    }
+
+    public short getVerticalOffset() {
+        return verticalOffset;
     }
 
     public Configuration setVerticalOffset(short verticalOffset) {
@@ -176,24 +170,44 @@ public class Configuration implements Cloneable, Serializable {
         return this;
     }
 
+    public short getHorizontalOffset() {
+        return horizontalOffset;
+    }
+
     public Configuration setHorizontalOffset(short horizontalOffset) {
         this.horizontalOffset = horizontalOffset;
         return this;
     }
 
-    public Configuration setSpecialRows(final List<SpecialRow> specialRows) {
+    public List<SpecialRow> getSpecialRows() {
+        return specialRows;
+    }
+
+    public Configuration setSpecialRows(List<SpecialRow> specialRows) {
         this.specialRows = specialRows;
         return this;
     }
 
-    public Configuration setSpecialColumns(final List<SpecialColumn> specialColumns) {
+    public List<SpecialColumn> getSpecialColumns() {
+        return specialColumns;
+    }
+
+    public Configuration setSpecialColumns(List<SpecialColumn> specialColumns) {
         this.specialColumns = specialColumns;
         return this;
+    }
+
+    public boolean isShowGridlines() {
+        return showGridlines;
     }
 
     public Configuration setShowGridlines(boolean showGridlines) {
         this.showGridlines = showGridlines;
         return this;
+    }
+
+    public boolean isDisplayZeros() {
+        return displayZeros;
     }
 
     public Configuration setDisplayZeros(boolean displayZeros) {
@@ -206,7 +220,7 @@ public class Configuration implements Cloneable, Serializable {
         Configuration clone = this;
         try {
             clone = (Configuration) super.clone();
-            clone.specialRows = specialRows.stream().map(row -> (SpecialRow) row.clone()).collect(Collectors.toList());
+            clone.specialRows = specialRows;
             clone.specialColumns = specialColumns.stream().map(row -> (SpecialColumn) row.clone()).collect(Collectors.toList());
         } catch (CloneNotSupportedException ignored) {}
         return clone;

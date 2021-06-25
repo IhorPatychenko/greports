@@ -1,6 +1,6 @@
 package org.greports.utils;
 
-import org.greports.exceptions.ReportEngineRuntimeException;
+import org.greports.exceptions.GreportsRuntimeException;
 import org.yaml.snakeyaml.Yaml;
 
 import java.io.IOException;
@@ -54,7 +54,7 @@ public class TranslationsParser {
                 return new HashMap<>();
             }
         } catch (IOException e) {
-            throw new ReportEngineRuntimeException(String.format("Error parsing translations file %s", fileURL), e);
+            throw new GreportsRuntimeException(String.format("Error parsing translations file %s", fileURL), e);
         }
     }
 

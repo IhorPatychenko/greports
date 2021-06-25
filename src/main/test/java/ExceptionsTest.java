@@ -1,5 +1,5 @@
 import models.Car;
-import org.greports.exceptions.ReportEngineRuntimeException;
+import org.greports.exceptions.GreportsRuntimeException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
 
@@ -10,7 +10,7 @@ class ExceptionsTest extends AbstractTest {
 
     @Test
     void parseExceptionTest() {
-        testNullObjectException(() -> reportGenerator.parse(null, Car.REPORT_NAME, Car.class));
+        testNullObjectException(() -> greportsGenerator.parse(null, Car.REPORT_NAME, Car.class));
     }
 
     @Test
@@ -38,7 +38,7 @@ class ExceptionsTest extends AbstractTest {
     }
 
     private void testNullObjectException(Executable executable) {
-        Exception exception = assertThrows(ReportEngineRuntimeException.class, executable);
+        Exception exception = assertThrows(GreportsRuntimeException.class, executable);
         assertEquals("The object is null", exception.getMessage());
     }
 }

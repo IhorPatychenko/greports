@@ -4,12 +4,12 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.greports.content.cell.DataCell;
 import org.greports.content.cell.HeaderCell;
-import org.greports.content.cell.SpecialDataCell;
+import org.greports.content.cell.SpecialDataRowCell;
 import org.greports.content.header.ReportHeader;
 import org.greports.content.row.DataRow;
 import org.greports.content.row.ReportRow;
 import org.greports.content.row.SpecialDataRow;
-import org.greports.styles.ReportStylesContainer;
+import org.greports.styles.StylesContainer;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
 public class Data implements Cloneable, Serializable {
     private static final long serialVersionUID = 7890759064532349923L;
 
-    private final ReportStylesContainer reportStylesContainer = new ReportStylesContainer();
+    private final StylesContainer stylesContainer = new StylesContainer();
     private final Map<String, Integer> targetIndexes = new HashMap<>();
     private final String reportName;
     private Configuration configuration;
@@ -143,7 +143,7 @@ public class Data implements Cloneable, Serializable {
         }
 
         for(SpecialDataRow specialRow : specialRows) {
-            for(SpecialDataCell specialCell : specialRow.getCells()) {
+            for(SpecialDataRowCell specialCell : specialRow.getCells()) {
                 specialCell.setColumnIndex(targetIndexes.get(specialCell.getTargetId()));
             }
         }
@@ -165,7 +165,7 @@ public class Data implements Cloneable, Serializable {
     }
 
     private void mergeStyles(Data other) {
-        reportStylesContainer.mergeStyles(other.reportStylesContainer);
+        stylesContainer.mergeStyles(other.stylesContainer);
     }
 
     @Override
@@ -267,8 +267,8 @@ public class Data implements Cloneable, Serializable {
         return compiledAutosizedColumns;
     }
 
-    public ReportStylesContainer getStyles() {
-        return reportStylesContainer;
+    public StylesContainer getStyles() {
+        return stylesContainer;
     }
 
     public List<SpecialDataRow> getSpecialRows() {

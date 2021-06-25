@@ -11,9 +11,10 @@ import java.util.Map;
 
 import static models.Car.REPORT_NAME;
 
-public interface DefaultStyles extends StyledReport {
+public class DefaultStyles implements StyledReport {
 
-    default Map<String, ReportStylesBuilder> getReportStyles(int rowsCount) {
+    @Override
+    public Map<String, ReportStylesBuilder> getReportStyles(Integer rowsCount) {
         Map<String, ReportStylesBuilder> map = new HashMap<>();
         map.put(REPORT_NAME, new ReportStylesBuilder()
             .newStyle(new VerticalRange(0, null), false)

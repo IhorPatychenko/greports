@@ -15,8 +15,8 @@ import org.greports.annotations.SubreportSetter;
 import org.greports.content.cell.HeaderCell;
 import org.greports.engine.Configuration;
 import org.greports.engine.DataBlock;
-import org.greports.exceptions.ReportEngineReflectionException;
-import org.greports.exceptions.ReportEngineRuntimeException;
+import org.greports.exceptions.GreportsReflectionException;
+import org.greports.exceptions.GreportsRuntimeException;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
@@ -40,7 +40,7 @@ public class AnnotationUtils {
 
     private static Report getReportAnnotation(Class<?> clazz) {
         return Optional.ofNullable(clazz.getAnnotation(Report.class))
-                .orElseThrow(() -> new ReportEngineRuntimeException(String.format("%s class has no %s.Report annotation", clazz.toString(), Report.class.getPackage().getName()), clazz));
+                .orElseThrow(() -> new GreportsRuntimeException(String.format("%s class has no %s.Report annotation", clazz.toString(), Report.class.getPackage().getName()), clazz));
     }
 
     public static org.greports.annotations.Configuration getReportConfiguration(Class<?> clazz, String reportName) {
@@ -48,17 +48,17 @@ public class AnnotationUtils {
         return Arrays.stream(report.reportConfigurations())
             .filter(entry -> Arrays.asList(entry.reportName()).contains(reportName))
             .findFirst()
-            .orElseThrow(() -> new ReportEngineRuntimeException(
+            .orElseThrow(() -> new GreportsRuntimeException(
                 String.format("%s has no %s annotation with name \"%s\"", Report.class.getName(), org.greports.annotations.Configuration.class.getName(), reportName),
                 report.getClass()
             ));
     }
 
     public static int getLastSpecialRowsCount(Configuration configuration) {
-        return (int) configuration.getSpecialRows().stream().filter(entry -> entry.getRowIndex() == Integer.MAX_VALUE).count();
+        return (int) configuration.getSpecialRows().stream().filter(entry -> entry.rowIndex() == Integer.MAX_VALUE).count();
     }
 
-    public static <T> void methodsWithColumnAnnotations(Class<T> clazz, Function<Pair<Column, Method>, Void> columnFunction, String reportName) throws ReportEngineReflectionException {
+    public static <T> void methodsWithColumnAnnotations(Class<T> clazz, Function<Pair<Column, Method>, Void> columnFunction, String reportName) throws GreportsReflectionException {
         for (Field declaredField : getAllClassFields(clazz)) {
             final Column[] columns = declaredField.getAnnotationsByType(Column.class);
             for (Column column : columns) {
@@ -81,7 +81,7 @@ public class AnnotationUtils {
     }
 
 
-    public static <T> void cellsWithMethodsFunction(Class<T> clazz, Function<Pair<Cell, Method>, Void> cellFunction, String reportName) throws ReportEngineReflectionException {
+    public static <T> void cellsWithMethodsFunction(Class<T> clazz, Function<Pair<Cell, Method>, Void> cellFunction, String reportName) throws GreportsReflectionException {
         for (Field declaredField : getAllClassFields(clazz)) {
             final Cell[] cells = declaredField.getAnnotationsByType(Cell.class);
             for (Cell cell : cells) {
@@ -144,7 +144,7 @@ public class AnnotationUtils {
         return list.stream().max(Comparator.comparing(Column::position)).orElse(null);
     }
 
-    public static Map<Annotation, Method> loadBlockAnnotations(final DataBlock dataBlock) throws ReportEngineReflectionException {
+    public static Map<Annotation, Method> loadBlockAnnotations(final DataBlock dataBlock) throws GreportsReflectionException {
         Map<Annotation, Method> map = new HashMap<>();
         Class<?> clazz = dataBlock.getBlockClass();
         final List<Field> fields = getAllClassFields(clazz);
@@ -192,7 +192,7 @@ public class AnnotationUtils {
         return map;
     }
 
-    public static <T> void methodsWithSubreportAnnotations(Class<T> clazz, Function<Pair<Subreport, Method>, Void> columnFunction, String reportName) throws ReportEngineReflectionException {
+    public static <T> void methodsWithSubreportAnnotations(Class<T> clazz, Function<Pair<Subreport, Method>, Void> columnFunction, String reportName) throws GreportsReflectionException {
         for (Field field : getAllClassFields(clazz)) {
             final Subreport[] subreports = field.getAnnotationsByType(Subreport.class);
             for (Subreport subreport : subreports) {

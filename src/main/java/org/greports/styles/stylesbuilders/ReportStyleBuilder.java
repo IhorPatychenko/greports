@@ -10,7 +10,7 @@ import org.greports.positioning.Position;
 import org.greports.positioning.Range;
 import org.greports.positioning.RectangleRange;
 import org.greports.positioning.VerticalRange;
-import org.greports.styles.ReportStyle;
+import org.greports.styles.Style;
 
 import java.awt.*;
 import java.io.Serializable;
@@ -280,9 +280,9 @@ public class ReportStyleBuilder<E extends Range<?, ?>> implements Serializable {
         return this.range;
     }
 
-    protected ReportStyle buildStyle() {
+    protected Style buildStyle() {
 
-        ReportStyle reportStyle = ReportStyle.builder()
+        Style style = Style.builder()
                 .range(range)
                 .clonePreviousStyle(clonePreviousStyle)
                 .fontName(fontName)
@@ -315,14 +315,14 @@ public class ReportStyleBuilder<E extends Range<?, ?>> implements Serializable {
                 .bottomBorderColor(bottomBorderColor)
                 .borderColor(borderColor)
                 .build();
-        return setCustomStyles(reportStyle);
+        return setCustomStyles(style);
     }
 
     public ReportStyleBuilder<RectangleRange> toRectangeRangeStyleBuilder() {
         return new ReportStyleBuilder<>(this.range, this);
     }
 
-    protected ReportStyle setCustomStyles(final ReportStyle style) {
+    protected Style setCustomStyles(final Style style) {
         return style;
     }
 }

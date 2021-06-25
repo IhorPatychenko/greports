@@ -5,9 +5,8 @@ import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
-import org.apache.poi.ss.util.CellUtil;
 import org.greports.engine.ValueType;
-import org.greports.exceptions.ReportEngineRuntimeException;
+import org.greports.exceptions.GreportsRuntimeException;
 
 import java.util.Date;
 import java.util.Objects;
@@ -21,7 +20,7 @@ public class WorkbookUtils {
     }
 
     public static void setCellValue(Cell cell, Object value, ValueType valueType) {
-        if(ValueType.FORMULA.equals(valueType) || ValueType.TEMPLATED_FORMULA.equals(valueType)) {
+        if(ValueType.FORMULA.equals(valueType)) {
             cell.setCellFormula(value.toString());
         } else if(value instanceof Date) {
             cell.setCellValue(((Date) value));
@@ -56,7 +55,7 @@ public class WorkbookUtils {
     public static int getLastRowNum(Workbook workbook, String sheetName) {
         final Sheet sheet = workbook.getSheet(sheetName);
         if(sheet == null) {
-            throw new ReportEngineRuntimeException(String.format("The sheet with name %s does not exist", sheetName), WorkbookUtils.class);
+            throw new GreportsRuntimeException(String.format("The sheet with name %s does not exist", sheetName), WorkbookUtils.class);
         }
         return getLastRowNum(sheet);
     }

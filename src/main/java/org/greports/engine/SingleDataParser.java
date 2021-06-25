@@ -2,12 +2,12 @@ package org.greports.engine;
 
 import com.google.common.base.Stopwatch;
 import org.apache.commons.lang3.tuple.Pair;
-import org.apache.log4j.Level;
+import org.apache.logging.log4j.Level;
 import org.greports.annotations.Cell;
 import org.greports.content.cell.DataCell;
 import org.greports.content.row.DataRow;
 import org.greports.converters.NotImplementedConverter;
-import org.greports.exceptions.ReportEngineReflectionException;
+import org.greports.exceptions.GreportsReflectionException;
 import org.greports.services.LoggerService;
 import org.greports.utils.AnnotationUtils;
 import org.greports.utils.ConverterUtils;
@@ -18,7 +18,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.function.Function;
 
-public class SingleDataParser<T> extends ReportParser {
+public class SingleDataParser<T> extends Parser {
 
     private final LoggerService loggerService;
 
@@ -28,7 +28,7 @@ public class SingleDataParser<T> extends ReportParser {
         loggerService = LoggerService.forClass(SingleDataParser.class, loggerEnabled, level);
     }
 
-    public SingleDataParser<T> parse(final T object, final String reportName, final Class<T> clazz, Configurator configurator) throws ReportEngineReflectionException {
+    public SingleDataParser<T> parse(final T object, final String reportName, final Class<T> clazz, Configurator configurator) throws GreportsReflectionException {
         loggerService.info("Parsing started...");
         loggerService.info(String.format("Parsing report for class \"%s\" with name \"%s\"...", clazz.getSimpleName(), reportName));
         Stopwatch timer = Stopwatch.createStarted();
@@ -46,7 +46,7 @@ public class SingleDataParser<T> extends ReportParser {
         return this;
     }
 
-    private void parseData(SingleDataContainer<T> container) throws ReportEngineReflectionException {
+    private void parseData(SingleDataContainer<T> container) throws GreportsReflectionException {
         final Data data = container.getReportData();
         final Class<T> clazz = container.getClazz();
         final T object = container.getObject();

@@ -1,6 +1,8 @@
 package org.greports.annotations;
 
 import org.apache.commons.lang3.StringUtils;
+import org.greports.styles.NotImplementedStyles;
+import org.greports.styles.interfaces.StyledReport;
 import org.greports.utils.TranslationsParser;
 
 import java.lang.annotation.ElementType;
@@ -57,6 +59,13 @@ public @interface Configuration {
      * @return {@link String}
      */
     String sheetName() default StringUtils.EMPTY;
+
+    /**
+     * Report styles class. Could be an interface with default method or class
+     * implementing {@link StyledReport} interface.
+     * @return {@link Class}
+     */
+    Class<? extends StyledReport> styles() default NotImplementedStyles.class;
 
     /**
      * The value indicates if the header needs to be created.

@@ -13,12 +13,6 @@ public enum ValueType {
      */
     FORMULA,
     /**
-     * Cell formula value. Used to indicate to the engine that this type of cell
-     * needs to be ignored during data inject, but this one needs to reindex
-     * cell references used in the formula.
-     */
-    TEMPLATED_FORMULA,
-    /**
      * Indicates that the reference to some method will be used to obtain the value.
      * When used an exact method name should be provided.
      * Examples: "getId", "getTotal", "toString"

@@ -1,13 +1,13 @@
 import models.Car;
 import models.Person;
-import org.apache.log4j.Level;
+import org.apache.logging.log4j.Level;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.greports.engine.Configurator;
 import org.greports.engine.DataReader;
-import org.greports.engine.ReportGenerator;
-import org.greports.engine.ReportLoader;
-import org.greports.exceptions.ReportEngineReflectionException;
-import org.greports.exceptions.ReportEngineRuntimeException;
+import org.greports.engine.GreportsGenerator;
+import org.greports.engine.GreportsLoader;
+import org.greports.exceptions.GreportsReflectionException;
+import org.greports.exceptions.GreportsRuntimeException;
 import org.junit.jupiter.api.BeforeAll;
 
 import java.io.File;
@@ -26,7 +26,7 @@ public class AbstractTest {
     static {
 
         if(OUTPUT_TEST_DIR == null) {
-            throw new ReportEngineRuntimeException(String.format("You need to define the '%s' environment variable in order to run tests.", OUTPUT_TEST_DIR_ENV_KEY), AbstractTest.class);
+            throw new GreportsRuntimeException(String.format("You need to define the '%s' environment variable in order to run tests.", OUTPUT_TEST_DIR_ENV_KEY), AbstractTest.class);
         }
 
         if(String.valueOf(OUTPUT_TEST_DIR.charAt(OUTPUT_TEST_DIR.length() - 1)).equals(File.separator)) {
@@ -39,9 +39,9 @@ public class AbstractTest {
     protected static final Date currentDate = new Date();
 
     protected static List<Car> loadedCars;
-    protected static ReportLoader reportLoader;
+    protected static GreportsLoader greportsLoader;
     protected static DataReader dataReader;
-    protected static ReportGenerator reportGenerator;
+    protected static GreportsGenerator greportsGenerator;
     protected static Configurator configurator;
 
     @BeforeAll
@@ -54,27 +54,27 @@ public class AbstractTest {
                 new Car("Lamborghini", "Aventador", 2020, (short) 4, currentDate, 315000.0f, new Person("Sonia", "Peake"))
         );
 
-        reportGenerator = new ReportGenerator(true, Level.ALL);
-        configurator = reportGenerator.getConfigurator(Car.class, Car.REPORT_NAME);
+        greportsGenerator = new GreportsGenerator(true, Level.ALL);
+        configurator = greportsGenerator.getConfigurator(Car.class, Car.REPORT_NAME);
 
         try {
-            reportGenerator.parse(cars, Car.REPORT_NAME, Car.class)
+            greportsGenerator.parse(cars, Car.REPORT_NAME, Car.class)
                     .getResult()
                     .writeToPath(FILE_PATH);
 
             loadCars();
-        } catch(ReportEngineReflectionException | IOException e) {
-            throw new ReportEngineRuntimeException("Error creating cars", e, ReportGeneratorAndLoaderTest.class);
+        } catch(GreportsReflectionException | IOException e) {
+            throw new GreportsRuntimeException("Error creating cars", e, GreportsGeneratorAndLoaderTest.class);
         }
     }
 
     protected static void loadCars() {
         try {
-            reportLoader = new ReportLoader(FILE_PATH, Car.REPORT_NAME);
-            dataReader = reportLoader.getReader();
-            loadedCars = reportLoader.bindForClass(Car.class).getLoaderResult().getResult(Car.class);
-        } catch(InvalidFormatException | IOException | ReportEngineReflectionException e) {
-            throw new ReportEngineRuntimeException("Error loading cars", e, ReportGeneratorAndLoaderTest.class);
+            greportsLoader = new GreportsLoader(FILE_PATH, Car.REPORT_NAME);
+            dataReader = greportsLoader.getReader();
+            loadedCars = greportsLoader.bindForClass(Car.class).getLoaderResult().getResult(Car.class);
+        } catch(InvalidFormatException | IOException | GreportsReflectionException e) {
+            throw new GreportsRuntimeException("Error loading cars", e, GreportsGeneratorAndLoaderTest.class);
         }
     }
 

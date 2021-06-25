@@ -1,8 +1,8 @@
 package org.greports.engine;
 
 import com.google.common.base.Stopwatch;
-import org.apache.log4j.Level;
-import org.greports.exceptions.ReportEngineRuntimeException;
+import org.apache.logging.log4j.Level;
+import org.greports.exceptions.GreportsRuntimeException;
 import org.greports.services.LoggerService;
 
 import java.io.File;
@@ -21,12 +21,12 @@ public class GeneratorResult implements Serializable {
 
     private final transient LoggerService loggerService;
     private final List<Data> data = new ArrayList<>();
-    private final transient ReportInjector reportInjector;
+    private final transient Injector injector;
     private final List<String> deleteSheets = new ArrayList<>();
 
     public GeneratorResult(boolean evaluateFormulas, boolean loggerEnabled, Level level) {
         loggerService = new LoggerService(GeneratorResult.class, loggerEnabled, level);
-        reportInjector = new ReportInjector(data, deleteSheets, loggerEnabled, evaluateFormulas, level);
+        injector = new Injector(data, deleteSheets, loggerEnabled, evaluateFormulas, level);
     }
 
     protected void addData(Data data){
@@ -47,7 +47,7 @@ public class GeneratorResult implements Serializable {
     public ResultChanger getResultChanger(final String sheetName) {
         Data dataBySheetName = getReportDataBySheetName(sheetName);
         if(dataBySheetName == null){
-            throw new ReportEngineRuntimeException(String.format("Sheet with name %s does not exist", sheetName), this.getClass());
+            throw new GreportsRuntimeException(String.format("Sheet with name %s does not exist", sheetName), this.getClass());
         }
         if(!_resultChangers.containsKey(sheetName)) {
             _resultChangers.put(sheetName, new ResultChanger(dataBySheetName, this));
@@ -63,18 +63,18 @@ public class GeneratorResult implements Serializable {
 
     public GeneratorResult deleteSheet(final String sheetName) {
         if(sheetName == null){
-            throw new ReportEngineRuntimeException("The parameter sheetName cannot be null", this.getClass());
+            throw new GreportsRuntimeException("The parameter sheetName cannot be null", this.getClass());
         }
         deleteSheets.add(sheetName);
         return this;
     }
 
     public void setEvaluateFormulas(boolean evaluateFormulas) {
-        this.reportInjector.setEvaluateFormulas(evaluateFormulas);
+        this.injector.setEvaluateFormulas(evaluateFormulas);
     }
 
     public void setForceFormulaRecalculation(boolean formulaRecalculation) {
-        this.reportInjector.setForceFormulaRecalculation(formulaRecalculation);
+        this.injector.setForceFormulaRecalculation(formulaRecalculation);
     }
 
     /**
@@ -98,11 +98,11 @@ public class GeneratorResult implements Serializable {
      * @throws IOException exception opening the stream to write to
      */
     public void writeToOutputStream(FileOutputStream outputStream) throws IOException {
-        reportInjector.inject();
+        injector.inject();
 
         loggerService.info("Write to file started...");
         final Stopwatch writeToStreamStopwatch = Stopwatch.createStarted();
-        reportInjector.writeToFileOutputStream(outputStream);
+        injector.writeToFileOutputStream(outputStream);
         loggerService.info("Write to file successfully finished. Write time: " + writeToStreamStopwatch.stop());
     }
 }
