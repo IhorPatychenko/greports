@@ -6,10 +6,10 @@ import org.greports.styles.stylesbuilders.ReportStylesBuilder;
 import java.util.HashMap;
 import java.util.Map;
 
-public interface NotImplementedStyles extends StyledReport {
+public final class NotImplementedStyles implements StyledReport {
 
     @Override
-    default Map<String, ReportStylesBuilder> getReportStyles(Integer rowsCount) {
+    public Map<String, ReportStylesBuilder> getReportStyles(Integer rowsCount) {
         return new HashMap<>();
     }
 }

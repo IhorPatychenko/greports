@@ -77,15 +77,15 @@ class DataInjector {
     }
 
     private void setSheetAttributes(Sheet sheet) {
-        loggerService.trace("Applying sheet configuration...");
+        loggerService.info("Applying sheet configuration...");
         Configuration configuration = data.getConfiguration();
         sheet.setDisplayZeros(configuration.isDisplayZeros());
         sheet.setDisplayGridlines(data.getConfiguration().isShowGridlines());
-        loggerService.trace("Sheet configuration applied");
+        loggerService.info("Sheet configuration applied");
     }
 
     private void createHeader(Sheet sheet) {
-        loggerService.trace("Creating header...", data.isCreateHeader());
+        loggerService.info("Creating header...", data.isCreateHeader());
         final Stopwatch headersStopwatch = Stopwatch.createStarted();
 
         if(data.isCreateHeader()) {
@@ -114,11 +114,11 @@ class DataInjector {
                 sheet.createFreezePane(0, headerRow.getRowNum() + 1, 0, headerRow.getRowNum() + 1);
             }
         }
-        loggerService.trace("Header created. Time: " + headersStopwatch.stop(), data.isCreateHeader());
+        loggerService.info("Header created. Time: " + headersStopwatch.stop(), data.isCreateHeader());
     }
 
     private void createDataRows(Sheet sheet) {
-        loggerService.trace("Creating data rows...");
+        loggerService.info("Creating data rows...");
         final Stopwatch dataRowsStopwatch = Stopwatch.createStarted();
 
         // First create cells with data
@@ -128,7 +128,7 @@ class DataInjector {
         this.createCells(sheet, dataCellsPredicate);
         this.createCells(sheet, formulaCellsPredicate);
 
-        loggerService.trace("Data rows created. Time: " + dataRowsStopwatch.stop());
+        loggerService.info("Data rows created. Time: " + dataRowsStopwatch.stop());
     }
 
     private void createCells(Sheet sheet, Predicate<DataCell> predicate) {
@@ -190,7 +190,7 @@ class DataInjector {
     private void createRowsGroups(final Sheet sheet) {
         List<Pair<Integer, Integer>> groupedRows = data.getGroupedRows();
 
-        loggerService.trace("Creating row's groups...", !groupedRows.isEmpty());
+        loggerService.info("Creating row's groups...", !groupedRows.isEmpty());
         final Stopwatch rowsGroup = Stopwatch.createStarted();
 
         for(final Pair<Integer, Integer> groupedRow : groupedRows) {
@@ -199,13 +199,13 @@ class DataInjector {
             sheet.groupRow(startGroup, endGroup);
             sheet.setRowGroupCollapsed(startGroup, data.isGroupedRowsDefaultCollapsed());
         }
-        loggerService.trace("Row's groups created. Time: " + rowsGroup.stop(), !groupedRows.isEmpty());
+        loggerService.info("Row's groups created. Time: " + rowsGroup.stop(), !groupedRows.isEmpty());
     }
 
     private void createColumnsGroups(final Sheet sheet) {
         final List<Pair<Integer, Integer>> groupedColumns = data.getGroupedColumns();
 
-        loggerService.trace("Creating row's groups...", !groupedColumns.isEmpty());
+        loggerService.info("Creating row's groups...", !groupedColumns.isEmpty());
         final Stopwatch columnsGroup = Stopwatch.createStarted();
 
         for(final Pair<Integer, Integer> groupedColumn : groupedColumns) {
@@ -214,13 +214,13 @@ class DataInjector {
             sheet.groupColumn(left, right);
             sheet.setColumnGroupCollapsed(left, data.isGroupedColumnsDefaultCollapsed());
         }
-        loggerService.trace("Column's groups created. Time: " + columnsGroup.stop(), !groupedColumns.isEmpty());
+        loggerService.info("Column's groups created. Time: " + columnsGroup.stop(), !groupedColumns.isEmpty());
     }
 
     private void addStyles(Sheet sheet) {
         final ReportStylesBuilder reportStylesBuilder = data.getStyles().getReportStylesBuilder();
         if(reportStylesBuilder != null) {
-            loggerService.trace("Adding styles...");
+            loggerService.info("Adding styles...");
             final Stopwatch stylesStopwatch = Stopwatch.createStarted();
 
             final List<Style> styles = reportStylesBuilder.getStyles();
@@ -248,8 +248,8 @@ class DataInjector {
                     }
                 }
             }
-            loggerService.trace("Styles added. Time: " + stylesStopwatch.stop());
-            loggerService.trace("Total styles: " + sheet.getWorkbook().getNumCellStyles());
+            loggerService.info("Styles added. Time: " + stylesStopwatch.stop());
+            loggerService.info("Total styles: " + sheet.getWorkbook().getNumCellStyles());
         }
     }
 
@@ -469,20 +469,20 @@ class DataInjector {
     protected void adjustColumns(Sheet sheet) {
         final List<Integer> autoSizedColumns = data.getAutoSizedColumns();
 
-        loggerService.trace("Adjusting columns...", !autoSizedColumns.isEmpty());
+        loggerService.info("Adjusting columns...", !autoSizedColumns.isEmpty());
         final Stopwatch adjustColumnsStopwatch = Stopwatch.createStarted();
 
         for (Integer autoSizedColumn : autoSizedColumns) {
             sheet.autoSizeColumn(autoSizedColumn + data.getConfiguration().getHorizontalOffset());
         }
 
-        loggerService.trace("Columns adjusted. Time: " + adjustColumnsStopwatch.stop(), !autoSizedColumns.isEmpty());
+        loggerService.info("Columns adjusted. Time: " + adjustColumnsStopwatch.stop(), !autoSizedColumns.isEmpty());
     }
 
     protected void createSpecialRows(Sheet sheet) {
         final List<SpecialDataRow> specialRows = data.getSpecialRows();
         Integer countBottomRows = 0;
-        loggerService.trace("Creating special rows...", !specialRows.isEmpty());
+        loggerService.info("Creating special rows...", !specialRows.isEmpty());
         final Stopwatch specialRowsStopwatch = Stopwatch.createStarted();
         for(SpecialDataRow specialRow : specialRows) {
             countBottomRows = specialRowSetRowIndex(countBottomRows, specialRow);
@@ -508,7 +508,7 @@ class DataInjector {
             }
             checkIfStickyRow(sheet, specialRow);
         }
-        loggerService.trace("Special rows created. Time: " + specialRowsStopwatch.stop(), !specialRows.isEmpty());
+        loggerService.info("Special rows created. Time: " + specialRowsStopwatch.stop(), !specialRows.isEmpty());
     }
 
     private void createCollectedFormulaValueCell(Sheet sheet, SpecialDataRowCell specialCell, Cell cell, String formulaString) {
